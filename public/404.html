@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found | AgriConnect</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Basic styling unique to the error page */
+        .error-container {
+            text-align: center;
+            padding: 50px 20px;
+        }
+        .error-container h1 {
+            font-size: 6em;
+            color: #E53E3E; /* Red/Error color */
+            margin-bottom: 0.1em;
+        }
+        .error-container h2 {
+            font-size: 1.8em;
+            color: #4A5568;
+            margin-bottom: 1em;
+        }
+        .error-container p {
+            font-size: 1.1em;
+            margin-bottom: 1.5em;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">🌾 AgriConnect</div>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/items">Marketplace</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/contact">Contact</a></li>
+            <li id="auth-link"></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <div class="error-container">
+            <h1>404</h1>
+            <h2>Oops! This page went missing.</h2>
+            <p>It looks like the address you typed doesn't lead to any produce or service on AgriConnect.</p>
+            <a href="/" class="btn primary-btn">Go to Home Page</a>
+            <a href="/items" class="btn secondary-btn">Browse Marketplace</a>
+        </div>
+    </div>
+
+    <footer class="footer">© 2025 AgriConnect</footer>
+    <script src="script.js"></script>
+</body>
+</html>

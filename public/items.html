@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace - AgriConnect</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">🌾 AgriConnect</div>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/items">Marketplace</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/contact">Contact</a></li>
+            <li id="auth-link"></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <h1>AgriConnect Marketplace</h1>
+
+        <div class="card form-wrap" id="product-form-container">
+            <h2>List Your Produce</h2>
+            <form id="productForm">
+                <label for="name">Product Name</label>
+                <input type="text" id="name" required placeholder="e.g., Organic Avocados">
+
+                <label for="price">Price (RWF)</label>
+                <input type="number" id="price" required min="1" placeholder="e.g., 50000">
+
+                <label for="category">Category</label>
+                <select id="category" required>
+                    <option value="">Select Category</option>
+                    <option value="Fruits">Fruits</option>
+                    <option value="Vegetables">Vegetables</option>
+                    <option value="Grains">Grains</option>
+                    <option value="Livestock">Livestock</option>
+                    <option value="Equipment">Equipment</option>
+                    <option value="Other">Other</option>
+                </select>
+
+                <label for="description">Description (Optional)</label>
+                <textarea id="description" rows="3" placeholder="Describe quality, quantity, and location..."></textarea>
+
+                <label for="paymentMethods">Accepted Payment Methods</label>
+                <select id="paymentMethods" multiple required>
+                    <option value="Mobile Money (MoMo)" selected>Mobile Money (MoMo)</option>
+                    <option value="Visa Card">Visa Card</option>
+                </select>
+
+                <label for="contact">Contact Information (Phone or WhatsApp)</label>
+                <input type="text" id="contact" required placeholder="+250 7X XXX XXXX">
+
+                <label for="imageUrl">Image URL (Optional)</label>
+                <input type="text" id="imageUrl" placeholder="Paste link to product image">
+
+                <button type="submit" class="btn primary-btn full-width-btn">List Product</button>
+            </form>
+        </div>
+
+        <h2 class="section-title">Available Products</h2>
+        
+        <div class="grid" id="product-list">
+            <p>Loading products...</p>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2024 Agri-Marketplace. All rights reserved.</p>
+    </footer>
+    
+    <script src="script.js"></script>
+</body>
+</html>

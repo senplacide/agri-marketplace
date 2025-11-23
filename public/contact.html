@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Agri-Marketplace</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">🌾 AgriConnect</div>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/items">Marketplace</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/contact">Contact</a></li>
+            <li id="auth-link"></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <h1>Contact AgriConnect Support</h1>
+        <p class="subtitle">We're here to help you with any questions about buying, selling, or using the platform.</p>
+
+        <div class="card form-wrap">
+            <h2>Send Us a Message</h2>
+            <form id="contact-form">
+                <label for="contact-name">Your Name</label>
+                <input type="text" id="contact-name" name="name" required placeholder="John Doe">
+
+                <label for="contact-email">Your Email Address</label>
+                <input type="email" id="contact-email" name="email" required placeholder="your.email@example.com">
+
+                <label for="contact-subject">Subject</label>
+                <input type="text" id="contact-subject" name="subject" placeholder="Issue with my listing">
+
+                <label for="contact-message">Message</label>
+                <textarea id="contact-message" name="message" rows="5" required placeholder="Please describe your issue or question in detail..."></textarea>
+
+                <button type="submit" class="btn primary-btn">Send Message</button>
+                <p id="contact-status" class="contact-status-margin"></p>
+            </form>
+        </div>
+
+        <div class="card contact-details">
+            <h3>Other Ways to Reach Us</h3>
+            <p>For urgent support related to your account or listings, please email us directly:</p>
+            <p class="highlight">Email: **support@agriconnect.africa**</p>
+            <p>Phone: **+250 79 203 0786**</p>
+            <p>We aim to respond within 4-8 business hours.</p>
+        </div>
+    </div>
+
+    <footer class="footer">© 2025 AgriConnect</footer>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>AgriConnect: Farm-to-Buyer Marketplace</title>
+    <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">🌾 AgriConnect</div>
+        <ul class="nav-links" id="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/items">Marketplace</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/contact">Contact</a></li>
+            <li id="auth-link"></li> 
+        </ul>
+    </nav>
+
+    <main class="content">
+        <section class="hero video-hero">
+            <video autoplay muted loop id="hero-video">
+                <source src="images/video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div class="hero-content">
+                <h1>AgriConnect</h1>
+                <p class="subtitle">Connecting farmers, buyers and fresh produce — everywhere.</p>
+                <h2>Bring your farm to the market</h2>
+                <p>AgriConnect helps farmers list products and reach buyers across regions quickly and simply.</p>
+                <a class="btn primary-btn" href="/items">Explore Marketplace</a>
+            </div>
+        </section>
+
+        <section class="why-us">
+            <h2>Why Choose AgriConnect?</h2>
+            <div class="features">
+                <div class="feature card">
+                    <h3>Direct Farm-to-Buyer 🤝</h3>
+                    <p>Get **fair prices** for your produce by removing unnecessary middlemen.</p>
+                </div>
+                <div class="feature card">
+                    <h3>Secure & Reliable 🔒</h3>
+                    <p>**Protected data** with passwords hashed and secure JWT authentication.</p>
+                </div>
+                <div class="feature card">
+                    <h3>Low-bandwidth Friendly 📱</h3>
+                    <p>Designed with **simple pages and small assets** for reliable access on slow networks.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="testimonials">
+            <h2>What Farmers Say</h2>
+            <blockquote class="card quote-card">
+                “AgriConnect helped me reach new buyers across districts. My sales tripled!” — <b>Jean, Farmer</b>
+            </blockquote>
+            
+            <h2>Inspiration 💡</h2>
+            <blockquote class="card quote-card inspired-quote">
+                “The future of agriculture is not in growing more, but in connecting better.” — <b>Anonymous</b>
+            </blockquote>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>© 2025 AgriConnect. All Rights Reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
