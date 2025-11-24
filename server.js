@@ -34,7 +34,8 @@ const contactRouter = require("./routes/contact");
 app.use("/api/auth", authRouter);
 app.use("/api/products", productRouter);
 app.use("/api/contact", contactRouter); 
-
+// Health Check Endpoint - Crucial for "Always-On" hack on Render/Railway
+app.get("/health", (req, res) => res.status(200).send("OK"));
 // --- Frontend Serving ---
 app.use(express.static(path.join(__dirname, "public")));
 
