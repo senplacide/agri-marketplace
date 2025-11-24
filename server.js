@@ -51,5 +51,7 @@ app.get("/dashboard", (req, res) => res.sendFile(path.join(__dirname, "public", 
 app.use("/api", (req,res) => res.status(404).json({ error: "API route not found" }));
 app.use((req,res) => res.status(404).sendFile(path.join(__dirname, "public", "404.html"))); 
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+const HOST = '0.0.0.0'; // Add this line
+app.listen(PORT, HOST, () => {
+    console.log(`🚀 Server running on http://${HOST}:${PORT}`);
+});
