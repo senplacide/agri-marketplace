@@ -34,13 +34,35 @@ app.get("/health", (req, res) => res.status(200).send("OK"));
 // --- Serve static frontend ---
 app.use(express.static(path.join(__dirname, "public")));
 
-// SPA fallback (important for Render)
-app.get("*", (req, res) => {
+app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+app.get("/about", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "about.html"));
+});
+
+app.get("/contact", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "contact.html"));
+});
+
+app.get("/items", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "items.html"));
+});
+
+app.get("/auth", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "auth.html"));
+});
+
+app.get("/dashboard", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "dashboard.html"));
 });
 
 // --- Start server ---
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, "0.0.0.0", () =>
-    console.log(`🚀 Server running on port ${PORT}`)
-);
+
+console.log("Render PORT =", process.env.PORT);
+
+app.listen(PORT, "0.0.0.0", () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+});
