@@ -1,16 +1,22 @@
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
     auth: {
-        user: process.env.EMAIL_SERVICE_USER, 
-        pass: process.env.EMAIL_SERVICE_PASS  
-    },
-    tls: {
-        rejectUnauthorized: false
+        user: process.env.EMAIL_SERVICE_USER,
+        pass: process.env.EMAIL_SERVICE_PASS
     }
 });
 
+transporter.verify((error, success) => {
+    if (error) {
+        console.error("SMTP Verify Error:", error);
+    } else {
+        console.log("SMTP Server is ready");
+    }
+});
 /**
  * Sends the contact form email to the site administrator.
  * @param {object} options - Email options (name, email, subject, message)
