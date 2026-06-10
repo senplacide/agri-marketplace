@@ -48,9 +48,9 @@ const sendContactEmail = async (options) => {
         await transporter.sendMail(mailOptions);
         console.log(`Contact email alert sent successfully to ${adminRecipient}`);
     } catch (error) {
-        console.error("NODEMAILER EMAIL ERROR:", error.message);
-        throw new Error('Email delivery failed.');
-    }
+    console.error("NODEMAILER FULL ERROR:", error);
+    throw error;
+}
 };
 
 module.exports = { sendContactEmail };
