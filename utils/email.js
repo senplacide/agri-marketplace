@@ -14,6 +14,7 @@ const transporter = nodemailer.createTransport({
   greetingTimeout: 30000,
   socketTimeout: 30000
 });
+/*
 transporter.verify((error, success) => {
     if (error) {
         console.error("SMTP Verify Error:", error);
@@ -21,7 +22,7 @@ transporter.verify((error, success) => {
         console.log("SMTP Server is ready");
     }
 });
-
+*/
 const sendContactEmail = async (options) => {
     const adminRecipient = process.env.EMAIL_SERVICE_USER;
 
