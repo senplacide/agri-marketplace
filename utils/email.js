@@ -2,7 +2,7 @@ const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
   host: "smtp-relay.brevo.com",
-  port: 587,
+  port: 2525,
   secure: false,
 
   auth: {
@@ -24,11 +24,11 @@ transporter.verify((error, success) => {
 });
 */
 const sendContactEmail = async (options) => {
-    const adminRecipient = process.env.EMAIL_SERVICE_USER;
+    const adminRecipient = "placidesenadata35@gmail.com";
 
-    const mailOptions = {
-        from: `AgriConnect Contact <${adminRecipient}>`,
-        to: adminRecipient,
+const mailOptions = {
+    from: `AgriConnect Contact <${process.env.EMAIL_SERVICE_USER}>`,
+    to: adminRecipient,
         subject: `[New Inquiry] ${options.subject}`,
         replyTo: options.email,
         text: `New Contact Form Submission:
@@ -54,9 +54,12 @@ ${options.message}`,
     };
 
     try {
-        await transporter.sendMail(mailOptions);
-        console.log(`Contact email alert sent successfully to ${adminRecipient}`);
-    } catch (error) {
+    console.log("Attempting SMTP send...");
+
+    await transporter.sendMail(mailOptions);
+
+    console.log(`Contact email alert sent successfully to ${adminRecipient}`);
+} catch (error) {
         console.error("NODEMAILER FULL ERROR:", error);
         throw error;
     }
