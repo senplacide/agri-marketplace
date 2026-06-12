@@ -1,43 +1,38 @@
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
-  port: 2525,
-  secure: false,
+    host: "smtp-relay.brevo.com",
+    port: 2525,
+    secure: false,
 
-  auth: {
-    user: process.env.EMAIL_SERVICE_USER,
-    pass: process.env.EMAIL_SERVICE_PASS
-  },
+    auth: {
+        user: process.env.EMAIL_SERVICE_USER,
+        pass: process.env.EMAIL_SERVICE_PASS
+    },
 
-  connectionTimeout: 30000,
-  greetingTimeout: 30000,
-  socketTimeout: 30000
+    connectionTimeout: 30000,
+    greetingTimeout: 30000,
+    socketTimeout: 30000
 });
-/*
-transporter.verify((error, success) => {
-    if (error) {
-        console.error("SMTP Verify Error:", error);
-    } else {
-        console.log("SMTP Server is ready");
-    }
-});
-*/
+
 const sendContactEmail = async (options) => {
     const adminRecipient = "placidesenadata35@gmail.com";
 
-const mailOptions = {
-    from: `AgriConnect Contact <${process.env.EMAIL_SERVICE_USER}>`,
-    to: adminRecipient,
+    const mailOptions = {
+        from: `AgriConnect Contact <${process.env.EMAIL_SERVICE_USER}>`,
+        to: adminRecipient,
         subject: `[New Inquiry] ${options.subject}`,
         replyTo: options.email,
+
         text: `New Contact Form Submission:
+
 Name: ${options.name}
 Email: ${options.email}
 Subject: ${options.subject}
 
 Message:
 ${options.message}`,
+
         html: `
             <p>You have received a new contact form submission:</p>
 
@@ -54,15 +49,20 @@ ${options.message}`,
     };
 
     try {
-    console.log("Attempting SMTP send...");
+        console.log("Attempting SMTP send...");
 
-    await transporter.sendMail(mailOptions);
+        const info = await transporter.sendMail(mailOptions);
 
-    console.log(`Contact email alert sent successfully to ${adminRecipient}`);
-} catch (error) {
+        console.log("Email sent successfully");
+        console.log(info.messageId);
+
+        return info;
+    } catch (error) {
         console.error("NODEMAILER FULL ERROR:", error);
         throw error;
     }
 };
 
-module.exports = { sendContactEmail };
+module.exports = {
+    sendContactEmail
+};
