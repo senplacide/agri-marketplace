@@ -15,16 +15,13 @@ const transporter = nodemailer.createTransport({
     socketTimeout: 30000
 });
 
-const sendContactEmail = async (options) => {
-    const adminRecipient = "placidesenadata35@gmail.com";
+const mailOptions = {
+    from: `"AgriConnect" <${process.env.SENDER_EMAIL}>`,
+    to: adminRecipient,
+    subject: `[New Inquiry] ${options.subject}`,
+    replyTo: options.email,
 
-    const mailOptions = {
-        from: `AgriConnect Contact <${process.env.EMAIL_SERVICE_USER}>`,
-        to: adminRecipient,
-        subject: `[New Inquiry] ${options.subject}`,
-        replyTo: options.email,
-
-        text: `New Contact Form Submission:
+    text: `New Contact Form Submission:
 
 Name: ${options.name}
 Email: ${options.email}
@@ -33,22 +30,27 @@ Subject: ${options.subject}
 Message:
 ${options.message}`,
 
-        html: `
-            <p>You have received a new contact form submission:</p>
+    html: `
+        <p>You have received a new contact form submission:</p>
 
-            <h3>Sender Details:</h3>
-            <ul>
-                <li><strong>Name:</strong> ${options.name}</li>
-                <li><strong>Email:</strong> ${options.email}</li>
-                <li><strong>Subject:</strong> ${options.subject}</li>
-            </ul>
+        <h3>Sender Details:</h3>
+        <ul>
+            <li><strong>Name:</strong> ${options.name}</li>
+            <li><strong>Email:</strong> ${options.email}</li>
+            <li><strong>Subject:</strong> ${options.subject}</li>
+        </ul>
 
-            <h3>Message:</h3>
-            <p>${options.message.replace(/\n/g, '<br>')}</p>
-        `
-    };
+        <h3>Message:</h3>
+        <p>${options.message.replace(/\n/g, '<br>')}</p>
+    `
+};
 
     try {
+        console.log("SMTP USER:", process.env.EMAIL_SERVICE_USER);
+        console.log("FROM HEADER:", mailOptions.from);
+        console.log("TO:", mailOptions.to);
+
+
         console.log("Attempting SMTP send...");
 
         const info = await transporter.sendMail(mailOptions);
