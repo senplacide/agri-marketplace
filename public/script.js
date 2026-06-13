@@ -7,10 +7,8 @@
  * @param {string} message 
  */
 function showAlert(message) {
-    // A simple console log for now, but in a real app, this would show a visible message banner.
-    console.error("ALERT:", message); 
-    // You can implement a simple visual alert here:
-    // alert(message); 
+    alert(message);
+    console.error("ALERT:", message);
 }
 
 /**
@@ -20,7 +18,7 @@ function showAlert(message) {
  * @param {boolean} headers - Set to true to include the Authorization header (default: true)
  * @returns {Promise<object>} JSON response data
  */
-async function apiFetch(endpoint, { method = 'GET', body = null, headers = true } = {}) {
+async function apiFetch(endpoint, { method = 'GET', body = null, headers = true } = {}) {}
     const token = localStorage.getItem('token');
     const requestHeaders = {};
 
@@ -46,10 +44,13 @@ async function apiFetch(endpoint, { method = 'GET', body = null, headers = true 
         } catch (e) {
             // response body wasn't JSON
         }
-        throw new Error(errorData.message || `API error: ${response.status}`);
-    }
+        throw new Error(
+    errorData.message ||
+    errorData.error ||
+    `API error: ${response.status}`
+);
 
-    // Handle 204 No Content responses
+ // Handle 204 No Content responses
     if (response.status === 204) {
         return { message: 'Success (No Content)' };
     }

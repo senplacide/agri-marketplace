@@ -1,72 +1,287 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <title>AgriConnect: Farm-to-Buyer Marketplace</title>
-    <link rel="stylesheet" href="style.css"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriConnect - Farm to Buyer Marketplace</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="logo">🌾 AgriConnect</div>
-        <ul class="nav-links" id="nav-links">
-            <li><a href="/">Home</a></li>
-            <li><a href="/items">Marketplace</a></li>
-            <li><a href="/about">About</a></li>
-            <li><a href="/contact">Contact</a></li>
-            <li id="auth-link"></li> 
-        </ul>
-    </nav>
 
-    <main class="content">
-        <section class="hero video-hero">
-            <video autoplay muted loop id="hero-video">
-                <source src="images/video.mp4" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
-            <div class="hero-content">
-                <h1>AgriConnect</h1>
-                <p class="subtitle">Connecting farmers, buyers and fresh produce — everywhere.</p>
-                <h2>Bring your farm to the market</h2>
-                <p>AgriConnect helps farmers list products and reach buyers across regions quickly and simply.</p>
-                <a class="btn primary-btn" href="/items">Explore Marketplace</a>
+<div class="navbar">
+    <div class="logo">🌾 AgriConnect</div>
+
+    <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/items">Marketplace</a></li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/contact">Contact</a></li>
+        <li id="auth-link"></li>
+    </ul>
+</div>
+
+<main class="content">
+
+    <!-- HERO SECTION -->
+    <section class="hero video-hero">
+        <video autoplay muted loop id="hero-video">
+            <source src="images/video.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+
+        <div class="hero-content">
+            <h1>Connecting Farmers Directly to Buyers</h1>
+
+            <p class="subtitle">
+                Buy and sell fresh agricultural produce through a trusted marketplace built for farmers and buyers across Rwanda.
+            </p>
+
+            <h2>Bring Your Farm to the Market</h2>
+
+            <p>
+                AgriConnect helps farmers showcase produce, reach more customers,
+                and receive fair prices without unnecessary middlemen.
+            </p>
+
+            <a class="btn primary-btn" href="/items">
+                Explore Marketplace
+            </a>
+        </div>
+    </section>
+
+    <!-- STATISTICS -->
+    <section class="stats-section">
+        <h2>AgriConnect at a Glance</h2>
+
+        <div class="features">
+
+            <div class="card feature">
+                <h3>500+</h3>
+                <p>Farmers Connected</p>
             </div>
-        </section>
 
-        <section class="why-us">
-            <h2>Why Choose AgriConnect?</h2>
-            <div class="features">
-                <div class="feature card">
-                    <h3>Direct Farm-to-Buyer 🤝</h3>
-                    <p>Get **fair prices** for your produce by removing unnecessary middlemen.</p>
-                </div>
-                <div class="feature card">
-                    <h3>Secure & Reliable 🔒</h3>
-                    <p>**Protected data** with passwords hashed and secure JWT authentication.</p>
-                </div>
-                <div class="feature card">
-                    <h3>Low-bandwidth Friendly 📱</h3>
-                    <p>Designed with **simple pages and small assets** for reliable access on slow networks.</p>
-                </div>
+            <div class="card feature">
+                <h3>1,200+</h3>
+                <p>Produce Listings</p>
             </div>
-        </section>
 
-        <section class="testimonials">
-            <h2>What Farmers Say</h2>
+            <div class="card feature">
+                <h3>30</h3>
+                <p>Districts Reached</p>
+            </div>
+
+            <div class="card feature">
+                <h3>95%</h3>
+                <p>User Satisfaction</p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="how-it-works">
+
+        <h2>How AgriConnect Works</h2>
+
+        <div class="features">
+
+            <div class="card feature">
+                <h3>1️⃣ Farmers List Produce</h3>
+                <p>
+                    Farmers post available crops, livestock, and agricultural products.
+                </p>
+            </div>
+
+            <div class="card feature">
+                <h3>2️⃣ Buyers Browse Listings</h3>
+                <p>
+                    Buyers explore available produce and compare offers.
+                </p>
+            </div>
+
+            <div class="card feature">
+                <h3>3️⃣ Connect & Trade</h3>
+                <p>
+                    Farmers and buyers communicate directly and complete transactions.
+                </p>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- CATEGORIES -->
+    <section class="categories">
+
+        <h2>Popular Categories</h2>
+
+        <div class="features">
+
+            <div class="card feature">
+                <h3>🌽 Grains</h3>
+            </div>
+
+            <div class="card feature">
+                <h3>🥬 Vegetables</h3>
+            </div>
+
+            <div class="card feature">
+                <h3>🍌 Fruits</h3>
+            </div>
+
+            <div class="card feature">
+                <h3>🐄 Livestock</h3>
+            </div>
+
+            <div class="card feature">
+                <h3>🥚 Poultry Products</h3>
+            </div>
+
+            <div class="card feature">
+                <h3>🌱 Seeds</h3>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- WHY CHOOSE US -->
+    <section class="why-us">
+
+        <h2>Why Choose AgriConnect?</h2>
+
+        <div class="features">
+
+            <div class="feature card">
+                <h3>Direct Farmer-to-Buyer 🤝</h3>
+                <p>
+                    Access fair market prices while helping farmers earn more.
+                </p>
+            </div>
+
+            <div class="feature card">
+                <h3>Secure & Reliable 🔒</h3>
+                <p>
+                    Protected accounts, secure authentication, and trusted communication.
+                </p>
+            </div>
+
+            <div class="feature card">
+                <h3>Accessible Anywhere 📱</h3>
+                <p>
+                    Optimized for mobile devices and low-bandwidth internet connections.
+                </p>
+            </div>
+
+            <div class="feature card">
+                <h3>Community Driven 🌱</h3>
+                <p>
+                    Supporting local agriculture and strengthening rural economies.
+                </p>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section class="testimonials">
+
+        <h2>Success Stories</h2>
+
+        <div class="features">
+
             <blockquote class="card quote-card">
-                “AgriConnect helped me reach new buyers across districts. My sales tripled!” — <b>Jean, Farmer</b>
+                “AgriConnect helped me find new buyers and improve my earnings.”
+                <br><br>
+                <b>Jean – Farmer, Musanze</b>
             </blockquote>
-            
-            <h2>Inspiration 💡</h2>
-            <blockquote class="card quote-card inspired-quote">
-                “The future of agriculture is not in growing more, but in connecting better.” — <b>Anonymous</b>
-            </blockquote>
-        </section>
-    </main>
 
-    <footer class="footer">
-        <p>© 2025 AgriConnect. All Rights Reserved.</p>
-    </footer>
+            <blockquote class="card quote-card">
+                “I can now source fresh produce directly from trusted farmers.”
+                <br><br>
+                <b>Aline – Buyer, Kigali</b>
+            </blockquote>
+
+            <blockquote class="card quote-card">
+                “Posting produce is easy and inquiries arrive quickly.”
+                <br><br>
+                <b>Patrick – Farmer, Huye</b>
+            </blockquote>
+
+        </div>
+
+    </section>
+
+    <!-- IMPACT -->
+    <section class="impact">
+
+        <h2>Our Impact</h2>
+
+        <div class="features">
+
+            <div class="card feature">
+                <h3>🌾 Supporting Farmers</h3>
+            </div>
+
+            <div class="card feature">
+                <h3>🤝 Connecting Communities</h3>
+            </div>
+
+            <div class="card feature">
+                <h3>📈 Expanding Market Access</h3>
+            </div>
+
+            <div class="card feature">
+                <h3>💰 Improving Farmer Income</h3>
+            </div>
+
+            <div class="card feature">
+                <h3>🌍 Promoting Sustainable Agriculture</h3>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+
+        <h2>Ready to Buy or Sell?</h2>
+
+        <p>
+            Join AgriConnect today and become part of Rwanda's growing agricultural marketplace.
+        </p>
+
+        <div class="cta-buttons">
+
+            <a class="btn primary-btn" href="/auth">
+    Start Selling
+</a>
+    
+            <a class="btn primary-btn" href="/items">
+                Browse Produce
+            </a>
+
+        </div>
+
+    </section>
+
+</main>
+
+  <footer class="footer">
+
+    <h3>AgriConnect</h3>
+
+    <p>
+        Connecting farmers and buyers through a trusted digital marketplace.
+    </p>
+
+    <p>
+        © 2026 AgriConnect. All Rights Reserved.
+    </p>
+
+</footer>
 
     <script src="script.js"></script>
 </body>

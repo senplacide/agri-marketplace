@@ -168,6 +168,13 @@ form input:focus, form textarea:focus { border-color: var(--primary-color); outl
 form label { display: block; margin-top: 8px; font-weight: 600; color: #4a5568; }
 form button { background: var(--secondary-color); }
 form button:hover { background: #2f855a; }
+form select {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0 16px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e0;
+}
 
 /* Grid for products */
 .grid { 
@@ -200,7 +207,6 @@ form button:hover { background: #2f855a; }
 }
 .footer p { margin: 0; }
 
-
 /* small screens */
 @media (max-width: 768px) {
     .navbar { padding: 10px 15px; }
@@ -213,4 +219,104 @@ form button:hover { background: #2f855a; }
 /* Add this rule to your existing style.css */
 .section-title {
     margin-top: 40px; /* Moves the Available Products heading down */
+}
+/* =========================
+   HOMEPAGE SECTIONS
+   ========================= */
+
+.stats-section,
+.how-it-works,
+.categories,
+.why-us,
+.testimonials,
+.impact,
+.cta-section {
+    margin: 60px 0;
+    text-align: center;
+}
+
+.stats-section h2,
+.how-it-works h2,
+.categories h2,
+.why-us h2,
+.testimonials h2,
+.impact h2,
+.cta-section h2 {
+    border-bottom: none;
+    margin-bottom: 20px;
+}
+
+.stats-section .feature,
+.how-it-works .feature,
+.categories .feature,
+.why-us .feature,
+.impact .feature {
+    transition: transform 0.3s ease,
+                box-shadow 0.3s ease;
+}
+
+.stats-section .feature:hover,
+.how-it-works .feature:hover,
+.categories .feature:hover,
+.why-us .feature:hover,
+.impact .feature:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.stats-section .feature h3 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.categories .feature {
+    width: 220px;
+}
+
+.categories .feature h3 {
+    font-size: 1.2rem;
+}
+
+.cta-section {
+    background: linear-gradient(
+        135deg,
+        var(--primary-color),
+        var(--secondary-color)
+    );
+    color: white;
+    padding: 50px 30px;
+    border-radius: 12px;
+}
+
+.cta-section h2 {
+    color: white;
+}
+
+.cta-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 25px;
+    flex-wrap: wrap;
+}
+
+.cta-section .btn {
+    background: white;
+    color: var(--primary-color);
+}
+
+.cta-section .btn:hover {
+    background: #f1f1f1;
+}
+
+.stats-section .card,
+.categories .card,
+.impact .card,
+.why-us .card,
+.how-it-works .card {
+    min-height: 140px;
+}
+
+.quote-card {
+    text-align: left;
 }
