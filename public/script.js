@@ -7,10 +7,14 @@
  * @param {string} message 
  */
 function showAlert(message) {
-    alert(message);
+    if (message.includes("Failed to fetch")) {
+        alert("Invalid email or password.");
+    } else {
+        alert(message);
+    }
+
     console.error("ALERT:", message);
 }
-
 /**
  * Standardized API Fetch utility with JWT handling.
  * @param {string} endpoint - API path, e.g., '/api/auth/signup'
@@ -18,7 +22,8 @@ function showAlert(message) {
  * @param {boolean} headers - Set to true to include the Authorization header (default: true)
  * @returns {Promise<object>} JSON response data
  */
-async function apiFetch(endpoint, { method = 'GET', body = null, headers = true } = {}) {}
+async function apiFetch(endpoint, { method = 'GET', body = null, headers = true } = {}) {
+
     const token = localStorage.getItem('token');
     const requestHeaders = {};
 
@@ -36,28 +41,26 @@ async function apiFetch(endpoint, { method = 'GET', body = null, headers = true 
         body: body ? JSON.stringify(body) : null,
     });
 
-    // Check for network errors or bad status codes
     if (!response.ok) {
         let errorData = { message: 'An unknown error occurred' };
+
         try {
             errorData = await response.json();
-        } catch (e) {
-            // response body wasn't JSON
-        }
-        throw new Error(
-    errorData.message ||
-    errorData.error ||
-    `API error: ${response.status}`
-);
+        } catch (e) {}
 
- // Handle 204 No Content responses
+        throw new Error(
+            errorData.message ||
+            errorData.error ||
+            `API error: ${response.status}`
+        );
+    }
+
     if (response.status === 204) {
         return { message: 'Success (No Content)' };
     }
 
     return response.json();
 }
-
 
 // --- 2. User State and Navigation ---
 
