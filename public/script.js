@@ -290,7 +290,15 @@ async function renderDashboard() {
                 <p><strong>Payment:</strong> <span style="color: var(--secondary-color); font-weight: 700;">${methods}</span></p>
                 <p><strong>Contact:</strong> ${product.contact}</p>
                 <p>${product.description}</p>
-                <button class="btn delete-btn" data-id="${product._id}">Delete Listing</button>
+                <div class="listing-actions">
+    <button class="btn edit-btn" data-id="${product._id}">
+        Edit Listing
+    </button>
+
+    <button class="btn delete-btn" data-id="${product._id}">
+        Delete Listing
+    </button>
+</div>
             `;
             dashboardProducts.appendChild(card);
         });
@@ -299,12 +307,63 @@ async function renderDashboard() {
         dashboardProducts.querySelectorAll('.delete-btn').forEach(button => {
             button.addEventListener('click', handleDeleteProduct);
         });
+        dashboardProducts.querySelectorAll('.edit-btn').forEach(button => {
+    button.addEventListener('click', handleEditProduct);
+});
 
     } catch (error) {
         dashboardProducts.innerHTML = `<p style="color: red;">Failed to load listings: ${error.message}</p>`;
     }
 }
+async function handleEditProduct(e) {
+    const productId = e.target.getAttribute('data-id');
 
+    const card = document.getElementById(`product-${productId}`);
+
+    card.innerHTML += `
+        <div class="edit-form" id="edit-form-${productId}">
+            <input type="text" id="edit-name-${productId}" placeholder="Product Name">
+            <input type="number" id="edit-price-${productId}" placeholder="Price">
+            <input type="text" id="edit-contact-${productId}" placeholder="Contact">
+            <textarea id="edit-description-${productId}" placeholder="Description"></textarea>
+
+            <button class="btn save-btn" data-id="${productId}">
+                Save Changes
+            </button>
+        </div>
+    `;
+
+    card.querySelector(".save-btn")
+        .addEventListener("click", handleSaveProduct);
+}
+async function handleSaveProduct(e) {
+
+    const productId = e.target.getAttribute("data-id");
+
+    const updatedData = {
+        name: document.getElementById(`edit-name-${productId}`).value,
+        price: Number(document.getElementById(`edit-price-${productId}`).value),
+        contact: document.getElementById(`edit-contact-${productId}`).value,
+        description: document.getElementById(`edit-description-${productId}`).value
+    };
+
+    try {
+
+        await apiFetch(`/api/products/${productId}`, {
+            method: "PUT",
+            body: updatedData
+        });
+
+        alert("Listing updated successfully!");
+
+        renderDashboard();
+
+    } catch (error) {
+
+        showAlert("Failed to update listing: " + error.message);
+
+    }
+}
 async function handleDeleteProduct(e) {
     const productId = e.target.getAttribute('data-id');
     if (!confirm('Are you sure you want to delete this product listing?')) {

@@ -53,7 +53,36 @@ router.post("/", requireAuth, async (req, res) => {
         res.status(400).json({ error: err.message });
     }
 });
+// --- 4. UPDATE product (Protected - owner only) ---
+router.put("/:id", requireAuth, async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
 
+        if (!product) {
+            return res.status(404).json({ error: "Product not found" });
+        }
+
+        if (product.owner.toString() !== req.userId) {
+            return res.status(403).json({
+                error: "Forbidden: You do not own this listing"
+            });
+        }
+
+        const updatedProduct = await Product.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            {
+                new: true,
+                runValidators: true
+            }
+        );
+
+        res.json(updatedProduct);
+
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
 // --- 4. DELETE product (Protected - owner only) ---
 router.delete("/:id", requireAuth, async (req, res) => {
     try {

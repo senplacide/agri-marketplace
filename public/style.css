@@ -9,7 +9,6 @@
     --shadow-light: 0 4px 10px rgba(0, 0, 0, 0.08);
     --danger-color: #e53e3e; /* Red for delete button */
 }
-
 * { box-sizing: border-box }
 
 body {
@@ -319,4 +318,22 @@ form select {
 
 .quote-card {
     text-align: left;
+}
+.edit-form {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.edit-form input,
+.edit-form textarea {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.save-btn {
+    background: #38a169;
+    color: white;
 }
