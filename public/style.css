@@ -337,3 +337,25 @@ form select {
     background: #38a169;
     color: white;
 }
+@media (max-width: 768px) {
+
+    .navbar {
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .nav-links li a {
+        font-size: 14px;
+    }
+
+    .logo {
+        margin-bottom: 10px;
+    }
+}
