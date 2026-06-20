@@ -3,11 +3,14 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const path = require("path");
 const cors = require("cors");
+const helmet = require("helmet");
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
+
+app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
