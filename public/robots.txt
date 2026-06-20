@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://agri-marketplace-api.onrender.com/sitemap.xml
