@@ -2,6 +2,7 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const Product = require("../models/Product");
+const { validateProductInput } = require("../utils/validation");
 const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
@@ -44,10 +45,14 @@ router.get("/my-listings", requireAuth, async (req, res) => {
 // --- 3. POST create product (Protected) ---
 router.post("/", requireAuth, async (req, res) => {
     try {
-        const data = req.body;
-        data.owner = req.userId; 
+        const validation = validateProductInput(req.body);
+        if (validation.error) {
+            return res.status(400).json({ error: validation.error });
+        }
+
+        const data = { ...validation.value, owner: req.userId };
         const p = new Product(data);
-        await p.save(); // Mongoose will validate paymentMethods here
+        await p.save();
         res.status(201).json(p);
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -68,9 +73,14 @@ router.put("/:id", requireAuth, async (req, res) => {
             });
         }
 
+        const validation = validateProductInput(req.body, { partial: true });
+        if (validation.error) {
+            return res.status(400).json({ error: validation.error });
+        }
+
         const updatedProduct = await Product.findByIdAndUpdate(
             req.params.id,
-            req.body,
+            { ...validation.value },
             {
                 new: true,
                 runValidators: true

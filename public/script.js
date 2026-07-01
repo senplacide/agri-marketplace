@@ -6,6 +6,15 @@
  * Global alert utility
  * @param {string} message 
  */
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 function showAlert(message) {
     if (message.includes("Failed to fetch")) {
         alert("Invalid email or password.");
@@ -126,10 +135,16 @@ function loadAuthForms() {
             const password = document.getElementById('signup-password').value;
 
             try {
-                // Hitting the backend route: POST /api/auth/signup
-                await apiFetch('/api/auth/signup', { method: 'POST', body: { name, email, password }, headers: false });
-                alert('Sign Up successful! Please sign in now.');
-                signupForm.reset();
+                const data = await apiFetch('/api/auth/signup', {
+    method: 'POST',
+    body: { name, email, password },
+    headers: false
+});
+
+window.location =
+"/verify?email=" +
+encodeURIComponent(data.email);
+signupForm.reset();
             } catch (error) {
                 showAlert('Sign Up Failed: ' + error.message);
             }
@@ -190,13 +205,13 @@ async function renderProducts() {
             const card = document.createElement('div');
             card.className = 'product-card';
             card.innerHTML = `
-                ${product.imageUrl ? `<img src="${product.imageUrl}" alt="${product.name}">` : ''}
-                <h3>${product.name}</h3>
-                <p><strong>Category:</strong> ${product.category}</p>
-                <p><strong>Price:</strong> ${price}</p>
-                <p><strong>Payment:</strong> <span style="color: var(--secondary-color); font-weight: 700;">${methods}</span></p>
-                <p><strong>Contact:</strong> ${product.contact}</p>
-                <p>${product.description}</p>
+                ${product.imageUrl ? `<img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.name)}">` : ''}
+                <h3>${escapeHtml(product.name)}</h3>
+                <p><strong>Category:</strong> ${escapeHtml(product.category)}</p>
+                <p><strong>Price:</strong> ${escapeHtml(price)}</p>
+                <p><strong>Payment:</strong> <span style="color: var(--secondary-color); font-weight: 700;">${escapeHtml(methods)}</span></p>
+                <p><strong>Contact:</strong> ${escapeHtml(product.contact || 'Not provided')}</p>
+                <p>${escapeHtml(product.description || '')}</p>
             `;
             productList.appendChild(card);
         });
@@ -283,13 +298,13 @@ async function renderDashboard() {
             card.className = 'product-card';
             card.id = `product-${product._id}`;
             card.innerHTML = `
-                ${product.imageUrl ? `<img src="${product.imageUrl}" alt="${product.name}">` : ''}
-                <h3>${product.name} (Your Listing)</h3>
-                <p><strong>Category:</strong> ${product.category}</p>
-                <p><strong>Price:</strong> ${price}</p>
-                <p><strong>Payment:</strong> <span style="color: var(--secondary-color); font-weight: 700;">${methods}</span></p>
-                <p><strong>Contact:</strong> ${product.contact}</p>
-                <p>${product.description}</p>
+                ${product.imageUrl ? `<img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.name)}">` : ''}
+                <h3>${escapeHtml(product.name)} (Your Listing)</h3>
+                <p><strong>Category:</strong> ${escapeHtml(product.category)}</p>
+                <p><strong>Price:</strong> ${escapeHtml(price)}</p>
+                <p><strong>Payment:</strong> <span style="color: var(--secondary-color); font-weight: 700;">${escapeHtml(methods)}</span></p>
+                <p><strong>Contact:</strong> ${escapeHtml(product.contact || 'Not provided')}</p>
+                <p>${escapeHtml(product.description || '')}</p>
                 <div class="listing-actions">
     <button class="btn edit-btn" data-id="${product._id}">
         Edit Listing
@@ -447,7 +462,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (document.getElementById("dashboard-products")) { // On dashboard.html
         renderDashboard();
     }
-    if (document.getElementById("contact-form")) { // On contact.html
-        loadContactForm(); 
-    }
+    if (document.getElementById("contact-form")) {
+    loadContactForm();
+}
+
+// Homepage "Start Selling" button
+const startSellingBtn = document.getElementById("start-selling-btn");
+
+if (startSellingBtn) {
+
+    startSellingBtn.addEventListener("click", (e) => {
+
+        e.preventDefault();
+
+        if (currentUser) {
+            window.location.href = "/items";
+        } else {
+            window.location.href = "/auth";
+        }
+
+    });
+
+}
+
 });

@@ -10,9 +10,23 @@ dotenv.config();
 
 const app = express();
 
-app.use(helmet());
-app.use(cors());
-app.use(express.json());
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", "data:", "https:"],
+            objectSrc: ["'none'"],
+            connectSrc: ["'self'"],
+            baseUri: ["'self'"],
+            frameAncestors: ["'none'"]
+        }
+    }
+}));
+app.use(cors({ origin: true, credentials: true }));
+app.use(express.json({ limit: '100kb' }));
+app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
 // --- Database Connection ---
 if (!process.env.MONGO_URI) {
@@ -21,9 +35,30 @@ if (!process.env.MONGO_URI) {
 }
 
 mongoose.set("strictQuery", false);
+
+const maskMongoUri = (uri) => {
+    if (!uri) return "<missing>";
+    try {
+        const parsed = new URL(uri);
+        if (parsed.password) {
+            parsed.password = "***";
+        }
+        return parsed.toString();
+    } catch (err) {
+        return uri.replace(/:([^:@]+)@/, ":***@");
+    }
+};
+
+console.log(`[DB_DEBUG] Mongo URI: ${maskMongoUri(process.env.MONGO_URI)}`);
 mongoose
-    .connect(process.env.MONGO_URI)
-    .then(() => console.log("✅ MongoDB connected"))
+    .connect(process.env.MONGO_URI, {
+        serverSelectionTimeoutMS: 5000,
+        maxPoolSize: 10
+    })
+    .then(() => {
+        console.log("✅ MongoDB connected");
+        console.log(`[DB_DEBUG] database name: ${mongoose.connection.name}`);
+    })
     .catch((err) => console.error("❌ MongoDB connection failed:", err.message));
 
 // --- API Routes ---
@@ -61,11 +96,19 @@ app.get("/dashboard", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "dashboard.html"));
 });
 
+app.get("/verify", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "verify.html"));
+});
+
 // --- Start server ---
 const PORT = process.env.PORT || 5000;
 
 console.log("Render PORT =", process.env.PORT);
 
-app.listen(PORT, "0.0.0.0", () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-});
+if (require.main === module) {
+    app.listen(PORT, "0.0.0.0", () => {
+        console.log(`🚀 Server running on port ${PORT}`);
+    });
+}
+
+module.exports = app;

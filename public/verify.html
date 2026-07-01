@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Verify Email | AgriConnect</title>
+
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<div class="navbar">
+
+<div class="logo">🌾 AgriConnect</div>
+
+<ul class="nav-links">
+<li><a href="/">Home</a></li>
+<li><a href="/items">Marketplace</a></li>
+<li><a href="/about">About</a></li>
+<li><a href="/contact">Contact</a></li>
+</ul>
+
+</div>
+
+<div class="content">
+
+<div class="card form-wrap">
+
+<h1>Email Verification</h1>
+
+<p>
+We've sent a 6-digit verification code to your email address.
+</p>
+
+<form id="verify-form">
+
+<label for="verify-email">Email</label>
+
+<input
+type="email"
+id="verify-email"
+readonly>
+
+<label for="verify-code">Verification Code</label>
+
+<input
+    type="text"
+    id="verify-code"
+    inputmode="numeric"
+    pattern="[0-9]{6}"
+    maxlength="6"
+    placeholder="123456"
+    required>
+
+<button
+type="submit"
+class="btn primary-btn">
+
+Verify Account
+
+</button>
+
+</form>
+
+<p id="verify-status"></p>
+
+</div>
+
+</div>
+
+<script src="/verify.js"></script>
+
+</body>
+</html>

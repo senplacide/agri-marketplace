@@ -1,4 +1,3 @@
-// models/User.js
 const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
@@ -8,34 +7,66 @@ const UserSchema = new mongoose.Schema({
         maxlength: 50,
         default: "User"
     },
+
     email: {
         type: String,
         required: [true, "Email is required"],
         unique: true,
         trim: true,
         lowercase: true,
-        match: [/.+\@.+\..+/, 'Please fill a valid email address']
+        match: [/.+\@.+\..+/, "Please fill a valid email address"]
     },
-    // We store the hashed password, created via bcrypt in the auth route
+
     passwordHash: {
         type: String,
         required: [true, "Password hash is required"]
     },
+
     role: {
         type: String,
         enum: ["farmer", "buyer", "admin"],
-        default: "farmer" // Assuming sellers/farmers are the primary users
+        default: "farmer"
     },
+
+    // -------------------------
+    // Email verification fields
+    // -------------------------
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+
+    verificationCode: {
+        type: String,
+        default: null
+    },
+
+    verificationCodeExpires: {
+        type: Date,
+        default: null
+    },
+
     createdAt: {
         type: Date,
         default: Date.now
     }
 });
 
-// Avoid returning the password hash even if the user object is returned accidentally
-UserSchema.methods.toJSON = function() {
+UserSchema.pre("save", function (next) {
+    if (this.email) {
+        this.email = this.email.trim().toLowerCase();
+    }
+    next();
+});
+
+// Never expose sensitive information
+UserSchema.methods.toJSON = function () {
     const user = this.toObject();
+
     delete user.passwordHash;
+    delete user.verificationCode;
+    delete user.verificationCodeExpires;
+
     return user;
 };
 

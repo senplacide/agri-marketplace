@@ -2,13 +2,16 @@ const express = require("express");
 const router = express.Router();
 const ContactMessage = require('../models/ContactMessage'); 
 const { sendContactEmail } = require('../utils/email'); 
+const { validateContactInput } = require('../utils/validation');
 
 router.post('/', async (req, res) => {
-    const { name, email, subject, message } = req.body; 
+    const validation = validateContactInput(req.body);
 
-    if (!name || !email || !message) {
-        return res.status(400).json({ status: 'error', message: 'Name, email, and message are required.' });
+    if (validation.error) {
+        return res.status(400).json({ status: 'error', message: validation.error });
     }
+
+    const { name, email, subject, message } = validation.value;
 
     // --- 1. SAVE TO MONGODB FIRST ---
     try {

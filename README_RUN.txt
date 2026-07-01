@@ -33,9 +33,9 @@ express, mongoose, dotenv, cors, bcryptjs, jsonwebtoken, etc.
 Create a file named `.env` in your main folder (same level as server.js)
 and copy the following into it:
 
-    MONGO_URI=mongodb+srv://placidesenadata35_db_user:8zSAP0yX9NeaYnhw@cluster30.cmyolwl.mongodb.net/agri-marketplace?retryWrites=true&w=majority
+    MONGO_URI=mongodb+srv://<username>:<password>@<cluster-url>/<database>?retryWrites=true&w=majority
     PORT=5000
-    JWT_SECRET=159984ee217908809efb01530ae978a50f67871b7e2c1625bd8a555667b703d5fb3aa1e62574a34a616a93b645b91322afbba914bb9d9936a9538322524e3892
+    JWT_SECRET=<replace-with-a-long-random-secret>
     JWT_EXPIRES_IN=7d
 
 ----------------------------------------
