@@ -363,3 +363,13 @@ form select {
     position: absolute;
     left: -9999px;
 }
+/* Verify Email Page */
+
+.resend-text {
+    margin-top: 20px;
+}
+
+.resend-timer {
+    margin-top: 10px;
+    color: #666;
+}
