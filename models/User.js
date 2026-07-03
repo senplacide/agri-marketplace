@@ -45,6 +45,15 @@ const UserSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
+    resetPasswordCode: {
+    type: String,
+    default: null
+    },
+
+    resetPasswordExpires: {
+    type: Date,
+    default: null
+    },
 
     createdAt: {
         type: Date,
@@ -66,6 +75,9 @@ UserSchema.methods.toJSON = function () {
     delete user.passwordHash;
     delete user.verificationCode;
     delete user.verificationCodeExpires;
+
+    delete user.resetPasswordCode;
+    delete user.resetPasswordExpires;
 
     return user;
 };

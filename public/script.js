@@ -40,14 +40,18 @@ async function apiFetch(endpoint, { method = 'GET', body = null, headers = true 
         requestHeaders['Authorization'] = `Bearer ${token}`;
     }
 
-    if (body) {
-        requestHeaders['Content-Type'] = 'application/json';
-    }
+    if (body && !(body instanceof FormData)) {
+    requestHeaders["Content-Type"] = "application/json";
+}
 
     const response = await fetch(endpoint, {
         method,
         headers: requestHeaders,
-        body: body ? JSON.stringify(body) : null,
+        body: body
+    ? (body instanceof FormData
+        ? body
+        : JSON.stringify(body))
+    : null,
     });
 
     if (!response.ok) {
@@ -240,15 +244,54 @@ function loadProductForm() {
                         .map(option => option.value);
         }
 
-        const productData = {
-            name: document.getElementById('name').value,
-            price: document.getElementById('price').value,
-            category: document.getElementById('category').value,
-            description: document.getElementById('description').value,
-            contact: document.getElementById('contact').value,
-            imageUrl: document.getElementById('imageUrl').value || undefined, 
-            paymentMethods: getSelectedOptions(document.getElementById('paymentMethods')), // NEW DATA FIELD
-        };
+        const productData = new FormData();
+
+productData.append(
+    "name",
+    document.getElementById("name").value
+);
+
+productData.append(
+    "price",
+    document.getElementById("price").value
+);
+
+productData.append(
+    "category",
+    document.getElementById("category").value
+);
+
+productData.append(
+    "description",
+    document.getElementById("description").value
+);
+
+productData.append(
+    "contact",
+    document.getElementById("contact").value
+);
+
+const paymentMethods =
+    getSelectedOptions(
+        document.getElementById("paymentMethods")
+    );
+
+paymentMethods.forEach(method => {
+    productData.append(
+        "paymentMethods",
+        method
+    );
+});
+
+const imageFile =
+    document.getElementById("image").files[0];
+
+if (imageFile) {
+    productData.append(
+        "image",
+        imageFile
+    );
+}
 
         try {
             // Hitting the backend route: POST /api/products
@@ -337,15 +380,46 @@ async function handleEditProduct(e) {
 
     card.innerHTML += `
         <div class="edit-form" id="edit-form-${productId}">
-            <input type="text" id="edit-name-${productId}" placeholder="Product Name">
-            <input type="number" id="edit-price-${productId}" placeholder="Price">
-            <input type="text" id="edit-contact-${productId}" placeholder="Contact">
-            <textarea id="edit-description-${productId}" placeholder="Description"></textarea>
 
-            <button class="btn save-btn" data-id="${productId}">
-                Save Changes
-            </button>
-        </div>
+    <input
+        type="text"
+        id="edit-name-${productId}"
+        placeholder="Product Name"
+    >
+
+    <input
+        type="number"
+        id="edit-price-${productId}"
+        placeholder="Price"
+    >
+
+    <input
+        type="text"
+        id="edit-contact-${productId}"
+        placeholder="Contact"
+    >
+
+    <textarea
+        id="edit-description-${productId}"
+        placeholder="Description"
+    ></textarea>
+
+    <label><strong>Replace Product Image</strong></label>
+
+    <input
+        type="file"
+        id="edit-image-${productId}"
+        accept="image/*"
+    >
+
+    <button
+        class="btn save-btn"
+        data-id="${productId}"
+    >
+        Save Changes
+    </button>
+
+</div>
     `;
 
     card.querySelector(".save-btn")
@@ -355,18 +429,40 @@ async function handleSaveProduct(e) {
 
     const productId = e.target.getAttribute("data-id");
 
-    const updatedData = {
-        name: document.getElementById(`edit-name-${productId}`).value,
-        price: Number(document.getElementById(`edit-price-${productId}`).value),
-        contact: document.getElementById(`edit-contact-${productId}`).value,
-        description: document.getElementById(`edit-description-${productId}`).value
-    };
+    const formData = new FormData();
+
+    formData.append(
+        "name",
+        document.getElementById(`edit-name-${productId}`).value
+    );
+
+    formData.append(
+        "price",
+        document.getElementById(`edit-price-${productId}`).value
+    );
+
+    formData.append(
+        "contact",
+        document.getElementById(`edit-contact-${productId}`).value
+    );
+
+    formData.append(
+        "description",
+        document.getElementById(`edit-description-${productId}`).value
+    );
+
+    const imageFile =
+        document.getElementById(`edit-image-${productId}`).files[0];
+
+    if (imageFile) {
+        formData.append("image", imageFile);
+    }
 
     try {
 
         await apiFetch(`/api/products/${productId}`, {
             method: "PUT",
-            body: updatedData
+            body: formData
         });
 
         alert("Listing updated successfully!");
@@ -378,6 +474,7 @@ async function handleSaveProduct(e) {
         showAlert("Failed to update listing: " + error.message);
 
     }
+
 }
 async function handleDeleteProduct(e) {
     const productId = e.target.getAttribute('data-id');

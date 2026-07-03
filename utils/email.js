@@ -129,8 +129,67 @@ AgriConnect Team
     return transporter.sendMail(mailOptions);
 
 };
+const sendPasswordResetEmail = async (email, name, code) => {
 
+    const mailOptions = {
+        from: `"AgriConnect" <${process.env.SENDER_EMAIL}>`,
+        to: email,
+        subject: "Reset your AgriConnect password",
+
+        text: `
+Hello ${name},
+
+We received a request to reset your password.
+
+Your password reset code is:
+
+${code}
+
+This code expires in 15 minutes.
+
+If you did not request a password reset, you can safely ignore this email.
+
+AgriConnect Team
+        `,
+
+        html: `
+        <div style="font-family:Arial,sans-serif">
+
+            <h2>Password Reset 🔐</h2>
+
+            <p>Hello <strong>${name}</strong>,</p>
+
+            <p>Use the code below to reset your password:</p>
+
+            <h1 style="
+                background:#e53e3e;
+                color:white;
+                padding:15px;
+                width:180px;
+                text-align:center;
+                letter-spacing:6px;
+                border-radius:8px;">
+                ${code}
+            </h1>
+
+            <p>This code expires in <strong>15 minutes</strong>.</p>
+
+            <p>If you didn't request this reset, simply ignore this email.</p>
+
+            <br>
+
+            <p>AgriConnect Team</p>
+
+        </div>
+        `
+    };
+
+    ensureEmailConfig();
+    return transporter.sendMail(mailOptions);
+
+};
 module.exports = {
     sendContactEmail,
-    sendVerificationEmail
+    sendVerificationEmail,
+    sendPasswordResetEmail
 };

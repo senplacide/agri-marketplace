@@ -2,7 +2,10 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
-const { sendVerificationEmail } = require("../utils/email");
+const {
+    sendVerificationEmail,
+    sendPasswordResetEmail
+} = require("../utils/email");
 const { validateSignupInput, validateAuthInput, normalizeEmail } = require("../utils/validation");
 
 const router = express.Router();
@@ -323,5 +326,152 @@ router.get("/me", async (req, res) => {
     }
 
 });
+//
+// FORGOT PASSWORD
+//
+router.post("/forgot-password", async (req, res) => {
 
+    try {
+
+        const { email } = req.body;
+
+        const user = await findUserByEmail(email);
+
+        // Don't reveal whether the email exists
+        if (!user) {
+            return res.json({
+                message: "If that email exists, a reset code has been sent."
+            });
+        }
+
+        const code = generateVerificationCode();
+
+        user.resetPasswordCode = code;
+        user.resetPasswordExpires =
+            new Date(Date.now() + 15 * 60 * 1000);
+
+        await user.save();
+
+        await sendPasswordResetEmail(
+            user.email,
+            user.name,
+            code
+        );
+
+        res.json({
+            message: "If that email exists, a reset code has been sent."
+        });
+
+    } catch (err) {
+
+        res.status(500).json({
+            error: err.message
+        });
+
+    }
+
+});
+//
+// RESET PASSWORD
+//
+router.post("/reset-password", async (req, res) => {
+
+    try {
+
+        const { email, code, password } = req.body;
+
+        if (!email || !code || !password) {
+            return res.status(400).json({
+                error: "Email, code and new password are required."
+            });
+        }
+
+        const user = await findUserByEmail(email);
+
+        if (!user) {
+            return res.status(404).json({
+                error: "User not found."
+            });
+        }
+
+        if (
+            user.resetPasswordCode !== code ||
+            !user.resetPasswordExpires ||
+            user.resetPasswordExpires < new Date()
+        ) {
+            return res.status(400).json({
+                error: "Invalid or expired reset code."
+            });
+        }
+
+        user.passwordHash = await bcrypt.hash(password, 10);
+
+        user.resetPasswordCode = null;
+        user.resetPasswordExpires = null;
+
+        await user.save();
+
+        res.json({
+            message: "Password updated successfully."
+        });
+
+    } catch (err) {
+
+        res.status(500).json({
+            error: err.message
+        });
+
+    }
+
+});
+//
+// RESET PASSWORD
+//
+router.post("/reset-password", async (req, res) => {
+
+    try {
+
+        const {
+            email,
+            code,
+            password
+        } = req.body;
+
+        const user = await findUserByEmail(email);
+
+        if (!user) {
+            return res.status(404).json({
+                error: "User not found."
+            });
+        }
+
+        if (
+            user.resetPasswordCode !== code ||
+            user.resetPasswordExpires < new Date()
+        ) {
+            return res.status(400).json({
+                error: "Invalid or expired reset code."
+            });
+        }
+
+        user.passwordHash = await bcrypt.hash(password, 10);
+
+        user.resetPasswordCode = undefined;
+        user.resetPasswordExpires = undefined;
+
+        await user.save();
+
+        res.json({
+            message: "Password has been reset successfully."
+        });
+
+    } catch (err) {
+
+        res.status(500).json({
+            error: err.message
+        });
+
+    }
+
+});
 module.exports = router;

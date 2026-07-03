@@ -49,9 +49,16 @@ function validateProductInput(body, { partial = false } = {}) {
   const description = sanitizeText(body?.description);
   const contact = sanitizeText(body?.contact);
   const imageUrl = sanitizeText(body?.imageUrl);
-  const paymentMethods = Array.isArray(body?.paymentMethods)
-    ? body.paymentMethods.filter((value) => typeof value === "string" && value.trim())
-    : [];
+  console.log("IMAGE URL IN VALIDATOR:", body.imageUrl);
+  let paymentMethods = [];
+
+if (Array.isArray(body?.paymentMethods)) {
+  paymentMethods = body.paymentMethods.filter(
+    (value) => typeof value === "string" && value.trim()
+  );
+} else if (typeof body?.paymentMethods === "string") {
+  paymentMethods = [body.paymentMethods.trim()];
+}
 
   if (!partial || body?.name !== undefined) {
     if (!name || name.length < 2) {
@@ -81,9 +88,17 @@ function validateProductInput(body, { partial = false } = {}) {
     }
   }
 
-  if (imageUrl && !/^https?:\/\/\S+/i.test(imageUrl)) {
-    return { error: "Image URL must start with http:// or https://" };
-  }
+  if (
+  imageUrl &&
+  !(
+    imageUrl.startsWith("/uploads/") ||
+    /^https?:\/\/\S+/i.test(imageUrl)
+  )
+) {
+  return {
+    error: "Invalid image path."
+  };
+}
 
   if (!partial || body?.paymentMethods !== undefined) {
     if (paymentMethods.length === 0) {
@@ -97,16 +112,17 @@ function validateProductInput(body, { partial = false } = {}) {
   }
 
   return {
-    value: {
+  value: {
       ...(name ? { name } : {}),
       ...(Number.isFinite(price) ? { price } : {}),
       ...(category ? { category } : {}),
       ...(description ? { description } : {}),
       ...(contact ? { contact } : {}),
       ...(imageUrl ? { imageUrl } : {}),
-      ...(paymentMethods.length ? { paymentMethods } : {})
-    }
-  };
+      ...(paymentMethods.length ? { paymentMethods } : {}),
+      ...(body?.owner ? { owner: body.owner } : {})
+  }
+};
 }
 
 function validateContactInput(body) {

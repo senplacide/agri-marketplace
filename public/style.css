@@ -373,3 +373,7 @@ form select {
     margin-top: 10px;
     color: #666;
 }
+.forgot-password-link {
+    margin-top: 15px;
+    text-align: center;
+}
