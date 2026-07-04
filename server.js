@@ -71,7 +71,6 @@ app.get("/health", (req, res) => res.status(200).send("OK"));
 
 // --- Serve static frontend ---
 app.use(express.static(path.join(__dirname, "public")));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
