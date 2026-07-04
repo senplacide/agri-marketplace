@@ -49,7 +49,6 @@ function validateProductInput(body, { partial = false } = {}) {
   const description = sanitizeText(body?.description);
   const contact = sanitizeText(body?.contact);
   const imageUrl = sanitizeText(body?.imageUrl);
-  console.log("IMAGE URL IN VALIDATOR:", body.imageUrl);
   let paymentMethods = [];
 
 if (Array.isArray(body?.paymentMethods)) {
@@ -88,16 +87,13 @@ if (Array.isArray(body?.paymentMethods)) {
     }
   }
 
-  if (
-  imageUrl &&
-  !(
-    imageUrl.startsWith("/uploads/") ||
-    /^https?:\/\/\S+/i.test(imageUrl)
-  )
+if (
+    imageUrl &&
+    !/^https?:\/\/\S+/i.test(imageUrl)
 ) {
-  return {
-    error: "Invalid image path."
-  };
+    return {
+        error: "Invalid image URL."
+    };
 }
 
   if (!partial || body?.paymentMethods !== undefined) {

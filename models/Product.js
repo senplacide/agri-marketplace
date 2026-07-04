@@ -26,6 +26,10 @@ const ProductSchema = new mongoose.Schema({
         trim: true,
         default: "" // Optional image URL
     },
+    cloudinaryId: {
+    type: String,
+    default: ""
+},
     contact: {
         type: String,
         trim: true
