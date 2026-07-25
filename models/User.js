@@ -27,6 +27,10 @@ const UserSchema = new mongoose.Schema({
         enum: ["farmer", "buyer", "admin"],
         default: "farmer"
     },
+    isSuspended: {
+    type: Boolean,
+    default: false
+},
 
     // -------------------------
     // Email verification fields
@@ -51,8 +55,44 @@ const UserSchema = new mongoose.Schema({
     },
 
     resetPasswordExpires: {
-    type: Date,
-    default: null
+        type: Date,
+        default: null
+    },
+
+    phone: {
+        type: String,
+        trim: true,
+        maxlength: 20,
+        default: ""
+    },
+
+    address: {
+        type: String,
+        trim: true,
+        maxlength: 200,
+        default: ""
+    },
+
+    bio: {
+        type: String,
+        trim: true,
+        maxlength: 500,
+        default: ""
+    },
+
+    avatar: {
+        type: String,
+        default: ""
+    },
+
+    lastLogin: {
+        type: Date,
+        default: null
+    },
+
+    lastPasswordChange: {
+        type: Date,
+        default: null
     },
 
     createdAt: {

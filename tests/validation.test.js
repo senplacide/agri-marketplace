@@ -1,3 +1,5 @@
+process.env.NODE_ENV = 'test';
+
 const assert = require('assert');
 const http = require('http');
 const bcrypt = require('bcryptjs');

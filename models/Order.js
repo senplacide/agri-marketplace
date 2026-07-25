@@ -1,0 +1,96 @@
+const mongoose = require("mongoose");
+
+const OrderItemSchema = new mongoose.Schema({
+    product: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+        required: true
+    },
+    productName: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    category: {
+        type: String,
+        default: "Other"
+    },
+    imageUrl: {
+        type: String,
+        default: ""
+    },
+    farmerName: {
+        type: String,
+        default: "Unknown Farmer"
+    },
+    unitPrice: {
+        type: Number,
+        required: true,
+        min: 0
+    },
+    quantity: {
+        type: Number,
+        required: true,
+        min: 1
+    },
+    lineTotal: {
+        type: Number,
+        required: true,
+        min: 0
+    }
+}, { _id: false });
+
+const OrderSchema = new mongoose.Schema({
+    orderId: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    buyer: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
+    items: {
+        type: [OrderItemSchema],
+        validate: {
+            validator: function (v) {
+                return v && v.length > 0;
+            },
+            message: "Order must contain at least one item."
+        }
+    },
+    deliveryInfo: {
+        fullName: { type: String, required: true, trim: true },
+        phone: { type: String, required: true, trim: true },
+        district: { type: String, required: true, trim: true },
+        sector: { type: String, required: true, trim: true },
+        cell: { type: String, required: true, trim: true },
+        village: { type: String, required: true, trim: true }
+    },
+    totalPrice: {
+        type: Number,
+        required: true,
+        min: 0
+    },
+    status: {
+        type: String,
+        enum: ["Pending", "Processing", "Completed", "Cancelled", "Accepted", "Rejected"],
+        default: "Pending"
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now
+    }
+});
+
+OrderSchema.pre("save", function (next) {
+    this.updatedAt = new Date();
+    next();
+});
+
+module.exports = mongoose.model("Order", OrderSchema);

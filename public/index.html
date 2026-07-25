@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-  
+<head>
 <script type="application/ld+json">
 {
   "@context":"https://schema.org",
@@ -10,315 +10,330 @@
   "description":"Rwanda agricultural marketplace connecting farmers and buyers."
 }
 </script>
-<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>AgriConnect - Farm to Buyer Marketplace Rwanda</title>
-
-    <meta name="description"
-          content="AgriConnect is Rwanda's agricultural marketplace connecting farmers and buyers. Buy and sell fruits, vegetables, grains, livestock and agricultural products online.">
-
-    <meta name="keywords"
-          content="Rwanda agriculture, farmers marketplace, buy crops online, agricultural products Rwanda, AgriConnect">
-
+    <meta name="description" content="AgriConnect is Rwanda's agricultural marketplace connecting farmers and buyers. Buy and sell fruits, vegetables, grains, livestock and agricultural products online.">
+    <meta name="keywords" content="Rwanda agriculture, farmers marketplace, buy crops online, agricultural products Rwanda, AgriConnect">
     <meta name="robots" content="index, follow">
-
-    <meta property="og:title"
-          content="AgriConnect - Farm to Buyer Marketplace">
-
-    <meta property="og:description"
-          content="Connecting farmers directly to buyers across Rwanda.">
-
-    <meta property="og:type"
-          content="website">
-
-    <meta property="og:url"
-          content="https://agri-marketplace-api.onrender.com">
-
-    <meta property="og:image"
-      content="https://agri-marketplace-api.onrender.com/images/bg1.jpg">
-
+    <meta property="og:title" content="AgriConnect - Farm to Buyer Marketplace">
+    <meta property="og:description" content="Connecting farmers directly to buyers across Rwanda.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://agri-marketplace-api.onrender.com">
+    <meta property="og:image" content="https://agri-marketplace-api.onrender.com/images/bg1.jpg">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
     <link rel="canonical" href="https://agri-marketplace-api.onrender.com/">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="public-page">
 
-<div class="navbar">
-    <div class="logo">🌾 AgriConnect</div>
-
-    <ul class="nav-links">
-        <li><a href="/">Home</a></li>
+<!-- Modern Navigation -->
+<nav class="public-navbar">
+    <a href="/" class="public-logo">
+        <span class="logo-icon">🌾</span> AgriConnect
+    </a>
+    <button class="public-hamburger" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+    </button>
+    <ul class="public-nav-links">
+        <li data-role="guest,buyer,farmer"><a href="/">Home</a></li>
         <li><a href="/items">Marketplace</a></li>
-        <li><a href="/about">About</a></li>
-        <li><a href="/contact">Contact</a></li>
+        <li data-role="buyer"><a href="/items?wishlist=1">Wishlist</a></li>
+        <li data-role="buyer"><a href="/items?cart=1">Cart</a></li>
+        <li data-role="buyer,farmer"><a href="/orders">Orders</a></li>
+        <li data-role="farmer"><a href="/dashboard">My Products</a></li>
+        <li data-role="buyer,farmer,admin">Profile</li>
+        <li data-role="guest,buyer,farmer"><a href="/about">About</a></li>
+        <li data-role="guest,buyer,farmer"><a href="/contact">Contact</a></li>
         <li id="auth-link"></li>
     </ul>
-</div>
+</nav>
 
-<main class="content">
-    <!-- HERO SECTION -->
-    <section class="hero video-hero">
-        <video autoplay muted loop id="hero-video">
-            <source src="images/video.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-
-        <div class="hero-content">
-            <h1>Connecting Farmers Directly to Buyers</h1>
-
-            <p class="subtitle">
-                Buy and sell fresh agricultural produce through a trusted marketplace built for farmers and buyers across Rwanda.
-            </p>
-
-            <h2>Bring Your Farm to the Market</h2>
-
-            <p>
-                AgriConnect helps farmers showcase produce, reach more customers,
-                and receive fair prices without unnecessary middlemen.
-            </p>
-
-            <a class="btn primary-btn" href="/items">
+<!-- Hero Section with Video Background -->
+<section class="public-hero">
+    <video autoplay muted loop id="hero-video">
+        <source src="images/video.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <div class="public-hero-content">
+        <span class="public-hero-badge">Rwanda's #1 Agricultural Marketplace</span>
+        <h1>Connecting Farmers Directly to Buyers</h1>
+        <p>Buy and sell fresh agricultural produce through a trusted marketplace built for farmers and buyers across Rwanda. No middlemen, fair prices, direct connections.</p>
+        <div class="public-hero-buttons">
+            <a class="public-btn public-btn-primary" href="/items">
                 Explore Marketplace
             </a>
+            <a class="public-btn public-btn-secondary" href="/about">
+                Learn More
+            </a>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- STATISTICS -->
-    <section class="stats-section">
+<!-- Statistics -->
+<section class="public-section animate-in">
+    <div class="public-section-header">
+        <span class="section-badge">Our Numbers</span>
         <h2>AgriConnect at a Glance</h2>
-
-        <div class="features">
-
-            <div class="card feature">
-                <h3>500+</h3>
-                <p>Farmers Connected</p>
-            </div>
-
-            <div class="card feature">
-                <h3>1,200+</h3>
-                <p>Produce Listings</p>
-            </div>
-
-            <div class="card feature">
-                <h3>30</h3>
-                <p>Districts Reached</p>
-            </div>
-
-            <div class="card feature">
-                <h3>95%</h3>
-                <p>User Satisfaction</p>
-            </div>
-
+        <p>Join hundreds of farmers and buyers already transforming Rwanda's agricultural landscape.</p>
+    </div>
+    <div class="public-stats-grid">
+        <div class="public-stat-card animate-in">
+            <div class="stat-number">500+</div>
+            <div class="stat-label">Farmers Connected</div>
         </div>
-    </section>
+        <div class="public-stat-card animate-in">
+            <div class="stat-number">1,200+</div>
+            <div class="stat-label">Produce Listings</div>
+        </div>
+        <div class="public-stat-card animate-in">
+            <div class="stat-number">30</div>
+            <div class="stat-label">Districts Reached</div>
+        </div>
+        <div class="public-stat-card animate-in">
+            <div class="stat-number">95%</div>
+            <div class="stat-label">User Satisfaction</div>
+        </div>
+    </div>
+</section>
 
-    <!-- HOW IT WORKS -->
-    <section class="how-it-works">
-
+<!-- How It Works -->
+<section class="public-section animate-in">
+    <div class="public-section-header">
+        <span class="section-badge">Simple Process</span>
         <h2>How AgriConnect Works</h2>
-
-        <div class="features">
-
-            <div class="card feature">
-                <h3>1️⃣ Farmers List Produce</h3>
-                <p>
-                    Farmers post available crops, livestock, and agricultural products.
-                </p>
-            </div>
-
-            <div class="card feature">
-                <h3>2️⃣ Buyers Browse Listings</h3>
-                <p>
-                    Buyers explore available produce and compare offers.
-                </p>
-            </div>
-
-            <div class="card feature">
-                <h3>3️⃣ Connect & Trade</h3>
-                <p>
-                    Farmers and buyers communicate directly and complete transactions.
-                </p>
-            </div>
-
+        <p>Get started in three easy steps and join Rwanda's growing agricultural community.</p>
+    </div>
+    <div class="public-steps-grid">
+        <div class="public-step-card animate-in">
+            <div class="step-number">1</div>
+            <h3>Farmers List Produce</h3>
+            <p>Farmers post available crops, livestock, and agricultural products with photos and details.</p>
         </div>
+        <div class="public-step-card animate-in">
+            <div class="step-number">2</div>
+            <h3>Buyers Browse Listings</h3>
+            <p>Buyers explore available produce, compare offers, and find the best deals near them.</p>
+        </div>
+        <div class="public-step-card animate-in">
+            <div class="step-number">3</div>
+            <h3>Connect & Trade</h3>
+            <p>Farmers and buyers communicate directly and complete transactions seamlessly.</p>
+        </div>
+    </div>
+</section>
 
-    </section>
-
-    <!-- CATEGORIES -->
-    <section class="categories">
-
+<!-- Categories -->
+<section class="public-section animate-in">
+    <div class="public-section-header">
+        <span class="section-badge">Browse by Category</span>
         <h2>Popular Categories</h2>
+        <p>Find exactly what you need from our wide range of agricultural products.</p>
+    </div>
+    <div class="public-categories-grid">
+        <a href="/items" class="public-category-card animate-in">
+            <span class="cat-icon">🌽</span>
+            <span class="cat-name">Grains</span>
+        </a>
+        <a href="/items" class="public-category-card animate-in">
+            <span class="cat-icon">🥬</span>
+            <span class="cat-name">Vegetables</span>
+        </a>
+        <a href="/items" class="public-category-card animate-in">
+            <span class="cat-icon">🍌</span>
+            <span class="cat-name">Fruits</span>
+        </a>
+        <a href="/items" class="public-category-card animate-in">
+            <span class="cat-icon">🐄</span>
+            <span class="cat-name">Livestock</span>
+        </a>
+        <a href="/items" class="public-category-card animate-in">
+            <span class="cat-icon">🥚</span>
+            <span class="cat-name">Poultry Products</span>
+        </a>
+        <a href="/items" class="public-category-card animate-in">
+            <span class="cat-icon">🌱</span>
+            <span class="cat-name">Seeds</span>
+        </a>
+    </div>
+</section>
 
-        <div class="features">
-
-            <div class="card feature">
-                <h3>🌽 Grains</h3>
-            </div>
-
-            <div class="card feature">
-                <h3>🥬 Vegetables</h3>
-            </div>
-
-            <div class="card feature">
-                <h3>🍌 Fruits</h3>
-            </div>
-
-            <div class="card feature">
-                <h3>🐄 Livestock</h3>
-            </div>
-
-            <div class="card feature">
-                <h3>🥚 Poultry Products</h3>
-            </div>
-
-            <div class="card feature">
-                <h3>🌱 Seeds</h3>
-            </div>
-
-        </div>
-
-    </section>
-
-    <!-- WHY CHOOSE US -->
-    <section class="why-us">
-
+<!-- Why Choose Us -->
+<section class="public-section animate-in">
+    <div class="public-section-header">
+        <span class="section-badge">Why Us</span>
         <h2>Why Choose AgriConnect?</h2>
-
-        <div class="features">
-
-            <div class="feature card">
-                <h3>Direct Farmer-to-Buyer 🤝</h3>
-                <p>
-                    Access fair market prices while helping farmers earn more.
-                </p>
+        <p>Built specifically for Rwanda's agricultural community with features that matter.</p>
+    </div>
+    <div class="public-features-grid">
+        <div class="public-feature-card animate-in">
+            <div class="feature-icon">🤝</div>
+            <div>
+                <h3>Direct Farmer-to-Buyer</h3>
+                <p>Access fair market prices while helping farmers earn more by eliminating unnecessary middlemen.</p>
             </div>
-
-            <div class="feature card">
-                <h3>Secure & Reliable 🔒</h3>
-                <p>
-                    Protected accounts, secure authentication, and trusted communication.
-                </p>
-            </div>
-
-            <div class="feature card">
-                <h3>Accessible Anywhere 📱</h3>
-                <p>
-                    Optimized for mobile devices and low-bandwidth internet connections.
-                </p>
-            </div>
-
-            <div class="feature card">
-                <h3>Community Driven 🌱</h3>
-                <p>
-                    Supporting local agriculture and strengthening rural economies.
-                </p>
-            </div>
-
         </div>
+        <div class="public-feature-card animate-in">
+            <div class="feature-icon">🔒</div>
+            <div>
+                <h3>Secure & Reliable</h3>
+                <p>Protected accounts, secure authentication, and trusted communication channels.</p>
+            </div>
+        </div>
+        <div class="public-feature-card animate-in">
+            <div class="feature-icon">📱</div>
+            <div>
+                <h3>Accessible Anywhere</h3>
+                <p>Optimized for mobile devices and low-bandwidth internet connections across Rwanda.</p>
+            </div>
+        </div>
+        <div class="public-feature-card animate-in">
+            <div class="feature-icon">🌱</div>
+            <div>
+                <h3>Community Driven</h3>
+                <p>Supporting local agriculture and strengthening rural economies together.</p>
+            </div>
+        </div>
+    </div>
+</section>
 
-    </section>
-
-    <!-- TESTIMONIALS -->
-    <section class="testimonials">
-
+<!-- Testimonials -->
+<section class="public-section animate-in">
+    <div class="public-section-header">
+        <span class="section-badge">Testimonials</span>
         <h2>Success Stories</h2>
-
-        <div class="features">
-
-            <blockquote class="card quote-card">
-                “AgriConnect helped me find new buyers and improve my earnings.”
-                <br><br>
-                <b>Jean – Farmer, Musanze</b>
-            </blockquote>
-
-            <blockquote class="card quote-card">
-                “I can now source fresh produce directly from trusted farmers.”
-                <br><br>
-                <b>Aline – Buyer, Kigali</b>
-            </blockquote>
-
-            <blockquote class="card quote-card">
-                “Posting produce is easy and inquiries arrive quickly.”
-                <br><br>
-                <b>Patrick – Farmer, Huye</b>
-            </blockquote>
-
+        <p>Hear from farmers and buyers who are already benefiting from AgriConnect.</p>
+    </div>
+    <div class="public-testimonials-grid">
+        <div class="public-testimonial-card animate-in">
+            <p class="testimonial-text">"AgriConnect helped me find new buyers and improve my earnings. The platform is easy to use even on my basic phone."</p>
+            <div class="testimonial-author">
+                <div class="author-avatar">J</div>
+                <div class="author-info">
+                    <div class="author-name">Jean</div>
+                    <div class="author-role">Farmer, Musanze</div>
+                </div>
+            </div>
         </div>
+        <div class="public-testimonial-card animate-in">
+            <p class="testimonial-text">"I can now source fresh produce directly from trusted farmers. The quality has been consistently excellent."</p>
+            <div class="testimonial-author">
+                <div class="author-avatar">A</div>
+                <div class="author-info">
+                    <div class="author-name">Aline</div>
+                    <div class="author-role">Buyer, Kigali</div>
+                </div>
+            </div>
+        </div>
+        <div class="public-testimonial-card animate-in">
+            <p class="testimonial-text">"Posting produce is easy and inquiries arrive quickly. I've expanded my customer base significantly."</p>
+            <div class="testimonial-author">
+                <div class="author-avatar">P</div>
+                <div class="author-info">
+                    <div class="author-name">Patrick</div>
+                    <div class="author-role">Farmer, Huye</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-    </section>
-
-    <!-- IMPACT -->
-    <section class="impact">
-
+<!-- Impact -->
+<section class="public-section animate-in">
+    <div class="public-section-header">
+        <span class="section-badge">Our Mission</span>
         <h2>Our Impact</h2>
-
-        <div class="features">
-
-            <div class="card feature">
-                <h3>🌾 Supporting Farmers</h3>
-            </div>
-
-            <div class="card feature">
-                <h3>🤝 Connecting Communities</h3>
-            </div>
-
-            <div class="card feature">
-                <h3>📈 Expanding Market Access</h3>
-            </div>
-
-            <div class="card feature">
-                <h3>💰 Improving Farmer Income</h3>
-            </div>
-
-            <div class="card feature">
-                <h3>🌍 Promoting Sustainable Agriculture</h3>
-            </div>
-
+        <p>Working towards a more connected and prosperous agricultural ecosystem in Rwanda.</p>
+    </div>
+    <div class="public-impact-grid">
+        <div class="public-impact-card animate-in">
+            <span class="impact-icon">🌾</span>
+            <span class="impact-label">Supporting Farmers</span>
         </div>
+        <div class="public-impact-card animate-in">
+            <span class="impact-icon">🤝</span>
+            <span class="impact-label">Connecting Communities</span>
+        </div>
+        <div class="public-impact-card animate-in">
+            <span class="impact-icon">📈</span>
+            <span class="impact-label">Expanding Market Access</span>
+        </div>
+        <div class="public-impact-card animate-in">
+            <span class="impact-icon">💰</span>
+            <span class="impact-label">Improving Farmer Income</span>
+        </div>
+        <div class="public-impact-card animate-in">
+            <span class="impact-icon">🌍</span>
+            <span class="impact-label">Sustainable Agriculture</span>
+        </div>
+    </div>
+</section>
 
-    </section>
-
-    <!-- CTA -->
-    <section class="cta-section">
-
+<!-- CTA -->
+<div class="public-section">
+    <div class="public-cta animate-in">
         <h2>Ready to Buy or Sell?</h2>
-
-        <p>
-            Join AgriConnect today and become part of Rwanda's growing agricultural marketplace.
-        </p>
-
-        <div class="cta-buttons">
-
-            <a class="btn primary-btn" href="#" id="start-selling-btn">
-    Start Selling
-</a>
-    
-            <a class="btn primary-btn" href="/items">
+        <p>Join AgriConnect today and become part of Rwanda's growing agricultural marketplace.</p>
+        <div class="public-cta-buttons">
+            <a class="public-btn public-btn-secondary" href="/items?mode=seller" id="start-selling-btn">
+                Start Selling
+            </a>
+            <a class="public-btn public-btn-secondary" href="/items?mode=buyer">
                 Browse Produce
             </a>
-
         </div>
+    </div>
+</div>
 
-    </section>
-
-</main>
-
-  <footer class="footer">
-
-    <h3>AgriConnect</h3>
-
-    <p>
-        Connecting farmers and buyers through a trusted digital marketplace.
-    </p>
-
-    <p>
-        © 2026 AgriConnect. All Rights Reserved.
-    </p>
-
+<!-- Footer -->
+<footer class="public-footer">
+    <div class="public-footer-grid">
+        <div class="public-footer-brand">
+            <div class="footer-logo">🌾 AgriConnect</div>
+            <p class="footer-desc">Empowering farmers and connecting buyers through Rwanda's most trusted agricultural marketplace.</p>
+            <div class="public-footer-social">
+                <a href="#" aria-label="Facebook">f</a>
+                <a href="#" aria-label="Twitter">𝕏</a>
+                <a href="#" aria-label="Instagram">ig</a>
+                <a href="#" aria-label="LinkedIn">in</a>
+            </div>
+        </div>
+        <div class="public-footer-col">
+            <h4>Marketplace</h4>
+            <ul>
+                <li><a href="/items">Browse Products</a></li>
+                <li><a href="/items">List Produce</a></li>
+                <li><a href="/items">Categories</a></li>
+            </ul>
+        </div>
+        <div class="public-footer-col">
+            <h4>Company</h4>
+            <ul>
+                <li><a href="/about">About Us</a></li>
+                <li><a href="/contact">Contact</a></li>
+                <li><a href="#">Privacy Policy</a></li>
+                <li><a href="#">Terms of Service</a></li>
+            </ul>
+        </div>
+        <div class="public-footer-col">
+            <h4>Support</h4>
+            <ul>
+                <li><a href="/contact">Help Center</a></li>
+                <li><a href="/contact">Email Support</a></li>
+                <li><a href="/auth">Sign In</a></li>
+                <li><a href="/auth">Create Account</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="public-footer-bottom">
+        &copy; 2026 AgriConnect. Empowering Farmers. Connecting Buyers. All rights reserved.
+    </div>
 </footer>
 
     <script src="script.js"></script>
+    <script src="public-ui.js"></script>
 </body>
 </html>

@@ -83,9 +83,14 @@ function startResendCountdown(seconds = 60) {
                     localStorage.setItem("token", data.token);
 
                     setTimeout(() => {
-
-                        window.location.href = "/dashboard";
-
+                        var userRole = data.user && data.user.role;
+                        if (userRole === "admin") {
+                            window.location.href = "/admin.html";
+                        } else if (userRole === "buyer") {
+                            window.location.href = "/buyer-dashboard";
+                        } else {
+                            window.location.href = "/dashboard";
+                        }
                     }, 1500);
 
                 } else {

@@ -79,6 +79,13 @@ async function apiFetch(endpoint, { method = 'GET', body = null, headers = true 
 
 let currentUser = null;
 
+function getDashboardUrl(role) {
+    if (role === 'admin') return '/admin.html';
+    if (role === 'buyer') return '/buyer-dashboard';
+    if (role === 'farmer') return '/dashboard';
+    return '/';
+}
+
 async function loadCurrentUser() {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -86,10 +93,8 @@ async function loadCurrentUser() {
         return;
     }
     try {
-        // Assuming there is a route like /api/auth/me that returns user data
-        const user = await apiFetch('/api/auth/me', { method: 'GET' });
-        // The backend /api/auth/me returns the user object directly, not {user: user}
-        currentUser = user; 
+        const response = await apiFetch('/api/auth/me', { method: 'GET' });
+        currentUser = response.user || response;
     } catch (error) {
         // Token is invalid or expired
         localStorage.removeItem('token');
@@ -98,21 +103,38 @@ async function loadCurrentUser() {
 }
 
 function updateNav() {
-    const authLinkContainer = document.getElementById('auth-link');
+    var role = currentUser ? currentUser.role : null;
+    var dashboardUrl = getDashboardUrl(role);
+
+    // Update logo href to route by role
+    document.querySelectorAll('.public-logo, .nav-logo').forEach(function(logo) {
+        logo.setAttribute('href', dashboardUrl || '/');
+    });
+
+    // Show/hide role-specific nav items in public navbar
+    var effectiveRole = role || 'guest';
+    document.querySelectorAll('[data-role]').forEach(function(el) {
+        var allowedRoles = el.getAttribute('data-role').split(',');
+        if (allowedRoles.indexOf(effectiveRole) !== -1) {
+            el.style.display = '';
+        } else {
+            el.style.display = 'none';
+        }
+    });
+
+    // Update auth-link container
+    var authLinkContainer = document.getElementById('auth-link');
     if (!authLinkContainer) return;
 
     if (currentUser) {
-        // User is logged in: show Dashboard and Logout
-        authLinkContainer.innerHTML = `
-            <li><a href="/dashboard">Dashboard</a></li>
-            <li><a href="#" id="logout-btn">Logout</a></li>
-        `;
-        document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
+        authLinkContainer.innerHTML =
+            '<li><a href="' + dashboardUrl + '">Dashboard</a></li>' +
+            '<li><a href="#" id="logout-btn">Logout</a></li>';
+        var logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
     } else {
-        // User is logged out: show Sign In / Sign Up
-        authLinkContainer.innerHTML = `
-            <li><a href="/auth">Sign In / Sign Up</a></li>
-        `;
+        authLinkContainer.innerHTML =
+            '<li><a href="/auth">Sign In / Sign Up</a></li>';
     }
 }
 
@@ -121,7 +143,7 @@ function handleLogout(e) {
     localStorage.removeItem('token');
     currentUser = null;
     updateNav();
-    window.location.href = '/'; // Redirect to home page
+    window.location.href = '/';
 }
 
 
@@ -137,11 +159,13 @@ function loadAuthForms() {
             const name = document.getElementById('signup-name').value;
             const email = document.getElementById('signup-email').value;
             const password = document.getElementById('signup-password').value;
+            const roleRadio = document.querySelector('input[name="signup-role"]:checked');
+            const role = roleRadio ? roleRadio.value : 'farmer';
 
             try {
                 const data = await apiFetch('/api/auth/signup', {
     method: 'POST',
-    body: { name, email, password },
+    body: { name, email, password, role },
     headers: false
 });
 
@@ -166,14 +190,19 @@ signupForm.reset();
                 const result = await apiFetch('/api/auth/login', { method: 'POST', body: { email, password }, headers: false });
                 
                 // Store the JWT token
-                localStorage.setItem('token', result.token);
-                
-                // Reload user and update UI
-                await loadCurrentUser();
-                updateNav();
-                
-                // Redirect to dashboard on successful login
-                window.location.href = '/dashboard'; 
+localStorage.setItem('token', result.token);
+
+// Reload user and update UI
+await loadCurrentUser();
+updateNav();
+
+if (result.user.role === "admin") {
+    window.location.href = "/admin.html";
+} else if (result.user.role === "buyer") {
+    window.location.href = "/buyer-dashboard";
+} else {
+    window.location.href = "/dashboard";
+}
             } catch (error) {
                 showAlert('Login Failed: ' + error.message);
             }
@@ -191,20 +220,21 @@ async function renderProducts() {
     productList.innerHTML = '<p>Loading products...</p>';
     try {
         // Hitting the backend route: GET /api/products
-        const products = await apiFetch('/api/products', { headers: false });
-        
-        productList.innerHTML = ''; 
+        const response = await apiFetch('/api/products', { headers: false });
+        const products = Array.isArray(response) ? response : (response.data || response.products || []);
+
+        productList.innerHTML = '';
         if (products.length === 0) {
             productList.innerHTML = '<p>No products listed yet. Be the first!</p>';
             return;
         }
 
-        products.forEach(product => {
-            // Function to format price
-            const price = new Intl.NumberFormat('en-RW', { style: 'currency', currency: 'RWF' }).format(product.price);
-            
-            // Format payment methods for display
-            const methods = product.paymentMethods?.join(', ') || 'Contact Seller'; // CORRECTED LOGIC
+        const fragment = document.createDocumentFragment();
+        const priceFormatter = new Intl.NumberFormat('en-RW', { style: 'currency', currency: 'RWF' });
+        for (let i = 0; i < products.length; i++) {
+            const product = products[i];
+            const price = priceFormatter.format(product.price);
+            const methods = product.paymentMethods?.join(', ') || 'Contact Seller';
 
             const card = document.createElement('div');
             card.className = 'product-card';
@@ -217,8 +247,9 @@ async function renderProducts() {
                 <p><strong>Contact:</strong> ${escapeHtml(product.contact || 'Not provided')}</p>
                 <p>${escapeHtml(product.description || '')}</p>
             `;
-            productList.appendChild(card);
-        });
+            fragment.appendChild(card);
+        }
+        productList.appendChild(fragment);
 
     } catch (error) {
         productList.innerHTML = `<p style="color: red;">Failed to load products: ${error.message}</p>`;
@@ -229,6 +260,14 @@ function loadProductForm() {
     const productForm = document.getElementById('productForm');
     if (!productForm) return;
 
+    const nameEl = document.getElementById("name");
+    const priceEl = document.getElementById("price");
+    const categoryEl = document.getElementById("category");
+    const descriptionEl = document.getElementById("description");
+    const contactEl = document.getElementById("contact");
+    const paymentMethodsEl = document.getElementById("paymentMethods");
+    const imageEl = document.getElementById("image");
+
     productForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -237,7 +276,6 @@ function loadProductForm() {
             return;
         }
 
-        // Helper function to get multiple selected options from a select element
         function getSelectedOptions(selectElement) {
             return Array.from(selectElement.options)
                         .filter(option => option.selected)
@@ -246,51 +284,22 @@ function loadProductForm() {
 
         const productData = new FormData();
 
-productData.append(
-    "name",
-    document.getElementById("name").value
-);
+productData.append("name", nameEl.value);
+productData.append("price", priceEl.value);
+productData.append("category", categoryEl.value);
+productData.append("description", descriptionEl.value);
+productData.append("contact", contactEl.value);
 
-productData.append(
-    "price",
-    document.getElementById("price").value
-);
-
-productData.append(
-    "category",
-    document.getElementById("category").value
-);
-
-productData.append(
-    "description",
-    document.getElementById("description").value
-);
-
-productData.append(
-    "contact",
-    document.getElementById("contact").value
-);
-
-const paymentMethods =
-    getSelectedOptions(
-        document.getElementById("paymentMethods")
-    );
+const paymentMethods = getSelectedOptions(paymentMethodsEl);
 
 paymentMethods.forEach(method => {
-    productData.append(
-        "paymentMethods",
-        method
-    );
+    productData.append("paymentMethods", method);
 });
 
-const imageFile =
-    document.getElementById("image").files[0];
+const imageFile = imageEl.files[0];
 
 if (imageFile) {
-    productData.append(
-        "image",
-        imageFile
-    );
+    productData.append("image", imageFile);
 }
 
         try {
@@ -325,7 +334,8 @@ async function renderDashboard() {
 
     try {
         // Hitting the backend route: GET /api/products/my-listings
-        const myProducts = await apiFetch('/api/products/my-listings'); 
+        const response = await apiFetch('/api/products/my-listings');
+        const myProducts = Array.isArray(response) ? response : (response.data || response.products || []);
 
         dashboardProducts.innerHTML = '';
         if (myProducts.length === 0) {
@@ -333,9 +343,12 @@ async function renderDashboard() {
             return;
         }
 
-        myProducts.forEach(product => {
-            const price = new Intl.NumberFormat('en-RW', { style: 'currency', currency: 'RWF' }).format(product.price);
-            const methods = product.paymentMethods?.join(', ') || 'Contact Seller'; // CORRECTED LOGIC
+        const fragment = document.createDocumentFragment();
+        const priceFormatter = new Intl.NumberFormat('en-RW', { style: 'currency', currency: 'RWF' });
+        for (let i = 0; i < myProducts.length; i++) {
+            const product = myProducts[i];
+            const price = priceFormatter.format(product.price);
+            const methods = product.paymentMethods?.join(', ') || 'Contact Seller';
 
             const card = document.createElement('div');
             card.className = 'product-card';
@@ -358,8 +371,9 @@ async function renderDashboard() {
     </button>
 </div>
             `;
-            dashboardProducts.appendChild(card);
-        });
+            fragment.appendChild(card);
+        }
+        dashboardProducts.appendChild(fragment);
 
         // Add event listeners for delete buttons
         dashboardProducts.querySelectorAll('.delete-btn').forEach(button => {
@@ -537,49 +551,112 @@ function loadContactForm() {
 }
 
 
+// --- 8. Onboarding Banner Logic (items.html) ---
+
+function renderOnboardingBanner() {
+    const bannerContainer = document.getElementById('onboarding-banner');
+    if (!bannerContainer) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const mode = params.get('mode');
+
+    if (!mode) {
+        bannerContainer.innerHTML = '';
+        return;
+    }
+
+    const userRole = currentUser?.role;
+
+    if (mode === 'buyer' && (userRole === 'buyer' || userRole === 'admin')) {
+        bannerContainer.innerHTML = '';
+        return;
+    }
+
+    if (mode === 'seller' && (userRole === 'farmer' || userRole === 'admin')) {
+        bannerContainer.innerHTML = '';
+        return;
+    }
+
+    if (mode === 'buyer') {
+        bannerContainer.innerHTML = `
+            <div class="onboarding-banner onboarding-buyer">
+                <div class="onboarding-content">
+                    <div class="onboarding-icon">&#x1F6D2;</div>
+                    <div class="onboarding-text">
+                        <h2>Welcome to the AgriConnect Marketplace</h2>
+                        <p class="onboarding-subtitle">Discover fresh agricultural products directly from verified farmers.</p>
+                        <ul class="onboarding-benefits">
+                            <li><span class="benefit-check">&#x2713;</span> Browse products</li>
+                            <li><span class="benefit-check">&#x2713;</span> Search by category</li>
+                            <li><span class="benefit-check">&#x2713;</span> Compare prices</li>
+                            <li><span class="benefit-check">&#x2713;</span> Save favourites</li>
+                            <li><span class="benefit-check">&#x2713;</span> Create a free buyer account</li>
+                        </ul>
+                        <div class="onboarding-actions">
+                            <a href="/auth" class="public-btn onboarding-primary-btn">Create Buyer Account</a>
+                            <a href="/items" class="public-btn onboarding-secondary-btn">Continue Browsing</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (mode === 'seller') {
+        bannerContainer.innerHTML = `
+            <div class="onboarding-banner onboarding-seller">
+                <div class="onboarding-content">
+                    <div class="onboarding-icon">&#x1F33E;</div>
+                    <div class="onboarding-text">
+                        <h2>Become a Seller on AgriConnect</h2>
+                        <p class="onboarding-subtitle">Reach more buyers and grow your farming business.</p>
+                        <ul class="onboarding-benefits">
+                            <li><span class="benefit-check">&#x2713;</span> Sell directly to buyers</li>
+                            <li><span class="benefit-check">&#x2713;</span> Upload products</li>
+                            <li><span class="benefit-check">&#x2713;</span> Manage inventory</li>
+                            <li><span class="benefit-check">&#x2713;</span> Receive orders</li>
+                            <li><span class="benefit-check">&#x2713;</span> Track sales</li>
+                        </ul>
+                        <div class="onboarding-actions">
+                            <a href="/auth" class="public-btn onboarding-primary-btn">Register as Farmer</a>
+                            <a href="/about" class="public-btn onboarding-secondary-btn">Learn More</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+
 // --- 7. Initialization ---
 
 document.addEventListener("DOMContentLoaded", async () => {
-    // 1. Load user state before updating navigation
     await loadCurrentUser(); 
-    
-    // 2. Update navigation links (Sign In/Dashboard)
     updateNav();
-    
-    // 3. Execute page-specific functions
-    if (document.getElementById("productForm")) { // On items.html
-        loadProductForm();
-    }
-    if (document.getElementById("product-list")) { // On items.html
-        renderProducts();
-    }
-    if (document.getElementById("signup-form") || document.getElementById("login-form")) { // On auth.html
-        loadAuthForms();
-    }
-    if (document.getElementById("dashboard-products")) { // On dashboard.html
-        renderDashboard();
-    }
-    if (document.getElementById("contact-form")) {
-    loadContactForm();
-}
 
-// Homepage "Start Selling" button
-const startSellingBtn = document.getElementById("start-selling-btn");
+    const hasProductForm = document.getElementById("productForm");
+    const hasProductList = document.getElementById("product-list");
+    const hasSignupForm = document.getElementById("signup-form");
+    const hasLoginForm = document.getElementById("login-form");
+    const hasDashboardProducts = document.getElementById("dashboard-products");
+    const hasContactForm = document.getElementById("contact-form");
+    const startSellingBtn = document.getElementById("start-selling-btn");
+
+    if (hasProductForm) loadProductForm();
+    if (hasProductList) renderProducts();
+    if (hasSignupForm || hasLoginForm) loadAuthForms();
+    if (hasDashboardProducts) renderDashboard();
+    if (hasContactForm) loadContactForm();
+    renderOnboardingBanner();
 
 if (startSellingBtn) {
-
     startSellingBtn.addEventListener("click", (e) => {
-
         e.preventDefault();
-
         if (currentUser) {
-            window.location.href = "/items";
+            window.location.href = "/items?mode=seller";
         } else {
             window.location.href = "/auth";
         }
-
     });
-
 }
 
 });

@@ -4,77 +4,145 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex,nofollow">
-    <title>Sign In / Sign Up - Agri-Marketplace</title>
+    <title>Sign In / Sign Up - AgriConnect</title>
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body>
-    <div class="navbar">
-        <div class="logo">🌾 AgriConnect</div>
-        <ul class="nav-links">
-            <li><a href="/">Home</a></li>
-            <li><a href="/items">Marketplace</a></li>
-            <li><a href="/about">About</a></li>
-            <li><a href="/contact">Contact</a></li>
-            <li id="auth-link"></li>
-        </ul>
-    </div>
+<body class="public-page">
 
-    <div class="content">
-        <h1>Welcome to Agri-Marketplace</h1>
-        <p class="subtitle">Sign in to buy or sign up to list your produce.</p>
-
-        <div class="auth-grid">
-            <div class="card">
-                <h2>New User Sign Up</h2>
-                <form id="signup-form">
-                    <label for="signup-name">Name</label>
-                    <input type="text" id="signup-name" required placeholder="John Doe">
-                    <label for="signup-email">Email</label>
-                    <input type="email" id="signup-email" required placeholder="email@example.com">
-                    <label for="signup-password">Password</label>
-                    <input type="password" id="signup-password" required placeholder="••••••••">
-                    <button type="submit" class="btn primary-btn full-width-btn">Sign Up</button>
-                </form>
-            </div>
-            
-            <div class="card inspired-quote">
-                <h2>Existing User Sign In</h2>
-                <form id="login-form">
-    <label for="login-email">Email</label>
-    <input
-        type="email"
-        id="login-email"
-        required
-        placeholder="email@example.com">
-
-    <label for="login-password">Password</label>
-    <input
-        type="password"
-        id="login-password"
-        required
-        placeholder="••••••••">
-
-    <button
-        type="submit"
-        class="btn primary-btn full-width-btn">
-        Sign In
+<!-- Modern Navigation -->
+<nav class="public-navbar" style="position: absolute;">
+    <a href="/" class="public-logo">
+        <span class="logo-icon">🌾</span> AgriConnect
+    </a>
+    <button class="public-hamburger" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
     </button>
+    <ul class="public-nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/items">Marketplace</a></li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/contact">Contact</a></li>
+        <li id="auth-link"></li>
+    </ul>
+</nav>
 
-    <p class="forgot-password-link">
-        <a href="/forgot-password.html">
-            Forgot your password?
-        </a>
-    </p>
-</form>
+<!-- Auth Content -->
+<div class="public-auth-wrapper">
+    <div class="public-auth-container">
+        <!-- Brand Side -->
+        <div class="public-auth-brand">
+            <div class="brand-content">
+                <div class="brand-logo">🌾 AgriConnect</div>
+                <h2>Welcome to Rwanda's Agricultural Marketplace</h2>
+                <p>Join hundreds of farmers and buyers already transforming how agricultural products are traded.</p>
+                <ul class="brand-features">
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Direct farmer-to-buyer connections
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Fair market prices for everyone
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Secure and trusted transactions
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Works on any device
+                    </li>
+                </ul>
             </div>
         </div>
-    </div>
 
-    <footer class="footer">
-        <p>&copy; 2024 Agri-Marketplace. All rights reserved.</p>
-    </footer>
+        <!-- Form Side -->
+        <div class="public-auth-form-section">
+            <!-- Sign Up Form -->
+            <h2>Create Account</h2>
+            <p class="auth-subtitle">Sign up to start listing your produce or buying fresh products.</p>
+            <form id="signup-form">
+                <div class="public-form-group">
+                    <label for="signup-name">Full Name</label>
+                    <input type="text" id="signup-name" required placeholder="John Doe">
+                </div>
+                <div class="public-form-group">
+                    <label>I am a...</label>
+                    <div style="display:flex;gap:12px;margin-top:6px;">
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:10px 16px;border:2px solid #e0e0e0;border-radius:8px;flex:1;text-align:center;transition:border-color .2s,background .2s;" class="role-option" data-role="farmer">
+                            <input type="radio" name="signup-role" value="farmer" checked style="display:none;">
+                            <span style="font-size:1.2rem;">🌾</span> Farmer
+                        </label>
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:10px 16px;border:2px solid #e0e0e0;border-radius:8px;flex:1;text-align:center;transition:border-color .2s,background .2s;" class="role-option" data-role="buyer">
+                            <input type="radio" name="signup-role" value="buyer" style="display:none;">
+                            <span style="font-size:1.2rem;">🛒</span> Buyer
+                        </label>
+                    </div>
+                </div>
+                <div class="public-form-group">
+                    <label for="signup-email">Email Address</label>
+                    <input type="email" id="signup-email" required placeholder="email@example.com">
+                </div>
+                <div class="public-form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" required placeholder="Min. 6 characters">
+                </div>
+                <button type="submit" class="public-form-submit">Create Account</button>
+            </form>
+
+            <div class="auth-divider">or</div>
+
+            <!-- Sign In Form -->
+            <h2>Sign In</h2>
+            <p class="auth-subtitle">Welcome back! Sign in to manage your listings.</p>
+            <form id="login-form">
+                <div class="public-form-group">
+                    <label for="login-email">Email Address</label>
+                    <input type="email" id="login-email" required placeholder="email@example.com">
+                </div>
+                <div class="public-form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required placeholder="Enter your password">
+                </div>
+                <button type="submit" class="public-form-submit">Sign In</button>
+                <p class="forgot-password-link" style="margin-top: 16px; text-align: center;">
+                    <a href="/forgot-password.html" style="color: #2E7D32; text-decoration: none; font-weight: 600; font-size: 0.9rem;">Forgot your password?</a>
+                </p>
+            </form>
+        </div>
+    </div>
+</div>
 
     <script src="script.js"></script>
+    <script src="public-ui.js"></script>
+    <script>
+    (function() {
+        var options = document.querySelectorAll('.role-option');
+        function updateRoleStyles() {
+            options.forEach(function(opt) {
+                var radio = opt.querySelector('input[type="radio"]');
+                if (radio.checked) {
+                    opt.style.borderColor = '#2E7D32';
+                    opt.style.background = '#f0fdf4';
+                } else {
+                    opt.style.borderColor = '#e0e0e0';
+                    opt.style.background = 'transparent';
+                }
+            });
+        }
+        options.forEach(function(opt) {
+            opt.addEventListener('click', function() {
+                var radio = opt.querySelector('input[type="radio"]');
+                radio.checked = true;
+                updateRoleStyles();
+            });
+        });
+        updateRoleStyles();
+    })();
+    </script>
 </body>
 </html>

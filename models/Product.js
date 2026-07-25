@@ -7,6 +7,15 @@ const ProductSchema = new mongoose.Schema({
         required: [true, "Product name is required"],
         trim: true
     },
+    status: {
+
+    type: String,
+
+    enum: ["pending", "approved", "rejected"],
+
+    default: "pending"
+
+},
     price: {
         type: Number,
         required: [true, "Price is required"],
@@ -34,6 +43,7 @@ const ProductSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
+
     // NEW FIELD: Restrict payment methods to MoMo and Visa Card
     paymentMethods: {
         type: [String],

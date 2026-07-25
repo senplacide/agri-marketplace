@@ -3,12 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Marketplace | Buy and Sell Agricultural Products in Rwanda | AgriConnect</title>
-
-    <meta name="description"
-          content="Browse agricultural products including fruits, vegetables, grains, livestock and farming equipment on AgriConnect Rwanda.">
-
+    <meta name="description" content="Browse agricultural products including fruits, vegetables, grains, livestock and farming equipment on AgriConnect Rwanda.">
     <script type="application/ld+json">
     {
       "@context":"https://schema.org",
@@ -18,79 +14,152 @@
       "description":"Browse agricultural products including fruits, vegetables, grains, livestock and farming equipment on AgriConnect Rwanda."
     }
     </script>
-
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body>
-    <div class="navbar">
-        <div class="logo">🌾 AgriConnect</div>
-        <ul class="nav-links">
-            <li><a href="/">Home</a></li>
-            <li><a href="/items">Marketplace</a></li>
-            <li><a href="/about">About</a></li>
-            <li><a href="/contact">Contact</a></li>
-            <li id="auth-link"></li>
-        </ul>
-    </div>
+<body class="public-page">
 
-    <div class="content">
-        <h1>AgriConnect Marketplace</h1>
+<!-- Modern Navigation -->
+<nav class="public-navbar">
+    <a href="/" class="public-logo">
+        <span class="logo-icon">🌾</span> AgriConnect
+    </a>
+    <button class="public-hamburger" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+    </button>
+    <ul class="public-nav-links">
+        <li data-role="guest,buyer,farmer"><a href="/">Home</a></li>
+        <li><a href="/items">Marketplace</a></li>
+        <li data-role="buyer"><a href="/items?wishlist=1">Wishlist</a></li>
+        <li data-role="buyer"><a href="/items?cart=1">Cart</a></li>
+        <li data-role="buyer,farmer"><a href="/orders">Orders</a></li>
+        <li data-role="farmer"><a href="/dashboard">My Products</a></li>
+        <li data-role="buyer,farmer,admin">Profile</li>
+        <li data-role="guest,buyer,farmer"><a href="/about">About</a></li>
+        <li data-role="guest,buyer,farmer"><a href="/contact">Contact</a></li>
+        <li id="auth-link"></li>
+    </ul>
+</nav>
 
-        <div class="card form-wrap" id="product-form-container">
+<!-- Marketplace Header -->
+<div class="public-marketplace-header">
+    <span class="section-badge">Marketplace</span>
+    <h1>AgriConnect Marketplace</h1>
+    <p>Browse fresh produce from verified farmers across Rwanda or list your own products.</p>
+</div>
+
+<!-- Onboarding Banner (injected by JS based on ?mode=buyer|seller) -->
+<div id="onboarding-banner"></div>
+
+<!-- Marketplace Content -->
+<div class="public-marketplace-content">
+    <div class="public-marketplace-layout">
+        <!-- Product Form -->
+        <div class="public-product-form-card" id="product-form-container">
             <h2>List Your Produce</h2>
             <form id="productForm">
-                <label for="name">Product Name</label>
-                <input type="text" id="name" required placeholder="e.g., Organic Avocados">
-
-                <label for="price">Price (RWF)</label>
-                <input type="number" id="price" required min="1" placeholder="e.g., 50000">
-
-                <label for="category">Category</label>
-                <select id="category" required>
-                    <option value="">Select Category</option>
-                    <option value="Fruits">Fruits</option>
-                    <option value="Vegetables">Vegetables</option>
-                    <option value="Grains">Grains</option>
-                    <option value="Livestock">Livestock</option>
-                    <option value="Equipment">Equipment</option>
-                    <option value="Other">Other</option>
-                </select>
-
-                <label for="description">Description (Optional)</label>
-                <textarea id="description" rows="3" placeholder="Describe quality, quantity, and location..."></textarea>
-
-                <label for="paymentMethods">Accepted Payment Methods</label>
-                <select id="paymentMethods" multiple required>
-                    <option value="Mobile Money (MoMo)" selected>Mobile Money (MoMo)</option>
-                    <option value="Visa Card">Visa Card</option>
-                </select>
-
-                <label for="contact">Contact Information (Phone or WhatsApp)</label>
-                <input type="text" id="contact" required placeholder="+250 7X XXX XXXX">
-
-                <label for="image">Product Image (Optional)</label>
-
-<input
-    type="file"
-    id="image"
-    name="image"
-    accept=".jpg,.jpeg,.png,.webp">
-                <button type="submit" class="btn primary-btn full-width-btn">List Product</button>
+                <div class="public-form-group">
+                    <label for="name">Product Name</label>
+                    <input type="text" id="name" required placeholder="e.g., Organic Avocados">
+                </div>
+                <div class="public-form-group">
+                    <label for="price">Price (RWF)</label>
+                    <input type="number" id="price" required min="1" placeholder="e.g., 50000">
+                </div>
+                <div class="public-form-group">
+                    <label for="category">Category</label>
+                    <select id="category" required style="width:100%;padding:14px 16px;border:2px solid #E5E7EB;border-radius:10px;font-size:0.95rem;color:#1F2937;background:#F8FAFC;font-family:inherit;">
+                        <option value="">Select Category</option>
+                        <option value="Fruits">Fruits</option>
+                        <option value="Vegetables">Vegetables</option>
+                        <option value="Grains">Grains</option>
+                        <option value="Livestock">Livestock</option>
+                        <option value="Equipment">Equipment</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="public-form-group">
+                    <label for="description">Description (Optional)</label>
+                    <textarea id="description" rows="3" placeholder="Describe quality, quantity, and location..." style="resize: vertical;"></textarea>
+                </div>
+                <div class="public-form-group">
+                    <label for="paymentMethods">Accepted Payment Methods</label>
+                    <select id="paymentMethods" multiple required style="width:100%;padding:14px 16px;border:2px solid #E5E7EB;border-radius:10px;font-size:0.95rem;color:#1F2937;background:#F8FAFC;font-family:inherit;">
+                        <option value="Mobile Money (MoMo)" selected>Mobile Money (MoMo)</option>
+                        <option value="Visa Card">Visa Card</option>
+                    </select>
+                </div>
+                <div class="public-form-group">
+                    <label for="contact">Contact Information (Phone or WhatsApp)</label>
+                    <input type="text" id="contact" required placeholder="+250 7X XXX XXXX">
+                </div>
+                <div class="public-form-group">
+                    <label for="image">Product Image (Optional)</label>
+                    <input type="file" id="image" name="image" accept=".jpg,.jpeg,.png,.webp" style="padding: 12px 16px; border: 2px solid #E5E7EB; border-radius: 10px; background: #F8FAFC;">
+                </div>
+                <button type="submit" class="public-form-submit">List Product</button>
             </form>
         </div>
 
-        <h2 class="section-title">Available Products</h2>
-        
-        <div class="grid" id="product-list">
-            <p>Loading products...</p>
+        <!-- Product Grid -->
+        <div>
+            <h2 class="section-title" style="color: #1F2937; font-size: 1.5rem; font-weight: 700; margin-bottom: 24px; border: none; padding-bottom: 0;">Available Products</h2>
+            <div class="public-products-grid" id="product-list">
+                <p>Loading products...</p>
+            </div>
         </div>
     </div>
+</div>
 
-    <footer class="footer">
-        <p>&copy; 2024 Agri-Marketplace. All rights reserved.</p>
-    </footer>
-    
+<!-- Footer -->
+<footer class="public-footer">
+    <div class="public-footer-grid">
+        <div class="public-footer-brand">
+            <div class="footer-logo">🌾 AgriConnect</div>
+            <p class="footer-desc">Empowering farmers and connecting buyers through Rwanda's most trusted agricultural marketplace.</p>
+            <div class="public-footer-social">
+                <a href="#" aria-label="Facebook">f</a>
+                <a href="#" aria-label="Twitter">X</a>
+                <a href="#" aria-label="Instagram">ig</a>
+                <a href="#" aria-label="LinkedIn">in</a>
+            </div>
+        </div>
+        <div class="public-footer-col">
+            <h4>Marketplace</h4>
+            <ul>
+                <li><a href="/items">Browse Products</a></li>
+                <li><a href="/items">List Produce</a></li>
+                <li><a href="/items">Categories</a></li>
+            </ul>
+        </div>
+        <div class="public-footer-col">
+            <h4>Company</h4>
+            <ul>
+                <li><a href="/about">About Us</a></li>
+                <li><a href="/contact">Contact</a></li>
+                <li><a href="#">Privacy Policy</a></li>
+                <li><a href="#">Terms of Service</a></li>
+            </ul>
+        </div>
+        <div class="public-footer-col">
+            <h4>Support</h4>
+            <ul>
+                <li><a href="/contact">Help Center</a></li>
+                <li><a href="/contact">Email Support</a></li>
+                <li><a href="/auth">Sign In</a></li>
+                <li><a href="/auth">Create Account</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="public-footer-bottom">
+        &copy; 2026 AgriConnect. Empowering Farmers. Connecting Buyers. All rights reserved.
+    </div>
+</footer>
+
     <script src="script.js"></script>
+    <script src="public-ui.js"></script>
 </body>
 </html>

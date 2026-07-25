@@ -1,37 +1,49 @@
 const express = require("express");
-const router = express.Router();
-const ContactMessage = require('../models/ContactMessage'); 
-const { sendContactEmail } = require('../utils/email'); 
-const { validateContactInput } = require('../utils/validation');
+var router = express.Router();
+var ContactMessage = require("../models/ContactMessage");
+var { sendContactEmail } = require("../utils/email");
+var { validateContactInput } = require("../utils/validation");
+var { contactLimiter } = require("../middleware/rateLimiter");
 
-router.post('/', async (req, res) => {
-    const validation = validateContactInput(req.body);
+router.post("/", contactLimiter, async function (req, res) {
+    var validation = validateContactInput(req.body);
 
     if (validation.error) {
-        return res.status(400).json({ status: 'error', message: validation.error });
+        return res.status(400).json({
+            success: false,
+            message: "Validation failed.",
+            error: validation.error
+        });
     }
 
-    const { name, email, subject, message } = validation.value;
+    var name = validation.value.name;
+    var email = validation.value.email;
+    var subject = validation.value.subject;
+    var message = validation.value.message;
 
-    // --- 1. SAVE TO MONGODB FIRST ---
     try {
-        const newMessage = new ContactMessage({ name, email, subject, message });
+        var newMessage = new ContactMessage({ name: name, email: email, subject: subject, message: message });
         await newMessage.save();
-        console.log('Message successfully saved to MongoDB.');
-
     } catch (dbError) {
-        return res.status(500).json({ status: 'error', message: 'Failed to save message due to a database error.' });
+        console.error("[Contact] Database save error:", dbError.message);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to save message.",
+            error: "A database error occurred."
+        });
     }
-    
-    // --- 2. SEND EMAIL ---
+
     try {
-        await sendContactEmail({ name, email, subject, message });
-        res.json({ status: 'success', message: 'Message successfully sent and saved!' });
+        await sendContactEmail({ name: name, email: email, subject: subject, message: message });
+        res.json({
+            success: true,
+            message: "Message sent and saved."
+        });
     } catch (emailError) {
-        console.error('EMAIL SEND FAILED, BUT MESSAGE WAS SAVED:', emailError.message);
-        res.json({ 
-            status: 'success_with_warning', 
-            message: 'Message was saved to our records, but the email alert failed. We will contact you soon.' 
+        console.error("[Contact] Email send failed, but message was saved:", emailError.message);
+        res.json({
+            success: true,
+            message: "Message saved, but email alert failed. We will contact you soon."
         });
     }
 });

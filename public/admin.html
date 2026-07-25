@@ -1,0 +1,2160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriConnect Admin</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        /* ══════════════════════════════════════════
+           CSS CUSTOM PROPERTIES (Light Mode)
+           ══════════════════════════════════════════ */
+        :root {
+            --admin-green: #2e7d32;
+            --admin-green-light: #43a047;
+            --admin-green-dark: #1b5e20;
+            --admin-bg: #f0f2f5;
+            --admin-surface: #ffffff;
+            --admin-text: #1a202c;
+            --admin-text-muted: #64748b;
+            --admin-border: #e2e8f0;
+            --admin-radius: 12px;
+            --admin-shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+            --admin-shadow-md: 0 4px 12px rgba(0,0,0,.07);
+            --admin-shadow-lg: 0 10px 30px rgba(0,0,0,.1);
+            --admin-transition: all .25s cubic-bezier(.4,0,.2,1);
+            --table-row-even: #f7faf8;
+            --table-row-hover: #eaf4ea;
+            --table-border: #f0f3f7;
+            --td-color: #334155;
+        }
+
+        /* ══════════════════════════════════════════
+           DARK MODE OVERRIDES
+           ══════════════════════════════════════════ */
+        body.dark-mode {
+            --admin-bg: #0f172a;
+            --admin-surface: #1e293b;
+            --admin-text: #e2e8f0;
+            --admin-text-muted: #94a3b8;
+            --admin-border: #334155;
+            --admin-shadow: 0 1px 3px rgba(0,0,0,.3), 0 1px 2px rgba(0,0,0,.2);
+            --admin-shadow-md: 0 4px 12px rgba(0,0,0,.35);
+            --admin-shadow-lg: 0 10px 30px rgba(0,0,0,.45);
+            --table-row-even: #1a2742;
+            --table-row-hover: #243352;
+            --table-border: #2d3f56;
+            --td-color: #cbd5e1;
+        }
+
+        body.dark-mode header {
+            background: linear-gradient(135deg, #0d3b12 0%, #1a5c22 50%, #2e7d32 100%);
+        }
+
+        body.dark-mode .card { background: #1e293b; border-color: rgba(46,125,50,.15); }
+        body.dark-mode .card p { color: #f1f5f9; }
+        body.dark-mode .card-label { color: #94a3b8; }
+        body.dark-mode table { background: #1e293b; border-color: #334155; }
+        body.dark-mode td { color: var(--td-color); border-bottom-color: var(--table-border); }
+        body.dark-mode tbody tr:nth-child(even) { background: var(--table-row-even); }
+        body.dark-mode tbody tr:nth-child(even):hover { background: var(--table-row-hover); }
+        body.dark-mode tbody tr:hover { background: var(--table-row-hover); }
+        body.dark-mode .chart-card { background: #1e293b; border-color: #334155; }
+        body.dark-mode .chart-card h3 { color: #e2e8f0; border-bottom-color: #334155; }
+        body.dark-mode .chart-loading-overlay { background: #1e293b; }
+        body.dark-mode h2 { color: #e2e8f0; border-bottom-color: #334155; }
+        body.dark-mode .modal-content { background: #1e293b; border-color: #334155; }
+        body.dark-mode .modal-content h2 { color: #e2e8f0; border-bottom-color: #334155; }
+        body.dark-mode .modal-content select { background: #0f172a; color: #e2e8f0; border-color: #475569; }
+        body.dark-mode #userDetails p { color: #cbd5e1; }
+        body.dark-mode .toast { background: #1e293b; color: #e2e8f0; }
+        body.dark-mode #closeModal:hover { background: #334155; color: #e2e8f0; }
+        body.dark-mode .admin-nav { background: #1a2742; border-bottom-color: #334155; }
+        body.dark-mode .nav-tab { color: #94a3b8; }
+        body.dark-mode .nav-tab.active { color: #4ade80; border-bottom-color: #4ade80; }
+        body.dark-mode #globalSearch { background: #0f172a; color: #e2e8f0; border-color: #475569; }
+        body.dark-mode #globalSearch::placeholder { color: #64748b; }
+        body.dark-mode .table-toolbar { background: #1e293b; border-color: #334155; }
+        body.dark-mode .table-toolbar select,
+        body.dark-mode .table-toolbar input { background: #0f172a; color: #e2e8f0; border-color: #475569; }
+        body.dark-mode .pagination button { background: #1e293b; color: #94a3b8; border-color: #334155; }
+        body.dark-mode .pagination button:hover:not(:disabled) { background: #334155; color: #e2e8f0; }
+        body.dark-mode .pagination button.active { background: var(--admin-green); color: #fff; }
+        body.dark-mode .export-btn { background: #1e293b; color: #94a3b8; border-color: #334155; }
+        body.dark-mode .export-btn:hover { background: #334155; color: #e2e8f0; }
+        body.dark-mode #darkModeToggle { color: #fbbf24; }
+        body.dark-mode .skeleton-box { background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%); background-size: 800px 100%; }
+        body.dark-mode #saveRoleBtn { background: var(--admin-green); }
+        body.dark-mode .search-icon { color: #64748b; }
+        body.dark-mode .order-detail-section-title { color: #4ade80; }
+        body.dark-mode .order-detail-field { color: #cbd5e1; }
+        body.dark-mode .order-detail-field strong { color: #e2e8f0; }
+        body.dark-mode .order-detail-product-name { color: #e2800c; }
+        body.dark-mode .order-detail-product-meta { color: #94a3b8; }
+        body.dark-mode .order-detail-delivery { background: rgba(96,165,250,.08); border-color: rgba(96,165,250,.18); }
+        body.dark-mode .order-timeline::before { background: #334155; }
+        body.dark-mode .order-timeline-dot { border-color: #4ade80; background: #1e293b; }
+        body.dark-mode .order-timeline-item.active .order-timeline-dot { background: #4ade80; }
+        body.dark-mode .order-detail-section-title { color: #4ade80; }
+
+        /* ══════════════════════════════════════════
+           BASE RESETS
+           ══════════════════════════════════════════ */
+        body {
+            background: var(--admin-bg);
+            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            color: var(--admin-text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            transition: background .3s ease, color .3s ease;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ══════════════════════════════════════════
+           HEADER
+           ══════════════════════════════════════════ */
+        header {
+            background: linear-gradient(135deg, var(--admin-green-dark) 0%, var(--admin-green) 50%, var(--admin-green-light) 100%);
+            color: white;
+            padding: 0 40px;
+            height: 68px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 16px rgba(46,125,50,.20), 0 1px 4px rgba(0,0,0,.08);
+        }
+
+        header h2 {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: -.2px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        #darkModeToggle {
+            background: rgba(255,255,255,.15);
+            color: white;
+            border: 1.5px solid rgba(255,255,255,.35);
+            border-radius: 50px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: var(--admin-transition);
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+        }
+
+        #darkModeToggle:hover {
+            background: rgba(255,255,255,.30);
+            transform: translateY(-2px);
+        }
+
+        #logoutBtn {
+            padding: 9px 28px;
+            cursor: pointer;
+            background: rgba(255,255,255,.15);
+            color: white;
+            border: 1.5px solid rgba(255,255,255,.35);
+            border-radius: 50px;
+            font-size: .875rem;
+            font-weight: 600;
+            letter-spacing: .3px;
+            transition: var(--admin-transition);
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+            box-shadow: 0 2px 8px rgba(0,0,0,.10);
+        }
+
+        #logoutBtn:hover {
+            background: rgba(255,255,255,.30);
+            border-color: rgba(255,255,255,.60);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 14px rgba(0,0,0,.15);
+        }
+
+        #logoutBtn:active {
+            transform: translateY(0) scale(.97);
+            box-shadow: 0 1px 4px rgba(0,0,0,.10);
+        }
+
+        /* ══════════════════════════════════════════
+           ADMIN NAV BAR
+           ══════════════════════════════════════════ */
+        .admin-nav {
+            background: var(--admin-surface);
+            border-bottom: 1px solid var(--admin-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            height: 52px;
+            position: sticky;
+            top: 68px;
+            z-index: 999;
+            box-shadow: 0 1px 4px rgba(0,0,0,.04);
+            transition: background .3s ease, border-color .3s ease;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 0;
+        }
+
+        .nav-tab {
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            padding: 14px 20px;
+            font-size: .875rem;
+            font-weight: 600;
+            color: var(--admin-text-muted);
+            cursor: pointer;
+            transition: var(--admin-transition);
+            letter-spacing: .2px;
+        }
+
+        .nav-tab:hover {
+            color: var(--admin-green);
+        }
+
+        .nav-tab.active {
+            color: var(--admin-green);
+            border-bottom-color: var(--admin-green);
+        }
+
+        .nav-search {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            color: var(--admin-text-muted);
+            font-size: .85rem;
+            pointer-events: none;
+        }
+
+        #globalSearch {
+            padding: 8px 16px 8px 36px;
+            border: 1.5px solid var(--admin-border);
+            border-radius: 50px;
+            font-size: .85rem;
+            width: 280px;
+            background: var(--admin-bg);
+            color: var(--admin-text);
+            transition: var(--admin-transition);
+            outline: none;
+        }
+
+        #globalSearch:focus {
+            border-color: var(--admin-green);
+            box-shadow: 0 0 0 3px rgba(46,125,50,.12);
+            width: 340px;
+        }
+
+        /* ══════════════════════════════════════════
+           CONTAINER
+           ══════════════════════════════════════════ */
+        .container {
+            width: 92%;
+            max-width: 1360px;
+            margin: 0 auto;
+            padding: 36px 24px 72px;
+            opacity: 0;
+            animation: fadeInUp .4s cubic-bezier(.4,0,.2,1) .05s forwards;
+            flex: 1;
+        }
+
+        /* ══════════════════════════════════════════
+           KPI CARDS
+           ══════════════════════════════════════════ */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 22px;
+            margin-bottom: 48px;
+        }
+
+        .card {
+            background: var(--admin-surface);
+            padding: 26px 28px;
+            border-radius: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 6px 16px rgba(0,0,0,.06);
+            border: 1px solid rgba(46,125,50,.08);
+            border-left: 5px solid #2e7d32;
+            transition: transform .3s cubic-bezier(.4,0,.2,1), box-shadow .3s cubic-bezier(.4,0,.2,1);
+            cursor: default;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .card::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            box-shadow: inset 0 0 0 1px rgba(46,125,50,0);
+            transition: box-shadow .3s ease;
+            pointer-events: none;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(46,125,50,.10), 0 12px 28px rgba(0,0,0,.08);
+        }
+
+        .card:hover::after {
+            box-shadow: inset 0 0 0 1px rgba(46,125,50,.12), 0 0 24px rgba(46,125,50,.07);
+        }
+
+        .card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+            transition: transform .3s ease;
+        }
+
+        .card:hover .card-icon { transform: scale(1.08); }
+        .card-icon.users { background: rgba(46,125,50,.10); color: #2e7d32; }
+        .card-icon.products { background: rgba(21,101,192,.10); color: #1565c0; }
+        .card-icon.farmers { background: rgba(230,126,34,.10); color: #e67e22; }
+        .card-icon.buyers { background: rgba(142,68,173,.10); color: #8e44ad; }
+        .card-body { flex: 1; min-width: 0; }
+        .card .card-label { margin: 0 0 6px; color: #8a8f98; font-size: 1.875rem; font-weight: 600; letter-spacing: .3px; text-transform: capitalize; }
+        .card p { margin: 0; font-size: 2.35rem; font-weight: 800; color: #1a1d23; line-height: 1.1; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+        .card-badge { position: absolute; top: 16px; right: 18px; padding: 4px 10px; border-radius: 20px; font-size: .68rem; font-weight: 700; letter-spacing: .3px; background: rgba(46,125,50,.08); color: #2e7d32; display: flex; align-items: center; gap: 3px; white-space: nowrap; }
+        .card-badge .badge-arrow { font-size: .58rem; }
+
+        /* ══════════════════════════════════════════
+           SECTION TITLES
+           ══════════════════════════════════════════ */
+        h2 {
+            color: var(--admin-text);
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -.3px;
+            margin: 48px 0 24px;
+            padding: 0 0 14px;
+            border-bottom: 2px solid var(--admin-border);
+            position: relative;
+            transition: color .3s ease, border-color .3s ease;
+        }
+
+        h2::after {
+            content: "";
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 64px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--admin-green), var(--admin-green-light));
+            border-radius: 3px;
+        }
+
+        .chart-card h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--admin-text);
+            margin: 0 0 14px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--admin-border);
+            letter-spacing: -.2px;
+            transition: color .3s ease, border-color .3s ease;
+        }
+
+        /* ══════════════════════════════════════════
+           TABLE TOOLBAR (Filters + Export)
+           ══════════════════════════════════════════ */
+        .table-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding: 14px 18px;
+            background: var(--admin-surface);
+            border-radius: var(--admin-radius);
+            border: 1px solid var(--admin-border);
+            box-shadow: var(--admin-shadow);
+            transition: background .3s ease, border-color .3s ease;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .table-toolbar select,
+        .table-toolbar input {
+            padding: 7px 14px;
+            border: 1.5px solid var(--admin-border);
+            border-radius: 8px;
+            font-size: .82rem;
+            font-weight: 500;
+            background: var(--admin-bg);
+            color: var(--admin-text);
+            transition: var(--admin-transition);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 30px;
+        }
+
+        .table-toolbar select:focus,
+        .table-toolbar input:focus {
+            border-color: var(--admin-green);
+            box-shadow: 0 0 0 3px rgba(46,125,50,.12);
+        }
+
+        .export-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .export-btn {
+            padding: 7px 14px;
+            border: 1.5px solid var(--admin-border);
+            border-radius: 8px;
+            font-size: .8rem;
+            font-weight: 600;
+            background: var(--admin-surface);
+            color: var(--admin-text-muted);
+            cursor: pointer;
+            transition: var(--admin-transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .export-btn:hover {
+            background: var(--admin-green);
+            color: white;
+            border-color: var(--admin-green);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(46,125,50,.2);
+        }
+
+        /* ══════════════════════════════════════════
+           TABLES
+           ══════════════════════════════════════════ */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: var(--admin-radius);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: var(--admin-surface);
+            border-radius: var(--admin-radius);
+            overflow: hidden;
+            box-shadow: var(--admin-shadow);
+            border: 1px solid var(--admin-border);
+            margin-bottom: 16px;
+            transition: background .3s ease, border-color .3s ease;
+        }
+
+        thead tr {
+            background: linear-gradient(135deg, var(--admin-green-dark), var(--admin-green));
+        }
+
+        th {
+            padding: 14px 18px;
+            color: white;
+            font-weight: 600;
+            font-size: .8rem;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            text-align: left;
+            border: none;
+            background: transparent;
+        }
+
+        td {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--table-border);
+            font-size: .9rem;
+            color: var(--td-color);
+            transition: background .25s ease;
+            vertical-align: middle;
+        }
+
+        tbody tr {
+            transition: background .25s ease;
+            animation: fadeInUp .3s cubic-bezier(.4,0,.2,1) both;
+        }
+
+        tbody tr:nth-child(even) { background: var(--table-row-even); }
+        tbody tr:nth-child(even):hover { background: var(--table-row-hover); }
+        tbody tr:hover { background: var(--table-row-hover); }
+        tbody tr:last-child td { border-bottom: none; }
+
+        thead th { position: sticky; top: 0; z-index: 2; }
+        table thead tr { position: relative; }
+
+        /* ══════════════════════════════════════════
+           BUTTONS
+           ══════════════════════════════════════════ */
+        button {
+            padding: 8px 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            font-size: .8rem;
+            font-weight: 600;
+            transition: var(--admin-transition);
+            letter-spacing: .2px;
+        }
+
+        button:active { transform: scale(.97); }
+
+        table button {
+            height: 30px;
+            padding: 0 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            line-height: 1;
+        }
+
+        table button:active { transform: scale(.95); }
+
+        button:disabled, button[disabled] {
+            opacity: .5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* ══════════════════════════════════════════
+           PAGINATION
+           ══════════════════════════════════════════ */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            margin: 20px 0 32px;
+            flex-wrap: wrap;
+        }
+
+        .pagination button {
+            min-width: 36px;
+            height: 36px;
+            padding: 0 10px;
+            border: 1.5px solid var(--admin-border);
+            border-radius: 8px;
+            background: var(--admin-surface);
+            color: var(--admin-text-muted);
+            font-size: .82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--admin-transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pagination button:hover:not(:disabled):not(.active) {
+            background: var(--admin-bg);
+            border-color: var(--admin-green);
+            color: var(--admin-green);
+        }
+
+        .pagination button.active {
+            background: var(--admin-green);
+            color: white;
+            border-color: var(--admin-green);
+        }
+
+        .pagination button:disabled {
+            opacity: .4;
+            cursor: not-allowed;
+        }
+
+        .pagination-info {
+            font-size: .8rem;
+            color: var(--admin-text-muted);
+            margin: 0 8px;
+        }
+
+        /* ══════════════════════════════════════════
+           CHARTS GRID
+           ══════════════════════════════════════════ */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(350px, 1fr));
+            gap: 24px;
+            margin-top: 28px;
+        }
+
+        .chart-card {
+            background: var(--admin-surface);
+            border-radius: var(--admin-radius);
+            padding: 20px;
+            box-shadow: var(--admin-shadow);
+            border: 1px solid var(--admin-border);
+            transition: transform .3s ease, box-shadow .3s ease, background .3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-card::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border-radius: var(--admin-radius);
+            box-shadow: inset 0 0 0 1px rgba(46,125,50,0);
+            transition: box-shadow .3s ease;
+            pointer-events: none;
+        }
+
+        .chart-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(46,125,50,.07), 0 6px 16px rgba(0,0,0,.07);
+        }
+
+        .chart-card:hover::after {
+            box-shadow: inset 0 0 0 1px rgba(46,125,50,.12), 0 0 16px rgba(46,125,50,.05);
+        }
+
+        .chart-card canvas {
+            width: 100% !important;
+            height: 220px !important;
+        }
+
+        /* ══════════════════════════════════════════
+           MODAL
+           ══════════════════════════════════════════ */
+        .modal {
+            display: none;
+            position: fixed;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background: rgba(15,23,42,.5);
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            animation: modalFadeIn .25s ease;
+        }
+
+        @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .modal-content {
+            background: var(--admin-surface);
+            width: 520px;
+            max-width: 95%;
+            border-radius: 18px;
+            padding: 36px 40px;
+            position: relative;
+            box-shadow: 0 24px 64px rgba(0,0,0,.12), 0 8px 24px rgba(0,0,0,.06);
+            animation: modalSlideUp .3s cubic-bezier(.4,0,.2,1);
+            border: 1px solid var(--admin-border);
+        }
+
+        @keyframes modalSlideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+        .modal-content h2 {
+            margin: 0 0 24px;
+            padding: 0 0 14px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            border-bottom: 2px solid var(--admin-border);
+            position: relative;
+        }
+
+        .modal-content h2::after {
+            content: "";
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 48px;
+            height: 2px;
+            background: var(--admin-green);
+            border-radius: 2px;
+        }
+
+        #closeModal {
+            position: absolute;
+            right: 20px;
+            top: 16px;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: 400;
+            color: var(--admin-text-muted);
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            transition: var(--admin-transition);
+            line-height: 1;
+        }
+
+        #closeModal:hover { background: var(--admin-bg); color: var(--admin-text); transform: scale(1.05); }
+
+        #userDetails p { margin: 12px 0; font-size: .95rem; color: var(--td-color); line-height: 1.7; }
+        #userDetails p strong { color: var(--admin-text); }
+
+        .modal-content select {
+            padding: 11px 16px;
+            border: 1.5px solid var(--admin-border);
+            border-radius: 10px;
+            font-size: .9rem;
+            width: 100%;
+            margin: 10px 0 24px;
+            background: var(--admin-surface);
+            transition: var(--admin-transition);
+            color: var(--admin-text);
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 36px;
+        }
+
+        .modal-content select:focus { outline: none; border-color: var(--admin-green); box-shadow: 0 0 0 3px rgba(46,125,50,.12); }
+
+        #saveRoleBtn {
+            background: var(--admin-green);
+            color: white;
+            padding: 11px 32px;
+            border-radius: 10px;
+            font-size: .9rem;
+            font-weight: 600;
+            letter-spacing: .2px;
+        }
+
+        #saveRoleBtn:hover { background: var(--admin-green-dark); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(46,125,50,.3); }
+
+        .section-divider { margin: 32px 0; border: none; border-top: 1px solid var(--admin-border); }
+
+        /* ══════════════════════════════════════════
+           TOAST NOTIFICATIONS
+           ══════════════════════════════════════════ */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            max-width: 420px;
+            padding: 14px 20px;
+            border-radius: 10px;
+            background: var(--admin-surface, #fff);
+            color: var(--admin-text, #1e1e1e);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-size: .92rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,.07), 0 8px 24px rgba(0,0,0,.06);
+            pointer-events: auto;
+            animation: toastSlideIn 0.35s cubic-bezier(0.21,1.02,0.73,1) forwards;
+            border-left: 4px solid var(--admin-green, #2e7d32);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .toast.toast-hide { opacity: 0; transform: translateX(30px); }
+        .toast-icon { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #fff; font-weight: 700; }
+        .toast-success .toast-icon { background: var(--admin-green, #2e7d32); }
+        .toast-success { border-left-color: var(--admin-green, #2e7d32); }
+        .toast-error .toast-icon { background: #d32f2f; }
+        .toast-error { border-left-color: #d32f2f; }
+        .toast-warning .toast-icon { background: #ed6c02; }
+        .toast-warning { border-left-color: #ed6c02; }
+        .toast-info .toast-icon { background: #0288d1; }
+        .toast-info { border-left-color: #0288d1; }
+
+        @keyframes toastSlideIn {
+            from { opacity: 0; transform: translateX(40px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* ══════════════════════════════════════════
+           SKELETON LOADERS
+           ══════════════════════════════════════════ */
+        @keyframes skeletonShimmer {
+            0% { background-position: -400px 0; }
+            100% { background-position: 400px 0; }
+        }
+
+        .skeleton-box {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e4e4e4 50%, #f0f0f0 75%);
+            background-size: 800px 100%;
+            animation: skeletonShimmer 1.5s infinite linear;
+            border-radius: 6px;
+        }
+
+        .card-number-skeleton { height: 38px; width: 70px; display: inline-block; border-radius: 8px; }
+
+        .chart-loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: var(--admin-surface);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            z-index: 1;
+            border-radius: var(--admin-radius);
+            transition: opacity .3s ease;
+        }
+
+        .chart-loading-overlay.fade-out { opacity: 0; pointer-events: none; }
+        .chart-loading-overlay .skeleton-box { width: 60%; height: 160px; border-radius: 12px; }
+        .chart-loading-overlay .skeleton-text-row { height: 10px; width: 40%; border-radius: 5px; }
+
+        /* ══════════════════════════════════════════
+           EMPTY STATES
+           ══════════════════════════════════════════ */
+        .empty-state { text-align: center; padding: 48px 24px; color: var(--admin-text-muted); }
+        .empty-state-icon { font-size: 2.6rem; margin-bottom: 12px; display: block; line-height: 1; }
+        .empty-state-text { font-size: .95rem; font-weight: 500; letter-spacing: -.1px; }
+
+        /* ══════════════════════════════════════════
+           ENTRANCE ANIMATIONS
+           ══════════════════════════════════════════ */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-in { animation: fadeInUp .35s cubic-bezier(.4,0,.2,1) both; }
+        .animate-in-d1 { animation-delay: .04s; }
+        .animate-in-d2 { animation-delay: .08s; }
+        .animate-in-d3 { animation-delay: .12s; }
+        .animate-in-d4 { animation-delay: .16s; }
+
+        /* ══════════════════════════════════════════
+           MODAL EXIT
+           ══════════════════════════════════════════ */
+        @keyframes modalFadeOut { from { opacity: 1; } to { opacity: 0; } }
+        @keyframes modalSlideDown { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(10px) scale(.98); } }
+        .modal.modal-closing { animation: modalFadeOut .2s ease forwards; }
+        .modal.modal-closing .modal-content { animation: modalSlideDown .2s ease forwards; }
+
+        /* ══════════════════════════════════════════
+           SCROLLBAR
+           ══════════════════════════════════════════ */
+        @media (hover: hover) and (pointer: fine) {
+            ::-webkit-scrollbar { width: 6px; height: 6px; }
+            ::-webkit-scrollbar-track { background: transparent; }
+            ::-webkit-scrollbar-thumb { background: #81c784; border-radius: 10px; }
+            ::-webkit-scrollbar-thumb:hover { background: var(--admin-green); }
+        }
+
+        .nav-profile-dropdown { position: relative; }
+
+        .nav-profile-trigger {
+            display: flex; align-items: center; gap: 8px;
+            padding: 5px 10px; border-radius: 50px;
+            border: 1.5px solid rgba(255,255,255,.35);
+            background: rgba(255,255,255,.15); color: white;
+            cursor: pointer; transition: all .2s ease; font-family: inherit;
+        }
+        .nav-profile-trigger:hover { background: rgba(255,255,255,.30); transform: translateY(-2px); }
+
+        .nav-profile-avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            overflow: hidden; display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,.20); flex-shrink: 0;
+        }
+        .nav-profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .nav-profile-avatar i { font-size: .85rem; }
+
+        .nav-profile-name {
+            font-size: .85rem; font-weight: 600;
+            max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+
+        .nav-profile-chevron { font-size: .6rem; opacity: .7; transition: transform .2s ease; }
+        .nav-profile-dropdown.open .nav-profile-chevron { transform: rotate(180deg); }
+
+        .nav-profile-menu {
+            position: absolute; top: calc(100% + 8px); right: 0;
+            background: var(--admin-surface); border: 1px solid var(--admin-border);
+            border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,.15);
+            min-width: 180px; padding: 6px;
+            opacity: 0; visibility: hidden; transform: translateY(-8px) scale(.96);
+            transition: all .2s cubic-bezier(.4,0,.2,1); z-index: 1001;
+        }
+        .nav-profile-dropdown.open .nav-profile-menu {
+            opacity: 1; visibility: visible; transform: translateY(0) scale(1);
+        }
+
+        .nav-profile-menu-item {
+            display: flex; align-items: center; gap: 10px;
+            width: 100%; padding: 10px 14px;
+            border: none; border-radius: 8px; background: transparent;
+            color: var(--admin-text); font-size: .85rem; font-weight: 500;
+            text-decoration: none; cursor: pointer; transition: background .15s ease;
+            font-family: inherit; text-align: left;
+        }
+        .nav-profile-menu-item:hover { background: var(--admin-bg); }
+        .nav-profile-menu-item i { width: 16px; text-align: center; font-size: .82rem; color: var(--admin-text-muted); }
+        .nav-profile-menu-item:hover i { color: var(--admin-green); }
+
+        .nav-profile-divider { border: none; border-top: 1px solid var(--admin-border); margin: 4px 0; }
+
+        .nav-profile-logout { color: #d32f2f; }
+        .nav-profile-logout i { color: #d32f2f !important; }
+        .nav-profile-logout:hover { background: rgba(211,47,47,.08); }
+
+        body.dark-mode .nav-profile-menu { background: #1e293b; border-color: #334155; }
+        body.dark-mode .nav-profile-menu-item { color: #e2e8f0; }
+        body.dark-mode .nav-profile-menu-item:hover { background: #334155; }
+        body.dark-mode .nav-profile-menu-item i { color: #94a3b8; }
+
+        @media(max-width:767px) {
+            .nav-profile-trigger { padding: 8px 12px; }
+            .nav-profile-name { display: none; }
+            .nav-profile-menu { min-width: 160px; }
+        }
+
+        /* ══════════════════════════════════════════
+           FOCUS STATES (Accessibility)
+           ══════════════════════════════════════════ */
+        #saveRoleBtn:focus-visible,
+        #darkModeToggle:focus-visible,
+        .nav-tab:focus-visible,
+        .export-btn:focus-visible,
+        .pagination button:focus-visible,
+        #globalSearch:focus-visible {
+            outline: 2px solid var(--admin-green);
+            outline-offset: 2px;
+        }
+
+        table button:focus-visible {
+            outline: 2px solid var(--admin-green);
+            outline-offset: 1px;
+        }
+
+        .modal-content select:focus-visible {
+            outline: none;
+            border-color: var(--admin-green);
+            box-shadow: 0 0 0 3px rgba(46,125,50,.15);
+        }
+
+        #closeModal:focus-visible {
+            outline: 2px solid var(--admin-green);
+            outline-offset: 2px;
+        }
+
+        /* ══════════════════════════════════════════
+           ORDERS SECTION STYLES
+           ══════════════════════════════════════════ */
+        .order-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: .75rem;
+            font-weight: 700;
+            letter-spacing: .3px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .order-status-badge.pending { background: rgba(230,168,23,.10); color: #b8860b; border: 1px solid rgba(230,168,23,.22); }
+        .order-status-badge.accepted { background: rgba(21,101,192,.10); color: #1565c0; border: 1px solid rgba(21,101,192,.22); }
+        .order-status-badge.completed { background: rgba(22,163,74,.10); color: #16a34a; border: 1px solid rgba(22,163,74,.22); }
+        .order-status-badge.rejected { background: rgba(211,47,47,.10); color: #d32f2f; border: 1px solid rgba(211,47,47,.22); }
+
+        body.dark-mode .order-status-badge.pending { background: rgba(230,168,23,.15); color: #fbbf24; border-color: rgba(230,168,23,.28); }
+        body.dark-mode .order-status-badge.accepted { background: rgba(21,101,192,.15); color: #60a5fa; border-color: rgba(21,101,192,.28); }
+        body.dark-mode .order-status-badge.completed { background: rgba(22,163,74,.15); color: #4ade80; border-color: rgba(22,163,74,.28); }
+        body.dark-mode .order-status-badge.rejected { background: rgba(211,47,47,.15); color: #f87171; border-color: rgba(211,47,47,.28); }
+
+        .orders-product-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .orders-product-thumb {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(46,125,50,.04), rgba(46,125,50,.08));
+        }
+        .orders-product-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .orders-product-thumb i { font-size: 1rem; color: rgba(46,125,50,.30); }
+        .orders-product-name { font-weight: 600; color: var(--admin-text); line-height: 1.3; }
+
+        .orders-view-btn {
+            background: #1976d2 !important;
+            color: white !important;
+            border: none !important;
+            padding: 6px 14px !important;
+            border-radius: 6px !important;
+            cursor: pointer !important;
+            font-size: .8rem !important;
+            font-weight: 600 !important;
+            display: inline-flex !important;
+            align-items: center;
+            gap: 5px;
+            transition: all .2s ease;
+        }
+        .orders-view-btn:hover { background: #1565c0 !important; transform: translateY(-1px); }
+
+        /* Order Detail Modal */
+        .order-modal-content {
+            width: 640px;
+            max-width: 95%;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .order-detail-section {
+            margin-bottom: 20px;
+        }
+
+        .order-detail-section-title {
+            margin: 0 0 10px;
+            font-size: .82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            color: var(--admin-green);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .order-detail-section-title i { font-size: .75rem; }
+
+        .order-detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .order-detail-field {
+            font-size: .88rem;
+            color: var(--td-color);
+            line-height: 1.6;
+        }
+        .order-detail-field strong {
+            color: var(--admin-text);
+        }
+
+        .order-detail-full {
+            grid-column: 1 / -1;
+        }
+
+        .order-detail-product {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--admin-border);
+        }
+        .order-detail-product:last-child { border-bottom: none; }
+
+        .order-detail-product-img {
+            width: 52px;
+            height: 52px;
+            border-radius: 10px;
+            overflow: hidden;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(46,125,50,.04), rgba(46,125,50,.08));
+        }
+        .order-detail-product-img img { width: 100%; height: 100%; object-fit: cover; }
+        .order-detail-product-img i { font-size: 1.1rem; color: rgba(46,125,50,.30); }
+
+        .order-detail-product-info { flex: 1; min-width: 0; }
+        .order-detail-product-name { margin: 0 0 3px; font-size: .9rem; font-weight: 600; color: var(--admin-text); }
+        .order-detail-product-meta { font-size: .78rem; color: var(--admin-text-muted); }
+
+        .order-detail-product-price {
+            text-align: right;
+            flex-shrink: 0;
+        }
+        .order-detail-product-price-value { margin: 0; font-size: .92rem; font-weight: 700; color: var(--admin-green); }
+        .order-detail-product-price-label { margin: 0; font-size: .72rem; color: var(--admin-text-muted); }
+
+        .order-detail-delivery {
+            padding: 12px 14px;
+            background: rgba(21,101,192,.04);
+            border-radius: 10px;
+            border: 1px solid rgba(21,101,192,.10);
+        }
+
+        /* Timeline */
+        .order-timeline {
+            position: relative;
+            padding-left: 24px;
+        }
+        .order-timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 4px;
+            bottom: 4px;
+            width: 2px;
+            background: var(--admin-border);
+            border-radius: 2px;
+        }
+
+        .order-timeline-item {
+            position: relative;
+            padding: 0 0 16px 0;
+        }
+        .order-timeline-item:last-child { padding-bottom: 0; }
+
+        .order-timeline-dot {
+            position: absolute;
+            left: -20px;
+            top: 4px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid var(--admin-green);
+            background: var(--admin-surface);
+            z-index: 1;
+        }
+        .order-timeline-item.active .order-timeline-dot {
+            background: var(--admin-green);
+        }
+        .order-timeline-item.rejected .order-timeline-dot {
+            border-color: #d32f2f;
+        }
+        .order-timeline-item.rejected.active .order-timeline-dot {
+            background: #d32f2f;
+        }
+
+        .order-timeline-label {
+            font-size: .88rem;
+            font-weight: 600;
+            color: var(--admin-text);
+            margin: 0 0 2px;
+        }
+        .order-timeline-time {
+            font-size: .78rem;
+            color: var(--admin-text-muted);
+            margin: 0;
+        }
+
+        .order-detail-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0 0;
+            margin-top: 12px;
+            border-top: 2px solid var(--admin-border);
+        }
+        .order-detail-total-label {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--admin-text);
+        }
+        .order-detail-total-value {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--admin-green);
+        }
+
+        /* ══════════════════════════════════════════
+           AUDIT LOGS SECTION
+           ══════════════════════════════════════════ */
+        .admin-section {
+            animation: fadeInUp .35s cubic-bezier(.4,0,.2,1) both;
+        }
+
+        /* ══════════════════════════════════════════
+           FOOTER
+           ══════════════════════════════════════════ */
+        .admin-footer {
+            background: #ffffff;
+            border-top: 1px solid #e5e7eb;
+            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.04);
+            padding: 36px 40px 28px;
+            text-align: center;
+            font-size: .82rem;
+            color: #64748b;
+            transition: background .3s ease, border-color .3s ease, box-shadow .3s ease;
+            width: 100%;
+        }
+
+        body.dark-mode .admin-footer {
+            background: #1e293b;
+            border-top-color: #334155;
+            color: #94a3b8;
+            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.25);
+        }
+
+        .admin-footer-top {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 18px;
+        }
+
+        .admin-footer-brand {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #2e7d32;
+            letter-spacing: -.2px;
+        }
+
+        body.dark-mode .admin-footer-brand {
+            color: #4ade80;
+        }
+
+        .admin-footer-tagline {
+            font-size: .8rem;
+            color: #94a3b8;
+            margin: 0;
+        }
+
+        body.dark-mode .admin-footer-tagline {
+            color: #64748b;
+        }
+
+        .admin-footer-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: .73rem;
+            font-weight: 500;
+            color: #16a34a;
+            background: rgba(22, 163, 74, 0.08);
+            border: 1px solid rgba(22, 163, 74, 0.18);
+            border-radius: 20px;
+            padding: 4px 14px;
+            margin: 10px 0 18px;
+            letter-spacing: .2px;
+        }
+
+        body.dark-mode .admin-footer-status {
+            color: #4ade80;
+            background: rgba(74, 222, 128, 0.10);
+            border-color: rgba(74, 222, 128, 0.22);
+        }
+
+        .admin-footer-status-dot {
+            width: 7px;
+            height: 7px;
+            background: #16a34a;
+            border-radius: 50%;
+            display: inline-block;
+            animation: footerPulse 2s ease-in-out infinite;
+        }
+
+        body.dark-mode .admin-footer-status-dot {
+            background: #4ade80;
+        }
+
+        @keyframes footerPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .45; }
+        }
+
+        .admin-footer-divider {
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #2e7d32, transparent);
+            margin: 0 auto 16px;
+            border: none;
+            border-radius: 2px;
+        }
+
+        body.dark-mode .admin-footer-divider {
+            background: linear-gradient(90deg, transparent, #4ade80, transparent);
+        }
+
+        .admin-footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 28px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .admin-footer-links a {
+            color: #64748b;
+            text-decoration: none;
+            font-size: .78rem;
+            font-weight: 500;
+            transition: color .2s ease;
+            position: relative;
+            padding-bottom: 2px;
+        }
+
+        body.dark-mode .admin-footer-links a {
+            color: #94a3b8;
+        }
+
+        .admin-footer-links a:hover {
+            color: #2e7d32;
+        }
+
+        body.dark-mode .admin-footer-links a:hover {
+            color: #4ade80;
+        }
+
+        .admin-footer-links a::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: #2e7d32;
+            transition: width .25s ease;
+        }
+
+        body.dark-mode .admin-footer-links a::after {
+            background: #4ade80;
+        }
+
+        .admin-footer-links a:hover::after {
+            width: 100%;
+        }
+
+        .admin-footer-bottom {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .admin-footer-copy {
+            font-size: .75rem;
+            color: #94a3b8;
+            margin: 0;
+        }
+
+        body.dark-mode .admin-footer-copy {
+            color: #64748b;
+        }
+
+        .admin-footer-version {
+            font-size: .68rem;
+            color: #b0b8c4;
+            margin: 0;
+            letter-spacing: .3px;
+        }
+
+        body.dark-mode .admin-footer-version {
+            color: #475569;
+        }
+
+        /* ══════════════════════════════════════════
+           RESPONSIVE: Laptop (992px-1199px)
+           ══════════════════════════════════════════ */
+        @media(min-width:992px) and (max-width:1199px) {
+            body { overflow-x: hidden; }
+            .container { width: 94%; }
+            .charts-grid { grid-template-columns: repeat(2, minmax(300px, 1fr)); }
+        }
+
+        /* ══════════════════════════════════════════
+           RESPONSIVE: Tablet (768px-991px)
+           ══════════════════════════════════════════ */
+        @media(max-width:991px) {
+            body { overflow-x: hidden; }
+            header { padding: 0 24px; height: 60px; }
+            header h2 { font-size: 1.15rem; }
+            .admin-nav { padding: 0 24px; top: 60px; }
+            .container { width: 94%; padding: 28px 18px 56px; }
+            .cards { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+            .card { padding: 22px 20px; }
+            .card p { font-size: 2rem; }
+            .card-icon { width: 48px; height: 48px; font-size: 19px; border-radius: 14px; }
+            .charts-grid { grid-template-columns: 1fr; }
+            .chart-card canvas { height: 220px !important; }
+            h2 { margin: 36px 0 18px; font-size: 1.25rem; }
+            #globalSearch { width: 220px; }
+            #globalSearch:focus { width: 260px; }
+            .admin-footer { padding: 28px 24px 20px; }
+        }
+
+        /* ══════════════════════════════════════════
+           RESPONSIVE: Mobile (below 768px)
+           ══════════════════════════════════════════ */
+        @media(max-width:767px) {
+            body { overflow-x: hidden; }
+            header {
+                flex-direction: column;
+                height: auto;
+                padding: 16px 20px;
+                gap: 12px;
+                text-align: center;
+            }
+            header h2 { font-size: 1.05rem; }
+            .header-actions { width: 100%; justify-content: center; }
+            #logoutBtn { padding: 9px 20px; }
+            .admin-nav {
+                flex-direction: column;
+                height: auto;
+                padding: 10px 16px;
+                gap: 10px;
+                top: auto;
+                position: relative;
+            }
+            .nav-tabs { width: 100%; justify-content: center; }
+            .nav-search { width: 100%; }
+            #globalSearch { width: 100%; }
+            #globalSearch:focus { width: 100%; }
+            .container { width: 96%; padding: 20px 12px 48px; }
+            .cards { grid-template-columns: 1fr; gap: 14px; }
+            .card { padding: 20px 18px; }
+            .card p { font-size: 1.85rem; }
+            .card-icon { width: 46px; height: 46px; font-size: 18px; border-radius: 14px; }
+            .charts-grid { grid-template-columns: 1fr; gap: 16px; }
+            .chart-card canvas { height: 200px !important; }
+            th { padding: 10px 12px; font-size: .72rem; }
+            td { padding: 10px 12px; font-size: .82rem; }
+            td button { margin-bottom: 4px; }
+            h2 { margin: 28px 0 14px; font-size: 1.15rem; }
+            h2::after { width: 48px; }
+            .section-divider { margin: 24px 0; }
+            .table-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .filter-group { flex-direction: column; }
+            .export-group { width: 100%; }
+            .export-btn { flex: 1; justify-content: center; }
+            .pagination { gap: 4px; }
+            .pagination button { min-width: 32px; height: 32px; font-size: .78rem; }
+            .admin-footer { padding: 24px 16px 18px; }
+            .admin-footer-status { font-size: .68rem; padding: 3px 12px; }
+            .admin-footer-links { gap: 16px; }
+            .admin-footer-links a { font-size: .75rem; }
+        }
+
+        /* ══════════════════════════════════════════
+           RESPONSIVE: Modal (small screens)
+           ══════════════════════════════════════════ */
+        @media(max-width:767px) {
+            .modal-content {
+                width: 95%;
+                max-width: none;
+                max-height: 85vh;
+                overflow-y: auto;
+                padding: 24px 20px;
+                margin: 12px;
+            }
+            #closeModal { right: 12px; top: 10px; }
+            #saveRoleBtn { width: 100%; padding: 12px; }
+            .modal-content h2 { font-size: 1.1rem; }
+            #userDetails p { font-size: .88rem; }
+            .order-detail-grid { grid-template-columns: 1fr; }
+            .order-detail-product { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .order-detail-product-price { text-align: left; }
+            .order-detail-total { flex-direction: column; gap: 6px; align-items: flex-start; }
+            .orders-product-cell { flex-direction: column; gap: 4px; align-items: flex-start; }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ══════════════════════════════════════════
+     HEADER
+     ══════════════════════════════════════════ -->
+<header>
+    <h2><i class="fa-solid fa-leaf" style="font-size:1.1rem;"></i> AgriConnect Admin Panel</h2>
+    <div class="header-actions">
+        <a href="/items" class="admin-marketplace-link" style="color:white;text-decoration:none;font-size:.85rem;font-weight:600;padding:8px 16px;border-radius:8px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.35);transition:all .2s;display:flex;align-items:center;gap:6px;"><i class="fa-solid fa-store"></i> Marketplace</a>
+        <div class="nav-profile-dropdown" id="profileDropdown">
+            <button class="nav-profile-trigger" id="profileTrigger" aria-haspopup="true" aria-expanded="false">
+                <div class="nav-profile-avatar" id="navProfileAvatar"><i class="fa-solid fa-user"></i></div>
+                <span class="nav-profile-name" id="navProfileName">Account</span>
+                <i class="fa-solid fa-chevron-down nav-profile-chevron"></i>
+            </button>
+            <div class="nav-profile-menu" id="profileMenu" role="menu">
+                <a href="/profile" class="nav-profile-menu-item" role="menuitem"><i class="fa-solid fa-user-pen"></i> My Profile</a>
+                <hr class="nav-profile-divider">
+                <button class="nav-profile-menu-item nav-profile-logout" id="navLogoutBtn" role="menuitem"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+            </div>
+        </div>
+        <button id="darkModeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+            <i class="fa-solid fa-moon"></i>
+        </button>
+    </div>
+</header>
+
+<!-- ══════════════════════════════════════════
+     ADMIN NAVIGATION BAR
+     ══════════════════════════════════════════ -->
+<nav class="admin-nav" role="navigation" aria-label="Admin navigation">
+    <div class="nav-tabs" role="tablist">
+        <button class="nav-tab active" data-tab="dashboard" role="tab" aria-selected="true" aria-controls="dashboardSection" id="dashboardTab">
+            <i class="fa-solid fa-chart-line"></i> Dashboard
+        </button>
+        <button class="nav-tab" data-tab="orders" role="tab" aria-selected="false" aria-controls="ordersSection" id="ordersTab">
+            <i class="fa-solid fa-receipt"></i> Orders
+        </button>
+        <button class="nav-tab" data-tab="audit-logs" role="tab" aria-selected="false" aria-controls="auditLogsSection" id="auditLogsTab">
+            <i class="fa-solid fa-clock-rotate-left"></i> Audit Logs
+        </button>
+    </div>
+    <div class="nav-search">
+        <i class="fa-solid fa-search search-icon"></i>
+        <input type="text" id="globalSearch" placeholder="Search users, products..." aria-label="Search users and products" autocomplete="off">
+    </div>
+</nav>
+
+<!-- ══════════════════════════════════════════
+     MAIN CONTAINER
+     ══════════════════════════════════════════ -->
+<div class="container">
+
+    <!-- ═══ DASHBOARD SECTION ═══ -->
+    <div id="dashboardSection" role="tabpanel" aria-labelledby="dashboardTab">
+
+        <!-- KPI Cards -->
+        <div class="cards">
+            <div class="card">
+                <span class="card-badge"><span class="badge-arrow">&#9650;</span> Active</span>
+                <div class="card-icon users"><i class="fa-solid fa-users"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Total Users</p>
+                    <p id="usersCount">0</p>
+                </div>
+            </div>
+            <div class="card">
+                <span class="card-badge"><span class="badge-arrow">&#9650;</span> Growing</span>
+                <div class="card-icon products"><i class="fa-solid fa-box-open"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Total Products</p>
+                    <p id="productsCount">0</p>
+                </div>
+            </div>
+            <div class="card">
+                <span class="card-badge"><span class="badge-arrow">&#9650;</span> Marketplace</span>
+                <div class="card-icon farmers"><i class="fa-solid fa-seedling"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Total Farmers</p>
+                    <p id="farmersCount">0</p>
+                </div>
+            </div>
+            <div class="card">
+                <span class="card-badge"><span class="badge-arrow">&#9650;</span> Verified</span>
+                <div class="card-icon buyers"><i class="fa-solid fa-cart-shopping"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Total Buyers</p>
+                    <p id="buyersCount">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Dashboard -->
+        <h2>Analytics Dashboard</h2>
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>Product Status</h3>
+                <canvas id="productStatusChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Products Added Over Time</h3>
+                <canvas id="productsLineChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Users by Role</h3>
+                <canvas id="usersRoleChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>New Users Per Month</h3>
+                <canvas id="usersMonthChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Verified vs Pending Users</h3>
+                <canvas id="verificationChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Products by Category</h3>
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Order Analytics -->
+        <h2>Order Analytics</h2>
+        <div class="table-toolbar">
+            <div class="filter-group">
+                <select id="adminPeriodFilter" aria-label="Filter analytics period">
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="7days">Last 7 Days</option>
+                    <option value="30days">Last 30 Days</option>
+                    <option value="year">This Year</option>
+                </select>
+            </div>
+            <div class="export-group">
+                <button class="export-btn" id="exportAdminAnalyticsCsv" aria-label="Export order analytics as CSV">
+                    <i class="fa-solid fa-file-csv"></i> CSV
+                </button>
+            </div>
+        </div>
+        <div class="cards">
+            <div class="card animate-in animate-in-d1" style="animation-delay:.04s">
+                <div class="card-icon" style="background:rgba(21,101,192,.10);color:#1565c0;"><i class="fa-solid fa-receipt"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Total Orders</p>
+                    <p id="aTotalOrders">0</p>
+                </div>
+            </div>
+            <div class="card animate-in animate-in-d2" style="animation-delay:.08s">
+                <div class="card-icon" style="background:rgba(46,125,50,.10);color:#2e7d32;"><i class="fa-solid fa-sack-dollar"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Marketplace Revenue</p>
+                    <p id="aRevenue">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="charts-grid" style="margin-top:24px;">
+            <div class="chart-card">
+                <h3>Revenue Trend</h3>
+                <canvas id="adminRevenueChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Orders Per Month</h3>
+                <canvas id="adminOrdersMonthChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Sales by Category</h3>
+                <canvas id="adminCategoryChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Top Products</h3>
+                <canvas id="adminTopProductsChart"></canvas>
+            </div>
+        </div>
+        <div class="charts-grid" style="margin-top:24px;">
+            <div class="chart-card">
+                <h3><i class="fa-solid fa-seedling" style="color:var(--admin-green);margin-right:6px;"></i>Top Farmers</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>Farmer</th><th>Orders</th><th>Total Sales</th></tr></thead>
+                        <tbody id="adminTopFarmersTable"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3><i class="fa-solid fa-cart-shopping" style="color:#8e44ad;margin-right:6px;"></i>Top Buyers</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>Buyer</th><th>Orders</th><th>Total Spent</th></tr></thead>
+                        <tbody id="adminTopBuyersTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Registered Users -->
+        <h2>Registered Users</h2>
+        <div class="table-toolbar" id="usersToolbar">
+            <div class="filter-group">
+                <select id="userRoleFilter" aria-label="Filter by role">
+                    <option value="all">All Roles</option>
+                    <option value="farmer">Farmer</option>
+                    <option value="buyer">Buyer</option>
+                    <option value="admin">Admin</option>
+                </select>
+                <select id="userVerifiedFilter" aria-label="Filter by verification status">
+                    <option value="all">All Verification</option>
+                    <option value="verified">Verified</option>
+                    <option value="pending">Pending</option>
+                </select>
+                <select id="userSuspendedFilter" aria-label="Filter by suspension status">
+                    <option value="all">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="suspended">Suspended</option>
+                </select>
+            </div>
+            <div class="export-group">
+                <button class="export-btn" id="exportUsersCsv" aria-label="Export users as CSV">
+                    <i class="fa-solid fa-file-csv"></i> CSV
+                </button>
+                <button class="export-btn" id="exportUsersExcel" aria-label="Export users as Excel">
+                    <i class="fa-solid fa-file-excel"></i> Excel
+                </button>
+            </div>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Verified</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTable"></tbody>
+            </table>
+        </div>
+        <div id="usersPagination" class="pagination" role="navigation" aria-label="Users pagination"></div>
+
+        <!-- All Product Listings -->
+        <h2>All Product Listings</h2>
+        <div class="table-toolbar" id="productsToolbar">
+            <div class="filter-group">
+                <select id="productStatusFilter" aria-label="Filter by product status">
+                    <option value="all">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+                <select id="productCategoryFilter" aria-label="Filter by product category">
+                    <option value="all">All Categories</option>
+                    <option value="Fruits">Fruits</option>
+                    <option value="Vegetables">Vegetables</option>
+                    <option value="Grains">Grains</option>
+                    <option value="Livestock">Livestock</option>
+                    <option value="Equipment">Equipment</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="export-group">
+                <button class="export-btn" id="exportProductsCsv" aria-label="Export products as CSV">
+                    <i class="fa-solid fa-file-csv"></i> CSV
+                </button>
+                <button class="export-btn" id="exportProductsExcel" aria-label="Export products as Excel">
+                    <i class="fa-solid fa-file-excel"></i> Excel
+                </button>
+            </div>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Owner</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="productsTable"></tbody>
+            </table>
+        </div>
+        <div id="productsPagination" class="pagination" role="navigation" aria-label="Products pagination"></div>
+
+    </div><!-- /dashboardSection -->
+
+    <!-- ═══ ORDERS SECTION ═══ -->
+    <div id="ordersSection" class="admin-section" role="tabpanel" aria-labelledby="ordersTab" style="display:none;">
+
+        <!-- Orders KPI Cards -->
+        <div class="cards">
+            <div class="card animate-in animate-in-d1" style="animation-delay:.04s">
+                <div class="card-icon users" style="background:rgba(21,101,192,.10);color:#1565c0;"><i class="fa-solid fa-receipt"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Total Orders</p>
+                    <p id="orderKpiTotal">0</p>
+                </div>
+            </div>
+            <div class="card animate-in animate-in-d2" style="animation-delay:.08s">
+                <div class="card-icon" style="background:rgba(230,168,23,.10);color:#b8860b;"><i class="fa-solid fa-clock"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Pending</p>
+                    <p id="orderKpiPending">0</p>
+                </div>
+            </div>
+            <div class="card animate-in animate-in-d3" style="animation-delay:.12s">
+                <div class="card-icon" style="background:rgba(21,101,192,.10);color:#1565c0;"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Accepted</p>
+                    <p id="orderKpiAccepted">0</p>
+                </div>
+            </div>
+            <div class="card animate-in animate-in-d4" style="animation-delay:.16s">
+                <div class="card-icon" style="background:rgba(22,163,74,.10);color:#16a34a;"><i class="fa-solid fa-flag-checkered"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Completed</p>
+                    <p id="orderKpiCompleted">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="cards" style="margin-bottom:32px;">
+            <div class="card animate-in animate-in-d1" style="animation-delay:.20s">
+                <div class="card-icon" style="background:rgba(211,47,47,.10);color:#d32f2f;"><i class="fa-solid fa-circle-xmark"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Rejected</p>
+                    <p id="orderKpiRejected">0</p>
+                </div>
+            </div>
+            <div class="card animate-in animate-in-d2" style="animation-delay:.24s">
+                <div class="card-icon" style="background:rgba(46,125,50,.10);color:#2e7d32;"><i class="fa-solid fa-calendar-day"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Today's Orders</p>
+                    <p id="orderKpiToday">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders Toolbar -->
+        <h2>All Orders</h2>
+        <div class="table-toolbar" id="ordersToolbar">
+            <div class="filter-group">
+                <input type="text" id="orderSearch" placeholder="Search by buyer, farmer, product, order ID..." aria-label="Search orders" autocomplete="off" style="min-width:300px;">
+                <select id="orderStatusFilter" aria-label="Filter by order status">
+                    <option value="all">All Orders</option>
+                    <option value="pending">Pending</option>
+                    <option value="accepted">Accepted</option>
+                    <option value="completed">Completed</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+            </div>
+            <div class="export-group">
+                <button class="export-btn" id="exportOrdersCsv" aria-label="Export orders as CSV">
+                    <i class="fa-solid fa-file-csv"></i> Export CSV
+                </button>
+            </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Date</th>
+                        <th>Buyer</th>
+                        <th>Farmer</th>
+                        <th>Product</th>
+                        <th>Qty</th>
+                        <th>Unit Price</th>
+                        <th>Total</th>
+                        <th>Delivery</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersTable"></tbody>
+            </table>
+        </div>
+        <div id="ordersPagination" class="pagination" role="navigation" aria-label="Orders pagination"></div>
+
+    </div><!-- /ordersSection -->
+
+    <!-- ═══ AUDIT LOGS SECTION ═══ -->
+    <div id="auditLogsSection" class="admin-section" role="tabpanel" aria-labelledby="auditLogsTab" style="display:none;">
+        <h2>Audit Logs</h2>
+        <div class="table-toolbar">
+            <div class="filter-group">
+                <input type="text" id="auditSearch" placeholder="Search audit logs..." aria-label="Search audit logs" autocomplete="off">
+            </div>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Admin</th>
+                        <th>Action</th>
+                        <th>Target</th>
+                    </tr>
+                </thead>
+                <tbody id="auditLogsTable"></tbody>
+            </table>
+        </div>
+        <div id="auditPagination" class="pagination" role="navigation" aria-label="Audit logs pagination"></div>
+    </div>
+
+</div><!-- /container -->
+
+<!-- ══════════════════════════════════════════
+     FOOTER
+     ══════════════════════════════════════════ -->
+<footer class="admin-footer">
+    <div class="admin-footer-top">
+        <div class="admin-footer-brand">&#127806; AgriConnect Admin Dashboard</div>
+        <p class="admin-footer-tagline">Helping connect farmers and buyers across Rwanda.</p>
+    </div>
+    <div class="admin-footer-status">
+        <span class="admin-footer-status-dot"></span> System Status: Online
+    </div>
+    <hr class="admin-footer-divider">
+    <div class="admin-footer-links">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Documentation</a>
+    </div>
+    <div class="admin-footer-bottom">
+        <p class="admin-footer-copy">&copy; 2026 AgriConnect. All rights reserved.</p>
+        <p class="admin-footer-version">Version 1.0.0</p>
+    </div>
+</footer>
+
+<!-- ══════════════════════════════════════════
+     VIEW/EDIT USER MODAL
+     ══════════════════════════════════════════ -->
+<div id="userModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-content">
+        <span id="closeModal" role="button" tabindex="0" aria-label="Close modal">&times;</span>
+        <h2 id="modalTitle">User Details</h2>
+        <div id="userDetails"></div>
+        <hr class="section-divider">
+        <label><strong>Role</strong></label>
+        <select id="editRole">
+            <option value="farmer">Farmer</option>
+            <option value="buyer">Buyer</option>
+            <option value="admin">Admin</option>
+        </select>
+        <br><br>
+        <button id="saveRoleBtn">Save Changes</button>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ORDER DETAILS MODAL
+     ══════════════════════════════════════════ -->
+<div id="orderModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="orderModalTitle">
+    <div class="modal-content order-modal-content">
+        <span id="closeOrderModal" role="button" tabindex="0" aria-label="Close modal">&times;</span>
+        <h2 id="orderModalTitle"><i class="fa-solid fa-receipt" style="color:var(--admin-green);margin-right:6px;"></i> Order Details</h2>
+        <div id="orderDetailsBody"></div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="js/notification-center.js"></script>
+<script src="js/admin.js"></script>
+<script>
+(function() {
+    var token = localStorage.getItem('token');
+    if (!token) return;
+    var aCharts = {};
+
+    function isDark() { return document.body.classList.contains('dark-mode'); }
+    function chartTextColor() { return '#94a3b8'; }
+    function chartGridColor() { return isDark() ? 'rgba(148,163,184,0.1)' : 'rgba(148,163,184,0.08)'; }
+    function chartTooltipBg() { return isDark() ? '#334155' : '#1e293b'; }
+    function chartLegendColor() { return isDark() ? '#94a3b8' : '#64748b'; }
+
+    function tipOpts() { return { backgroundColor: chartTooltipBg(), titleColor: '#f8fafc', bodyColor: '#cbd5e1', titleFont: { size: 13, weight: '600' }, bodyFont: { size: 12 }, padding: { top: 10, bottom: 10, left: 14, right: 14 }, cornerRadius: 10, displayColors: true, boxWidth: 10, boxHeight: 10, boxPadding: 6, usePointStyle: true }; }
+    function legOpts() { return { color: chartLegendColor(), font: { size: 12, weight: '500' }, padding: 20, usePointStyle: true, pointStyleWidth: 8 }; }
+
+    function fmt(n) { return Number(n || 0).toLocaleString(); }
+
+    function animateVal(el, target) {
+        if (!el) return;
+        var cur = 0;
+        var inc = Math.max(1, Math.ceil(target / 50));
+        var t = setInterval(function() { cur += inc; if (cur >= target) { cur = target; clearInterval(t); } el.textContent = fmt(cur); }, 18);
+    }
+
+    function destroyAC() { Object.keys(aCharts).forEach(function(k) { if (aCharts[k]) aCharts[k].destroy(); aCharts[k] = null; }); }
+
+    var categoryColors = ['#16a34a', '#1565c0', '#e67e22', '#8e44ad', '#d32f2f', '#0288d1', '#fbbf24', '#6366f1', '#ec4899', '#14b8a6'];
+
+    function renderAdminCharts(data) {
+        destroyAC();
+
+        var revenueByMonth = data.revenueByMonth || [];
+        var monthlyOrders = data.monthlyOrders || [];
+        var salesByCategory = data.salesByCategory || [];
+        var mostPurchased = data.mostPurchasedProducts || [];
+
+        if (revenueByMonth.length > 0) {
+            var rLabels = revenueByMonth.map(function(m) { return new Date(m._id.year, m._id.month - 1).toLocaleString('default', { month: 'short' }); });
+            var rData = revenueByMonth.map(function(m) { return m.revenue || 0; });
+            var rc = document.getElementById('adminRevenueChart');
+            if (rc) {
+                var rg = rc.getContext('2d').createLinearGradient(0, 0, 0, 350);
+                rg.addColorStop(0, 'rgba(22,163,74,0.25)');
+                rg.addColorStop(0.6, 'rgba(22,163,74,0.05)');
+                rg.addColorStop(1, 'rgba(22,163,74,0)');
+                aCharts.revenue = new Chart(rc, {
+                    type: 'line',
+                    data: { labels: rLabels, datasets: [{ label: 'Revenue (RWF)', data: rData, borderColor: '#16a34a', backgroundColor: rg, fill: true, tension: 0.4, borderWidth: 2.5, pointRadius: 5, pointHoverRadius: 8, pointBackgroundColor: '#fff', pointBorderColor: '#16a34a', pointBorderWidth: 2.5, pointHoverBackgroundColor: '#16a34a', pointHoverBorderColor: '#fff', pointHoverBorderWidth: 2.5 }] },
+                    options: { responsive: true, maintainAspectRatio: false, animation: { duration: 1400, easing: 'easeOutQuart' }, plugins: { legend: { display: true, labels: legOpts() }, tooltip: tipOpts() }, scales: { x: { border: { display: false }, grid: { display: false }, ticks: { color: chartTextColor(), font: { size: 11 } } }, y: { beginAtZero: true, border: { display: false }, ticks: { color: chartTextColor(), font: { size: 11 } }, grid: { color: chartGridColor(), drawBorder: false } } } }
+                });
+            }
+        }
+
+        if (monthlyOrders.length > 0) {
+            var oLabels = monthlyOrders.map(function(m) { return new Date(m._id.year, m._id.month - 1).toLocaleString('default', { month: 'short' }); });
+            var oData = monthlyOrders.map(function(m) { return m.count || 0; });
+            var oc = document.getElementById('adminOrdersMonthChart');
+            if (oc) {
+                var og = oc.getContext('2d').createLinearGradient(0, 0, 0, 350);
+                og.addColorStop(0, '#1565c0');
+                og.addColorStop(1, 'rgba(21,101,192,0.3)');
+                aCharts.ordersMonth = new Chart(oc, {
+                    type: 'bar',
+                    data: { labels: oLabels, datasets: [{ label: 'Orders', data: oData, backgroundColor: og, borderRadius: 8, borderSkipped: false, maxBarThickness: 56 }] },
+                    options: { responsive: true, maintainAspectRatio: false, animation: { duration: 1200, easing: 'easeOutQuart' }, plugins: { legend: { display: false }, tooltip: tipOpts() }, scales: { x: { border: { display: false }, grid: { display: false }, ticks: { color: chartTextColor(), font: { size: 11 } } }, y: { beginAtZero: true, border: { display: false }, ticks: { stepSize: 1, color: chartTextColor(), font: { size: 11 } }, grid: { color: chartGridColor(), drawBorder: false } } } }
+                });
+            }
+        }
+
+        if (salesByCategory.length > 0) {
+            var catLabels = salesByCategory.map(function(c) { return c.category; });
+            var catData = salesByCategory.map(function(c) { return c.revenue || 0; });
+            var cc = document.getElementById('adminCategoryChart');
+            if (cc) {
+                aCharts.category = new Chart(cc, {
+                    type: 'doughnut',
+                    data: { labels: catLabels, datasets: [{ data: catData, backgroundColor: categoryColors.slice(0, catLabels.length), borderWidth: 2, borderColor: isDark() ? '#1e293b' : '#fff', hoverOffset: 6 }] },
+                    options: { responsive: true, maintainAspectRatio: false, animation: { duration: 1200, easing: 'easeOutQuart' }, cutout: '60%', plugins: { legend: { position: 'bottom', labels: legOpts() }, tooltip: tipOpts() } }
+                });
+            }
+        }
+
+        if (mostPurchased.length > 0) {
+            var pLabels = mostPurchased.map(function(p) { return p.productName; });
+            var pData = mostPurchased.map(function(p) { return p.totalQuantity; });
+            var pc = document.getElementById('adminTopProductsChart');
+            if (pc) {
+                var pg = pc.getContext('2d').createLinearGradient(0, 0, 0, 350);
+                pg.addColorStop(0, '#e67e22');
+                pg.addColorStop(1, 'rgba(230,126,34,0.3)');
+                aCharts.topProducts = new Chart(pc, {
+                    type: 'bar',
+                    data: { labels: pLabels, datasets: [{ label: 'Quantity Sold', data: pData, backgroundColor: pg, borderRadius: 8, borderSkipped: false, maxBarThickness: 56 }] },
+                    options: { responsive: true, maintainAspectRatio: false, animation: { duration: 1200, easing: 'easeOutQuart' }, plugins: { legend: { display: false }, tooltip: tipOpts() }, scales: { x: { border: { display: false }, grid: { display: false }, ticks: { color: chartTextColor(), font: { size: 11 }, maxRotation: 45 } }, y: { beginAtZero: true, border: { display: false }, ticks: { stepSize: 1, color: chartTextColor(), font: { size: 11 } }, grid: { color: chartGridColor(), drawBorder: false } } } }
+                });
+            }
+        }
+
+        var ft = document.getElementById('adminTopFarmersTable');
+        if (ft) {
+            var farmers = data.topFarmers || [];
+            if (farmers.length === 0) { ft.innerHTML = '<tr><td colspan="3"><div class="empty-state"><span class="empty-state-text">No farmer data yet.</span></div></td></tr>'; }
+            else {
+                ft.innerHTML = farmers.map(function(f) {
+                    return '<tr><td><strong>' + (f.name || 'Unknown') + '</strong></td><td>' + (f.orderCount || 0) + '</td><td><strong>' + fmt(f.totalSales) + ' RWF</strong></td></tr>';
+                }).join('');
+            }
+        }
+
+        var bt = document.getElementById('adminTopBuyersTable');
+        if (bt) {
+            var buyers = data.topBuyers || [];
+            if (buyers.length === 0) { bt.innerHTML = '<tr><td colspan="3"><div class="empty-state"><span class="empty-state-text">No buyer data yet.</span></div></td></tr>'; }
+            else {
+                bt.innerHTML = buyers.map(function(b) {
+                    return '<tr><td><strong>' + (b.name || 'Unknown') + '</strong></td><td>' + (b.orderCount || 0) + '</td><td><strong>' + fmt(b.totalSpent) + ' RWF</strong></td></tr>';
+                }).join('');
+            }
+        }
+    }
+
+    async function loadAdminAnalytics(period) {
+        try {
+            var url = '/api/analytics/admin' + (period && period !== 'all' ? '?period=' + period : '');
+            var res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+            if (res.status === 401) { localStorage.removeItem('token'); location.href = '/auth'; return; }
+            if (!res.ok) throw new Error('Failed to load analytics');
+            var data = await res.json();
+
+            animateVal(document.getElementById('aTotalOrders'), data.totalOrders || 0);
+            animateVal(document.getElementById('aRevenue'), data.marketplaceRevenue || 0);
+
+            renderAdminCharts(data);
+        } catch (e) { console.error('Admin analytics error:', e); }
+    }
+
+    function exportAdminCsv(data) {
+        var rows = [['Metric', 'Value']];
+        rows.push(['Total Orders', data.totalOrders || 0]);
+        rows.push(['Marketplace Revenue (RWF)', data.marketplaceRevenue || 0]);
+        rows.push([]);
+        rows.push(['Monthly Revenue']);
+        rows.push(['Month', 'Revenue (RWF)']);
+        (data.revenueByMonth || []).forEach(function(m) { rows.push([m._id.year + '-' + m._id.month, m.revenue || 0]); });
+        rows.push([]);
+        rows.push(['Sales by Category']);
+        rows.push(['Category', 'Revenue (RWF)', 'Orders']);
+        (data.salesByCategory || []).forEach(function(c) { rows.push([c.category, c.revenue || 0, c.count || 0]); });
+        rows.push([]);
+        rows.push(['Top Farmers']);
+        rows.push(['Farmer', 'Orders', 'Sales (RWF)']);
+        (data.topFarmers || []).forEach(function(f) { rows.push([f.name, f.orderCount || 0, f.totalSales || 0]); });
+        rows.push([]);
+        rows.push(['Top Buyers']);
+        rows.push(['Buyer', 'Orders', 'Spent (RWF)']);
+        (data.topBuyers || []).forEach(function(b) { rows.push([b.name, b.orderCount || 0, b.totalSpent || 0]); });
+        var csv = rows.map(function(r) { return r.map(function(c) { var s = ('' + c).replace(/"/g, '""'); return '"' + s + '"'; }).join(','); }).join('\n');
+        var blob = new Blob([csv], { type: 'text/csv' });
+        var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'admin-order-analytics.csv'; a.click();
+    }
+
+    var apf = document.getElementById('adminPeriodFilter');
+    var aeb = document.getElementById('exportAdminAnalyticsCsv');
+    if (apf) apf.addEventListener('change', function() { loadAdminAnalytics(this.value); });
+    if (aeb) aeb.addEventListener('click', function() {
+        var p = apf ? apf.value : 'all';
+        fetch('/api/analytics/admin' + (p !== 'all' ? '?period=' + p : ''), { headers: { 'Authorization': 'Bearer ' + token } })
+            .then(function(r) { return r.json(); }).then(function(d) { exportAdminCsv(d); }).catch(function() {});
+    });
+
+    setTimeout(function() { loadAdminAnalytics('all'); }, 600);
+})();
+</script>
+
+</body>
+</html>
