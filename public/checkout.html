@@ -901,8 +901,8 @@
         </div>
 
         <div class="ck-actions" id="ckActions" style="display:none;">
-            <button class="ck-back" id="ckBackBtn"><i class="fa-solid fa-arrow-left"></i> Back to Cart</button>
-            <button class="ck-place-order" id="ckPlaceOrderBtn"><i class="fa-solid fa-lock"></i> Place Order</button>
+            <button class="ck-back" id="ckBackBtn" aria-label="Go back to cart"><i class="fa-solid fa-arrow-left"></i> Back to Cart</button>
+            <button class="ck-place-order" id="ckPlaceOrderBtn" aria-label="Place order"><i class="fa-solid fa-lock"></i> Place Order</button>
         </div>
     </div>
 
@@ -919,6 +919,68 @@
 </footer>
 
 <div id="ckToastContainer" class="ck-toast-container" aria-live="polite"></div>
+
+<!-- Purchase Confirmation Modal -->
+<div class="ck-confirm-overlay" id="ckConfirmModal">
+    <div class="ck-confirm-modal">
+        <div class="ck-confirm-icon"><i class="fa-solid fa-circle-check"></i></div>
+        <h2 class="ck-confirm-title">Order Placed Successfully!</h2>
+        <p class="ck-confirm-sub" id="ckConfirmSub">Your order has been submitted and is awaiting farmer approval.</p>
+        <div class="ck-confirm-details" id="ckConfirmDetails"></div>
+        <div class="ck-confirm-actions">
+            <a href="/orders" class="ck-confirm-btn ck-confirm-btn-primary"><i class="fa-solid fa-box-open"></i> View My Orders</a>
+            <a href="/buyer-dashboard" class="ck-confirm-btn ck-confirm-btn-secondary"><i class="fa-solid fa-store"></i> Continue Shopping</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .ck-confirm-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,.55);
+        backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        z-index: 10000; display: flex; align-items: center; justify-content: center;
+        padding: 24px; opacity: 0; visibility: hidden;
+        transition: opacity .3s ease, visibility .3s ease;
+    }
+    .ck-confirm-overlay.active { opacity: 1; visibility: visible; }
+    .ck-confirm-modal {
+        background: var(--bd-surface); border-radius: 20px; width: 100%; max-width: 480px;
+        padding: 40px 36px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.25);
+        border: 1px solid var(--bd-border);
+        transform: scale(.92) translateY(20px);
+        transition: transform .35s cubic-bezier(.4,0,.2,1);
+    }
+    .ck-confirm-overlay.active .ck-confirm-modal { transform: scale(1) translateY(0); }
+    .ck-confirm-icon {
+        width: 80px; height: 80px; border-radius: 50%;
+        background: rgba(22,163,74,.10); display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 20px;
+    }
+    .ck-confirm-icon i { font-size: 2.5rem; color: #16a34a; animation: confirmPop .5s ease; }
+    @keyframes confirmPop { 0% { transform: scale(0); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+    .ck-confirm-title { margin: 0 0 8px; font-size: 1.4rem; font-weight: 800; color: var(--bd-text); }
+    .ck-confirm-sub { margin: 0 0 24px; font-size: .92rem; color: var(--bd-text-muted); line-height: 1.5; }
+    .ck-confirm-details {
+        background: rgba(0,0,0,.02); border: 1px solid var(--bd-border);
+        border-radius: 12px; padding: 14px 18px; margin-bottom: 28px; text-align: left;
+    }
+    .ck-confirm-detail-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: .85rem; }
+    .ck-confirm-detail-key { color: var(--bd-text-muted); font-weight: 500; }
+    .ck-confirm-detail-val { color: var(--bd-text); font-weight: 700; }
+    .ck-confirm-actions { display: flex; gap: 12px; }
+    .ck-confirm-btn {
+        flex: 1; padding: 12px 20px; border-radius: 12px; font-size: .9rem; font-weight: 600;
+        font-family: inherit; cursor: pointer; text-decoration: none;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        transition: all .25s ease; border: none;
+    }
+    .ck-confirm-btn-primary { background: linear-gradient(135deg, var(--bd-green), var(--bd-green-light)); color: white; box-shadow: 0 2px 8px rgba(46,125,50,.25); }
+    .ck-confirm-btn-primary:hover { box-shadow: 0 4px 16px rgba(46,125,50,.40); transform: translateY(-1px); }
+    .ck-confirm-btn-secondary { background: var(--bd-bg); color: var(--bd-text); border: 1.5px solid var(--bd-border); }
+    .ck-confirm-btn-secondary:hover { border-color: var(--bd-green); color: var(--bd-green); }
+    body.dark-mode .ck-confirm-details { background: rgba(0,0,0,.15); border-color: #334155; }
+    @media(max-width:480px) { .ck-confirm-actions { flex-direction: column; } .ck-confirm-modal { padding: 28px 20px; } }
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -940,6 +1002,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+<script src="js/currency.js"></script>
 <script src="js/checkout.js"></script>
 
 </body>

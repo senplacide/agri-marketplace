@@ -85,6 +85,61 @@ const UserSchema = new mongoose.Schema({
         default: ""
     },
 
+    businessName: {
+        type: String,
+        trim: true,
+        maxlength: 100,
+        default: ""
+    },
+
+    country: {
+        type: String,
+        trim: true,
+        maxlength: 60,
+        default: ""
+    },
+
+    city: {
+        type: String,
+        trim: true,
+        maxlength: 60,
+        default: ""
+    },
+
+    preferredPayoutMethod: {
+        type: String,
+        enum: ["Mobile Money", "Bank Transfer", "Cash", ""],
+        default: ""
+    },
+
+    bankName: {
+        type: String,
+        trim: true,
+        maxlength: 100,
+        default: ""
+    },
+
+    bankAccountNumber: {
+        type: String,
+        trim: true,
+        maxlength: 40,
+        default: ""
+    },
+
+    bankAccountName: {
+        type: String,
+        trim: true,
+        maxlength: 100,
+        default: ""
+    },
+
+    momoNumber: {
+        type: String,
+        trim: true,
+        maxlength: 20,
+        default: ""
+    },
+
     lastLogin: {
         type: Date,
         default: null

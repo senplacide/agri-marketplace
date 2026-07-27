@@ -75,8 +75,72 @@ const OrderSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["Pending", "Processing", "Completed", "Cancelled", "Accepted", "Rejected"],
+        enum: [
+            "Pending Payment",
+            "Pending",
+            "Paid",
+            "Processing",
+            "Shipped",
+            "Completed",
+            "Cancelled",
+            "Refunded",
+            "Accepted",
+            "Rejected"
+        ],
         default: "Pending"
+    },
+    paymentStatus: {
+        type: String,
+        enum: ["Unpaid", "Pending", "Paid", "Failed", "Refunded"],
+        default: "Pending"
+    },
+    paymentMethod: {
+        type: String,
+        enum: ["Card", "Mobile Money", "Bank Transfer", "DPO Pay", "Cash"],
+        default: null
+    },
+    transactionId: {
+        type: String,
+        default: null
+    },
+    grossAmount: {
+        type: Number,
+        min: 0,
+        default: 0
+    },
+    commissionRate: {
+        type: Number,
+        min: 0,
+        default: 2
+    },
+    commissionAmount: {
+        type: Number,
+        min: 0,
+        default: 0
+    },
+    farmerAmount: {
+        type: Number,
+        min: 0,
+        default: 0
+    },
+    platformAmount: {
+        type: Number,
+        min: 0,
+        default: 0
+    },
+    sellerAmount: {
+        type: Number,
+        min: 0,
+        default: 0
+    },
+    payoutStatus: {
+        type: String,
+        enum: ["pending", "processing", "completed", "failed"],
+        default: "pending"
+    },
+    completedAt: {
+        type: Date,
+        default: null
     },
     createdAt: {
         type: Date,

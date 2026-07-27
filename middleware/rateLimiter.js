@@ -84,6 +84,18 @@ const passwordChangeLimiter = rateLimit({
     legacyHeaders: false
 });
 
+const verifyLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: {
+        success: false,
+        message: "Too many verification attempts.",
+        error: "Too many verification attempts. Please try again after 15 minutes."
+    },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
 module.exports = {
     loginLimiter,
     registerLimiter,
@@ -91,5 +103,6 @@ module.exports = {
     contactLimiter,
     globalLimiter,
     profileLimiter,
-    passwordChangeLimiter
+    passwordChangeLimiter,
+    verifyLimiter
 };

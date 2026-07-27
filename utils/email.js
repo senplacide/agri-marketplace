@@ -1,9 +1,15 @@
 const nodemailer = require('nodemailer');
 
+function escapeHtml(str) {
+    if (typeof str !== 'string') return String(str);
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 const transporter = nodemailer.createTransport({
     host: "smtp-relay.brevo.com",
-    port: 2525,
+    port: 587,
     secure: false,
+    requireTLS: true,
 
     auth: {
         user: process.env.EMAIL_SERVICE_USER,
@@ -80,8 +86,8 @@ function buildOrderTable(items, totalPrice) {
         rows += `
             <tr>
                 <td style="padding:12px;border-bottom:1px solid #e2e8f0;color:#4a5568;font-size:14px;">
-                    ${item.productName}
-                    <br><span style="color:#a0aec0;font-size:12px;">${item.farmerName || ''}</span>
+                    ${escapeHtml(item.productName)}
+                    <br><span style="color:#a0aec0;font-size:12px;">${escapeHtml(item.farmerName || '')}</span>
                 </td>
                 <td style="padding:12px;border-bottom:1px solid #e2e8f0;color:#4a5568;font-size:14px;text-align:center;">
                     ${item.quantity}
@@ -124,10 +130,10 @@ function buildDeliveryTable(deliveryInfo) {
     <div style="background-color:#f7fafc;border-radius:6px;padding:16px;margin:16px 0;">
         <h3 style="margin:0 0 8px;color:#276749;font-size:14px;">Delivery Address</h3>
         <p style="margin:0;color:#4a5568;font-size:14px;line-height:1.6;">
-            ${deliveryInfo.fullName}<br>
-            ${deliveryInfo.village}, ${deliveryInfo.cell}<br>
-            ${deliveryInfo.sector}, ${deliveryInfo.district}<br>
-            Phone: ${deliveryInfo.phone}
+            ${escapeHtml(deliveryInfo.fullName)}<br>
+            ${escapeHtml(deliveryInfo.village)}, ${escapeHtml(deliveryInfo.cell)}<br>
+            ${escapeHtml(deliveryInfo.sector)}, ${escapeHtml(deliveryInfo.district)}<br>
+            Phone: ${escapeHtml(deliveryInfo.phone)}
         </p>
     </div>`;
 }
@@ -141,7 +147,7 @@ const sendOrderPlacedEmail = async (buyerEmail, buyerName, order) => {
         <h2 style="margin:0 0 8px;color:#276749;font-size:22px;">Order Confirmation</h2>
         <p style="margin:0 0 4px;color:#718096;font-size:13px;">${new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })}</p>
         <p style="margin:16px 0;color:#4a5568;font-size:15px;">
-            Hello <strong>${buyerName}</strong>,
+            Hello <strong>${escapeHtml(buyerName)}</strong>,
         </p>
         <p style="margin:0 0 16px;color:#4a5568;font-size:15px;line-height:1.6;">
             Thank you for your order! We have received your order and it is now being processed.
@@ -168,19 +174,19 @@ const sendOrderPlacedEmail = async (buyerEmail, buyerName, order) => {
 };
 
 const sendOrderAcceptedEmail = async (buyerEmail, buyerName, order, farmerName) => {
-    const productNames = order.items.map(function (i) { return i.productName; }).join(', ');
+    const productNames = escapeHtml(order.items.map(function (i) { return i.productName; }).join(', '));
     const body = `
         <h2 style="margin:0 0 8px;color:#276749;font-size:22px;">Your Order Has Been Accepted</h2>
         <p style="margin:0 0 4px;color:#718096;font-size:13px;">${new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })}</p>
         <p style="margin:16px 0;color:#4a5568;font-size:15px;">
-            Hello <strong>${buyerName}</strong>,
+            Hello <strong>${escapeHtml(buyerName)}</strong>,
         </p>
         <p style="margin:0 0 16px;color:#4a5568;font-size:15px;line-height:1.6;">
-            Great news! Your order <strong>${order.orderId}</strong> has been accepted by the farmer.
+            Great news! Your order <strong>${escapeHtml(order.orderId)}</strong> has been accepted by the farmer.
         </p>
         <div style="background-color:#f7fafc;border-radius:6px;padding:16px;margin:16px 0;">
             <p style="margin:0 0 8px;color:#2d3748;font-size:14px;"><strong>Product:</strong> ${productNames}</p>
-            <p style="margin:0 0 8px;color:#2d3748;font-size:14px;"><strong>Farmer:</strong> ${farmerName}</p>
+            <p style="margin:0 0 8px;color:#2d3748;font-size:14px;"><strong>Farmer:</strong> ${escapeHtml(farmerName)}</p>
             <p style="margin:0;color:#2d3748;font-size:14px;"><strong>Estimated Next Step:</strong> The farmer is preparing your order for delivery. You will be notified once it is completed.</p>
         </div>
         <p style="margin:24px 0 0;color:#4a5568;font-size:14px;line-height:1.6;">
@@ -204,10 +210,10 @@ const sendOrderRejectedEmail = async (buyerEmail, buyerName, order) => {
         <h2 style="margin:0 0 8px;color:#276749;font-size:22px;">Order Update</h2>
         <p style="margin:0 0 4px;color:#718096;font-size:13px;">${new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })}</p>
         <p style="margin:16px 0;color:#4a5568;font-size:15px;">
-            Hello <strong>${buyerName}</strong>,
+            Hello <strong>${escapeHtml(buyerName)}</strong>,
         </p>
         <p style="margin:0 0 16px;color:#4a5568;font-size:15px;line-height:1.6;">
-            We regret to inform you that your order <strong>${order.orderId}</strong> could not be fulfilled at this time. The farmer has declined the order.
+            We regret to inform you that your order <strong>${escapeHtml(order.orderId)}</strong> could not be fulfilled at this time. The farmer has declined the order.
         </p>
         <div style="background-color:#fff5f5;border-left:4px solid #e53e3e;padding:12px 16px;border-radius:4px;margin:16px 0;">
             <p style="margin:0;color:#c53030;font-size:14px;">Order Status: Rejected</p>
@@ -233,10 +239,10 @@ const sendOrderCompletedEmail = async (buyerEmail, buyerName, order) => {
         <h2 style="margin:0 0 8px;color:#276749;font-size:22px;">Order Completed</h2>
         <p style="margin:0 0 4px;color:#718096;font-size:13px;">${new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })}</p>
         <p style="margin:16px 0;color:#4a5568;font-size:15px;">
-            Hello <strong>${buyerName}</strong>,
+            Hello <strong>${escapeHtml(buyerName)}</strong>,
         </p>
         <p style="margin:0 0 16px;color:#4a5568;font-size:15px;line-height:1.6;">
-            Your order <strong>${order.orderId}</strong> has been completed successfully. We hope you enjoy your fresh produce!
+            Your order <strong>${escapeHtml(order.orderId)}</strong> has been completed successfully. We hope you enjoy your fresh produce!
         </p>
         <div style="background-color:#f0fff4;border-left:4px solid #38a169;padding:12px 16px;border-radius:4px;margin:16px 0;">
             <p style="margin:0;color:#276749;font-size:14px;font-weight:600;">Order Total: ${order.totalPrice.toLocaleString()} RWF</p>
@@ -262,27 +268,27 @@ const sendOrderCompletedEmail = async (buyerEmail, buyerName, order) => {
 ============================================================ */
 
 const sendNewOrderReceivedEmail = async (farmerEmail, farmerName, order, buyerName) => {
-    const productNames = order.items.map(function (i) { return i.productName; }).join(', ');
-    const quantities = order.items.map(function (i) { return i.productName + ': ' + i.quantity; }).join(', ');
+    const productNames = escapeHtml(order.items.map(function (i) { return i.productName; }).join(', '));
+    const quantities = order.items.map(function (i) { return escapeHtml(i.productName) + ': ' + i.quantity; }).join(', ');
     const body = `
         <h2 style="margin:0 0 8px;color:#276749;font-size:22px;">New Customer Order</h2>
         <p style="margin:0 0 4px;color:#718096;font-size:13px;">${new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })}</p>
         <p style="margin:16px 0;color:#4a5568;font-size:15px;">
-            Hello <strong>${farmerName}</strong>,
+            Hello <strong>${escapeHtml(farmerName)}</strong>,
         </p>
         <p style="margin:0 0 16px;color:#4a5568;font-size:15px;line-height:1.6;">
             You have received a new order on AgriConnect! Please review and respond to this order promptly.
         </p>
         <div style="background-color:#f0fff4;border-left:4px solid #38a169;padding:12px 16px;border-radius:4px;margin:16px 0;">
-            <p style="margin:0;color:#276749;font-size:14px;font-weight:600;">Order ID: ${order.orderId}</p>
+            <p style="margin:0;color:#276749;font-size:14px;font-weight:600;">Order ID: ${escapeHtml(order.orderId)}</p>
         </div>
         <div style="background-color:#f7fafc;border-radius:6px;padding:16px;margin:16px 0;">
-            <p style="margin:0 0 8px;color:#2d3748;font-size:14px;"><strong>Buyer:</strong> ${buyerName}</p>
+            <p style="margin:0 0 8px;color:#2d3748;font-size:14px;"><strong>Buyer:</strong> ${escapeHtml(buyerName)}</p>
             <p style="margin:0 0 8px;color:#2d3748;font-size:14px;"><strong>Product(s):</strong> ${productNames}</p>
             <p style="margin:0 0 8px;color:#2d3748;font-size:14px;"><strong>Quantity:</strong> ${quantities}</p>
             <p style="margin:0 0 8px;color:#2d3748;font-size:14px;">
                 <strong>Delivery:</strong>
-                ${order.deliveryInfo.village}, ${order.deliveryInfo.cell}, ${order.deliveryInfo.sector}, ${order.deliveryInfo.district}
+                ${escapeHtml(order.deliveryInfo.village)}, ${escapeHtml(order.deliveryInfo.cell)}, ${escapeHtml(order.deliveryInfo.sector)}, ${escapeHtml(order.deliveryInfo.district)}
             </p>
             <p style="margin:0;color:#276749;font-size:16px;font-weight:700;">Order Total: ${order.totalPrice.toLocaleString()} RWF</p>
         </div>
@@ -307,10 +313,10 @@ const sendProductApprovedEmail = async (farmerEmail, farmerName, productName) =>
         <h2 style="margin:0 0 8px;color:#276749;font-size:22px;">Product Approved</h2>
         <p style="margin:0 0 4px;color:#718096;font-size:13px;">${new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })}</p>
         <p style="margin:16px 0;color:#4a5568;font-size:15px;">
-            Hello <strong>${farmerName}</strong>,
+            Hello <strong>${escapeHtml(farmerName)}</strong>,
         </p>
         <p style="margin:0 0 16px;color:#4a5568;font-size:15px;line-height:1.6;">
-            Your product <strong>${productName}</strong> has been reviewed and approved by our admin team.
+            Your product <strong>${escapeHtml(productName)}</strong> has been reviewed and approved by our admin team.
         </p>
         <div style="background-color:#f0fff4;border-left:4px solid #38a169;padding:12px 16px;border-radius:4px;margin:16px 0;">
             <p style="margin:0;color:#276749;font-size:14px;font-weight:600;">Your product is now live and visible to buyers on the marketplace.</p>
@@ -335,17 +341,17 @@ const sendProductRejectedEmail = async (farmerEmail, farmerName, productName, re
     const reasonSection = reason
         ? `<div style="background-color:#fff5f5;border-radius:6px;padding:16px;margin:16px 0;">
             <p style="margin:0 0 4px;color:#2d3748;font-size:14px;"><strong>Rejection Reason:</strong></p>
-            <p style="margin:0;color:#4a5568;font-size:14px;line-height:1.6;">${reason}</p>
+            <p style="margin:0;color:#4a5568;font-size:14px;line-height:1.6;">${escapeHtml(reason)}</p>
            </div>`
         : '';
     const body = `
         <h2 style="margin:0 0 8px;color:#276749;font-size:22px;">Product Rejected</h2>
         <p style="margin:0 0 4px;color:#718096;font-size:13px;">${new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })}</p>
         <p style="margin:16px 0;color:#4a5568;font-size:15px;">
-            Hello <strong>${farmerName}</strong>,
+            Hello <strong>${escapeHtml(farmerName)}</strong>,
         </p>
         <p style="margin:0 0 16px;color:#4a5568;font-size:15px;line-height:1.6;">
-            Your product <strong>${productName}</strong> has been reviewed and could not be approved at this time.
+            Your product <strong>${escapeHtml(productName)}</strong> has been reviewed and could not be approved at this time.
         </p>
         <div style="background-color:#fff5f5;border-left:4px solid #e53e3e;padding:12px 16px;border-radius:4px;margin:16px 0;">
             <p style="margin:0;color:#c53030;font-size:14px;">Product Status: Rejected</p>
@@ -379,9 +385,9 @@ const sendAdminNewUserEmail = async (adminEmail, user) => {
             A new user has joined AgriConnect:
         </p>
         <div style="background-color:#f7fafc;border-radius:6px;padding:16px;margin:16px 0;">
-            <p style="margin:0 0 8px;color:#2d3748;font-size:14px;"><strong>Name:</strong> ${user.name}</p>
-            <p style="margin:0 0 8px;color:#2d3748;font-size:14px;"><strong>Email:</strong> ${user.email}</p>
-            <p style="margin:0;color:#2d3748;font-size:14px;"><strong>Role:</strong> ${user.role}</p>
+            <p style="margin:0 0 8px;color:#2d3748;font-size:14px;"><strong>Name:</strong> ${escapeHtml(user.name)}</p>
+            <p style="margin:0 0 8px;color:#2d3748;font-size:14px;"><strong>Email:</strong> ${escapeHtml(user.email)}</p>
+            <p style="margin:0;color:#2d3748;font-size:14px;"><strong>Role:</strong> ${escapeHtml(user.role)}</p>
         </div>
         <p style="margin:24px 0 0;color:#718096;font-size:13px;">This is an automated notification from AgriConnect.</p>
     `;
@@ -404,10 +410,10 @@ const sendAdminNewProductEmail = async (adminEmail, product, farmerName) => {
             A new product has been submitted for review:
         </p>
         <div style="background-color:#f7fafc;border-radius:6px;padding:16px;margin:16px 0;">
-            <p style="margin:0 0 8px;color:#2d3748;font-size:14px;"><strong>Product:</strong> ${product.name}</p>
-            <p style="margin:0 0 8px;color:#2d3748;font-size:14px;"><strong>Category:</strong> ${product.category}</p>
-            <p style="margin:0 0 8px;color:#2d3748;font-size:14px;"><strong>Price:</strong> ${product.price.toLocaleString()} RWF</p>
-            <p style="margin:0;color:#2d3748;font-size:14px;"><strong>Farmer:</strong> ${farmerName}</p>
+            <p style="margin:0 0 8px;color:#2d3748;font-size:14px;"><strong>Product:</strong> ${escapeHtml(product.name)}</p>
+            <p style="margin:0 0 8px;color:#2d3748;font-size:14px;"><strong>Category:</strong> ${escapeHtml(product.category)}</p>
+            <p style="margin:0 0 8px;color:#2d3748;font-size:14px;"><strong>Price:</strong> ${escapeHtml(product.price.toLocaleString())} RWF</p>
+            <p style="margin:0;color:#2d3748;font-size:14px;"><strong>Farmer:</strong> ${escapeHtml(farmerName)}</p>
         </div>
         <p style="margin:24px 0 0;color:#4a5568;font-size:14px;line-height:1.6;">
             Please review this product in your admin dashboard.
@@ -430,7 +436,7 @@ const sendAdminNewProductEmail = async (adminEmail, product, farmerName) => {
 ============================================================ */
 
 const sendContactEmail = async (options) => {
-    const adminRecipient = "placidesenadata35@gmail.com";
+    const adminRecipient = process.env.ADMIN_EMAIL || "placidesenadata35@gmail.com";
 
     const mailOptions = {
         from: `"AgriConnect" <${process.env.SENDER_EMAIL}>`,
@@ -452,13 +458,13 @@ ${options.message}`,
 
             <h3>Sender Details:</h3>
             <ul>
-                <li><strong>Name:</strong> ${options.name}</li>
-                <li><strong>Email:</strong> ${options.email}</li>
-                <li><strong>Subject:</strong> ${options.subject}</li>
+                <li><strong>Name:</strong> ${escapeHtml(options.name)}</li>
+                <li><strong>Email:</strong> ${escapeHtml(options.email)}</li>
+                <li><strong>Subject:</strong> ${escapeHtml(options.subject)}</li>
             </ul>
 
             <h3>Message:</h3>
-            <p>${options.message.replace(/\n/g, '<br>')}</p>
+            <p>${escapeHtml(options.message).replace(/\n/g, '<br>')}</p>
         `
     };
 
@@ -505,7 +511,7 @@ AgriConnect Team
 
                 <h2>Welcome to AgriConnect &#127806;</h2>
 
-                <p>Hello <strong>${name}</strong>,</p>
+                <p>Hello <strong>${escapeHtml(name)}</strong>,</p>
 
                 <p>Thank you for creating your account.</p>
 
@@ -566,7 +572,7 @@ AgriConnect Team
 
             <h2>Password Reset &#128272;</h2>
 
-            <p>Hello <strong>${name}</strong>,</p>
+            <p>Hello <strong>${escapeHtml(name)}</strong>,</p>
 
             <p>Use the code below to reset your password:</p>
 

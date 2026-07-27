@@ -1,24 +1,33 @@
 /* ═══════════════════════════════════════════════════════════════
    AgriConnect Notification Center
    Shared module for Buyer, Farmer, and Admin dashboards.
-   Uses localStorage temporarily — structured for easy backend swap.
+   Fetches from /api/notifications backend, with localStorage fallback.
    ═══════════════════════════════════════════════════════════════ */
 (function () {
     'use strict';
 
     var STORAGE_KEY = 'agri_notifications';
+    var API_BASE = '/api/notifications';
+    var POLL_INTERVAL = 30000;
+    var pollTimer = null;
 
     /* ── Notification type → icon + label mapping ── */
     var TYPE_MAP = {
         buyer: {
-            order_accepted:    { icon: 'fa-solid fa-circle-check',          color: '#2e7d32' },
-            order_rejected:    { icon: 'fa-solid fa-circle-xmark',         color: '#e53e3e' },
-            order_completed:   { icon: 'fa-solid fa-circle-check',         color: '#2e7d32' }
+            order_submitted:     { icon: 'fa-solid fa-receipt',            color: '#1976d2' },
+            order_accepted:      { icon: 'fa-solid fa-circle-check',       color: '#2e7d32' },
+            order_rejected:      { icon: 'fa-solid fa-circle-xmark',       color: '#e53e3e' },
+            payment_received:    { icon: 'fa-solid fa-credit-card',        color: '#1976d2' },
+            order_completed:     { icon: 'fa-solid fa-circle-check',       color: '#2e7d32' },
+            order_delivered:     { icon: 'fa-solid fa-truck-fast',         color: '#16a34a' }
         },
         farmer: {
-            new_order_received: { icon: 'fa-solid fa-cart-plus',           color: '#2e7d32' },
+            new_order:         { icon: 'fa-solid fa-cart-plus',           color: '#2e7d32' },
+            new_order_received: { icon: 'fa-solid fa-cart-plus',          color: '#2e7d32' },
             product_approved:   { icon: 'fa-solid fa-circle-check',        color: '#2e7d32' },
-            product_rejected:  { icon: 'fa-solid fa-circle-xmark',         color: '#e53e3e' }
+            product_rejected:  { icon: 'fa-solid fa-circle-xmark',         color: '#e53e3e' },
+            low_stock:         { icon: 'fa-solid fa-triangle-exclamation', color: '#e67e22' },
+            out_of_stock:      { icon: 'fa-solid fa-circle-xmark',         color: '#d32f2f' }
         },
         admin: {
             new_user_registered:   { icon: 'fa-solid fa-user-plus',        color: '#2e7d32' },
@@ -38,6 +47,10 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
     }
 
+    function getToken() {
+        return localStorage.getItem('token');
+    }
+
     function uid() {
         return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
     }
@@ -50,6 +63,12 @@
         if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
         var d = new Date(ts);
         return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    function escHtml(str) {
+        var d = document.createElement('div');
+        d.appendChild(document.createTextNode(str || ''));
+        return d.innerHTML;
     }
 
     /* ── Detect current role from page ── */
@@ -74,13 +93,80 @@
     }
 
     /* ═══════════════════════════════════════════
+       BACKEND API
+       ═══════════════════════════════════════════ */
+    async function fetchFromBackend() {
+        var token = getToken();
+        if (!token) return null;
+        try {
+            var res = await fetch(API_BASE, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (!res.ok) return null;
+            var json = await res.json();
+            if (!json.success || !Array.isArray(json.data)) return null;
+            return json;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    async function markReadBackend(id) {
+        var token = getToken();
+        if (!token) return;
+        try {
+            await fetch(API_BASE + '/' + id + '/read', {
+                method: 'PATCH',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+        } catch (e) { /* ignore */ }
+    }
+
+    async function markAllReadBackend() {
+        var token = getToken();
+        if (!token) return;
+        try {
+            await fetch(API_BASE + '/read-all', {
+                method: 'PATCH',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+        } catch (e) { /* ignore */ }
+    }
+
+    async function syncFromBackend() {
+        var result = await fetchFromBackend();
+        if (!result) return;
+
+        var role = detectRole();
+        var backendNotifs = result.data.map(function (n) {
+            return {
+                id: n._id,
+                role: role,
+                type: n.type,
+                title: n.title,
+                description: n.message,
+                timestamp: new Date(n.createdAt).getTime(),
+                read: n.read,
+                _fromBackend: true
+            };
+        });
+
+        var local = getNotifications().filter(function (n) { return !n._fromBackend; });
+        var merged = backendNotifs.concat(local);
+        merged.sort(function (a, b) { return b.timestamp - a.timestamp; });
+
+        saveNotifications(merged);
+        updateBadge(role);
+        renderList(merged, role);
+    }
+
+    /* ═══════════════════════════════════════════
        INJECT STYLES
        ═══════════════════════════════════════════ */
     function injectStyles(role) {
         if (document.getElementById('nc-styles')) return;
 
         var gv = greenVar(role);
-        var gd = greenDarkVar(role);
         var style = document.createElement('style');
         style.id = 'nc-styles';
         style.textContent = [
@@ -221,12 +307,6 @@
         container.innerHTML = html;
     }
 
-    function escHtml(str) {
-        var d = document.createElement('div');
-        d.appendChild(document.createTextNode(str));
-        return d.innerHTML;
-    }
-
     function updateBadge(role) {
         var list = getNotifications();
         var unread = list.filter(function (n) { return n.role === role && !n.read; }).length;
@@ -267,6 +347,9 @@
                 if (list[i].id === id) { list[i].read = true; break; }
             }
             saveNotifications(list);
+            if (list[i] && list[i]._fromBackend) {
+                markReadBackend(id);
+            }
         },
         markAllRead: function (role) {
             var list = getNotifications();
@@ -274,6 +357,7 @@
                 if (list[i].role === role) list[i].read = true;
             }
             saveNotifications(list);
+            markAllReadBackend();
         },
         clear: function (role) {
             var list = getNotifications().filter(function (n) { return n.role !== role; });
@@ -281,6 +365,9 @@
         },
         getAll: function (role) {
             return getNotifications().filter(function (n) { return n.role === role; });
+        },
+        refresh: function () {
+            syncFromBackend();
         }
     };
 
@@ -316,16 +403,25 @@
 
         document.body.appendChild(overlay);
 
-        /* Render */
-        updateBadge(role);
-        renderList(getNotifications(), role);
+        /* Sync from backend on init */
+        syncFromBackend().then(function () {
+            updateBadge(role);
+            renderList(getNotifications(), role);
+        });
+
+        /* ── Polling for updates ── */
+        pollTimer = setInterval(function () {
+            syncFromBackend();
+        }, POLL_INTERVAL);
 
         /* ── Event: open panel ── */
         bell.addEventListener('click', function (e) {
             e.stopPropagation();
             overlay.classList.add('nc-open');
-            renderList(getNotifications(), role);
-            updateBadge(role);
+            syncFromBackend().then(function () {
+                renderList(getNotifications(), role);
+                updateBadge(role);
+            });
         });
 
         /* ── Event: close panel ── */
@@ -375,8 +471,6 @@
             markAllBtn.disabled = unread === 0;
         }
         updateMarkAllBtn();
-        var origRender = renderList;
-        /* Re-check after each render */
         var observer = new MutationObserver(updateMarkAllBtn);
         observer.observe(listEl, { childList: true });
     }

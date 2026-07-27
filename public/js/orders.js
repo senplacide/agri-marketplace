@@ -18,15 +18,15 @@
     var odShowingCount = document.getElementById('odShowingCount');
 
     var odCountPending = document.getElementById('odCountPending');
-    var odCountProcessing = document.getElementById('odCountProcessing');
+    var odCountAccepted = document.getElementById('odCountAccepted');
     var odCountCompleted = document.getElementById('odCountCompleted');
-    var odCountCancelled = document.getElementById('odCountCancelled');
+    var odCountRejected = document.getElementById('odCountRejected');
 
     var odTabAll = document.getElementById('odTabAll');
     var odTabPending = document.getElementById('odTabPending');
-    var odTabProcessing = document.getElementById('odTabProcessing');
+    var odTabAccepted = document.getElementById('odTabAccepted');
     var odTabCompleted = document.getElementById('odTabCompleted');
-    var odTabCancelled = document.getElementById('odTabCancelled');
+    var odTabRejected = document.getElementById('odTabRejected');
 
     var currentTab = 'all';
     var allOrders = [];
@@ -74,6 +74,10 @@
         return Number(price).toLocaleString('en-RW');
     }
 
+    function formatDualPrice(price) {
+        return PriceFormatter.formatDual(price);
+    }
+
     function formatDate(dateStr) {
         var d = new Date(dateStr);
         var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -104,13 +108,10 @@
 
     function getStatusIcon(status) {
         var map = {
-            'pending': 'fa-clock',
             'Pending': 'fa-clock',
-            'processing': 'fa-spinner fa-spin-pulse',
-            'Processing': 'fa-spinner fa-spin-pulse',
-            'completed': 'fa-circle-check',
-            'Completed': 'fa-circle-check',
-            'cancelled': 'fa-circle-xmark',
+            'Accepted': 'fa-circle-check',
+            'Completed': 'fa-flag-checkered',
+            'Rejected': 'fa-circle-xmark',
             'Cancelled': 'fa-circle-xmark'
         };
         return map[status] || 'fa-circle-question';
@@ -118,14 +119,14 @@
 
     function getStatusLabel(status) {
         if (!status) return 'Pending';
-        if (status === 'Processing') return 'Accepted';
-        if (status === 'Cancelled') return 'Rejected';
         return status.charAt(0).toUpperCase() + status.slice(1);
     }
 
     function normalizeStatus(status) {
         if (!status) return 'pending';
-        return status.toLowerCase();
+        var s = status.toLowerCase();
+        if (s === 'cancelled') return 'rejected';
+        return s;
     }
 
     function formatDeliveryAddress(deliveryInfo) {
@@ -153,7 +154,7 @@
                 return [];
             }
             var data = await res.json();
-            return Array.isArray(data) ? data : [];
+            return (data && Array.isArray(data.data)) ? data.data : [];
         } catch (err) {
             console.error('Failed to fetch orders:', err);
             return [];
@@ -187,7 +188,7 @@
     }
 
     function cancelOrder(orderId) {
-        if (!confirm('Are you sure you want to cancel this order?')) return;
+        showToast('Order cancelled.', 'info');
         updateOrderStatus(orderId, 'Cancelled');
     }
 
@@ -205,7 +206,7 @@
     }
 
     function updateCounts() {
-        var counts = { all: 0, pending: 0, processing: 0, completed: 0, cancelled: 0 };
+        var counts = { all: 0, pending: 0, accepted: 0, completed: 0, rejected: 0 };
         for (var i = 0; i < allOrders.length; i++) {
             var s = normalizeStatus(allOrders[i].status);
             counts.all++;
@@ -213,15 +214,15 @@
         }
 
         if (odCountPending) odCountPending.textContent = counts.pending;
-        if (odCountProcessing) odCountProcessing.textContent = counts.processing;
+        if (odCountAccepted) odCountAccepted.textContent = counts.accepted;
         if (odCountCompleted) odCountCompleted.textContent = counts.completed;
-        if (odCountCancelled) odCountCancelled.textContent = counts.cancelled;
+        if (odCountRejected) odCountRejected.textContent = counts.rejected;
 
         if (odTabAll) odTabAll.querySelector('.od-tab-count').textContent = counts.all;
         if (odTabPending) odTabPending.querySelector('.od-tab-count').textContent = counts.pending;
-        if (odTabProcessing) odTabProcessing.querySelector('.od-tab-count').textContent = counts.processing;
+        if (odTabAccepted) odTabAccepted.querySelector('.od-tab-count').textContent = counts.accepted;
         if (odTabCompleted) odTabCompleted.querySelector('.od-tab-count').textContent = counts.completed;
-        if (odTabCancelled) odTabCancelled.querySelector('.od-tab-count').textContent = counts.cancelled;
+        if (odTabRejected) odTabRejected.querySelector('.od-tab-count').textContent = counts.rejected;
     }
 
     function renderOrderCard(order, index) {
@@ -291,11 +292,11 @@
                     '<p class="od-detail-name">' + escapeHtml(item.productName) + '</p>' +
                     '<div class="od-detail-meta">' +
                         '<span><i class="fa-solid fa-cubes"></i> Qty: <strong>' + (item.quantity || 1) + '</strong></span>' +
-                        '<span><i class="fa-solid fa-money-bill"></i> ' + formatPrice(item.unitPrice) + ' RWF/unit</span>' +
+                        '<span><i class="fa-solid fa-money-bill"></i> <span class="price-dual">' + formatDualPrice(item.unitPrice) + '</span>/unit</span>' +
                     '</div>' +
                 '</div>' +
                 '<div class="od-detail-price">' +
-                    '<p class="od-detail-price-value">' + formatPrice(item.lineTotal) + ' RWF</p>' +
+                    '<p class="od-detail-price-value">' + formatDualPrice(item.lineTotal) + '</p>' +
                     '<p class="od-detail-price-unit">Subtotal</p>' +
                 '</div>' +
             '</div>';
@@ -317,7 +318,7 @@
             detailActions = '<div class="od-detail-actions">' +
                 '<button class="od-card-btn" data-action="reorder" data-order-id="' + order.orderId + '"><i class="fa-solid fa-rotate"></i> Reorder</button>' +
             '</div>';
-        } else if (normalizedStatus === 'cancelled') {
+        } else if (normalizedStatus === 'rejected') {
             detailActions = '<div class="od-detail-actions">' +
                 '<button class="od-card-btn" data-action="reorder" data-order-id="' + order.orderId + '"><i class="fa-solid fa-rotate"></i> Reorder</button>' +
             '</div>';
@@ -326,10 +327,14 @@
         detailsHtml += detailActions;
         detailsHtml += '</div></div>';
 
+        var payStatusLabel = order.paymentStatus || 'Pending';
+        var payStatusClass = 'od-badge ' + normalizeStatus(payStatusLabel);
+
         return '<div class="od-card" style="animation-delay:' + delay + 's">' +
             '<div class="od-card-top">' +
                 '<span class="od-card-id"><i class="fa-solid fa-hashtag"></i> ' + escapeHtml(order.orderId.slice(-8).toUpperCase()) + '</span>' +
                 '<span class="od-badge ' + normalizedStatus + '"><i class="fa-solid ' + getStatusIcon(order.status) + '"></i> ' + getStatusLabel(order.status) + '</span>' +
+                '<span class="' + payStatusClass + '" style="font-size:.72rem;padding:3px 10px;"><i class="fa-solid fa-credit-card"></i> ' + escapeHtml(payStatusLabel) + '</span>' +
                 '<span class="od-card-date"><i class="fa-regular fa-calendar"></i> ' + formatDate(order.createdAt) + ' at ' + formatTime(order.createdAt) + '</span>' +
             '</div>' +
             '<div class="od-card-body">' +
@@ -344,7 +349,7 @@
                     moreText +
                 '</div>' +
                 '<div class="od-card-price">' +
-                    '<p class="od-card-price-value">' + formatPrice(order.totalPrice) + ' RWF</p>' +
+                    '<p class="od-card-price-value">' + formatDualPrice(order.totalPrice) + '</p>' +
                     '<p class="od-card-price-unit">Order Total</p>' +
                 '</div>' +
             '</div>' +
@@ -354,8 +359,9 @@
                     '<span class="od-card-delivery-text">' + escapeHtml(deliveryAddr || 'No address') + '</span>' +
                 '</div>' +
                 '<div class="od-card-actions">' +
+                    '<button class="od-card-btn" data-view-order-detail="' + order.orderId + '" style="background:var(--od-green);color:white;border-color:var(--od-green);"><i class="fa-solid fa-expand"></i> View Details</button>' +
                     '<button class="od-card-expand' + (isExpanded ? ' expanded' : '') + '" data-expand-order="' + order.orderId + '">' +
-                        '<i class="fa-solid fa-chevron-down"></i> ' + (isExpanded ? 'Collapse' : 'View Details') +
+                        '<i class="fa-solid fa-chevron-down"></i> ' + (isExpanded ? 'Collapse' : 'Quick View') +
                     '</button>' +
                 '</div>' +
             '</div>' +
@@ -552,6 +558,141 @@
         } catch (e) { /* ignore */ }
     }
 
+    /* ── Order Detail Modal ── */
+    var odDetailModal = document.getElementById('odDetailModal');
+    var odModalBody = document.getElementById('odModalBody');
+    var odModalClose = document.getElementById('odModalClose');
+
+    function openOrderDetailModal(orderId) {
+        var order = findOrder(orderId);
+        if (!order || !odDetailModal || !odModalBody) return;
+
+        var items = order.items || [];
+        var deliveryInfo = order.deliveryInfo || {};
+
+        var html = '';
+
+        /* Order ID + Status */
+        html += '<div class="od-m-section">';
+        html += '<div class="od-m-order-id"><i class="fa-solid fa-hashtag"></i> ' + escapeHtml(order.orderId) + '</div>';
+        html += '</div>';
+
+        /* Products */
+        html += '<div class="od-m-section">';
+        html += '<p class="od-m-label"><i class="fa-solid fa-box-open"></i> Products</p>';
+        for (var i = 0; i < items.length; i++) {
+            var item = items[i];
+            var hasImg = item.imageUrl && item.imageUrl.length > 0;
+            var imgHtml = hasImg
+                ? '<img src="' + escapeHtml(item.imageUrl) + '" alt="' + escapeHtml(item.productName) + '">'
+                : '<i class="fa-solid ' + getCategoryEmoji(item.category) + '"></i>';
+            html += '<div class="od-m-product">' +
+                '<div class="od-m-product-img">' + imgHtml + '</div>' +
+                '<div class="od-m-product-info">' +
+                    '<p class="od-m-product-name">' + escapeHtml(item.productName) + '</p>' +
+                    '<p class="od-m-product-farmer"><i class="fa-solid fa-user"></i> ' + escapeHtml(item.farmerName || 'Unknown') + '</p>' +
+                '</div>' +
+                '<div class="od-m-product-price">' +
+                    '<div class="od-m-product-qty">Qty: ' + (item.quantity || 1) + '</div>' +
+                    '<div class="od-m-product-total">' + formatDualPrice(item.lineTotal) + '</div>' +
+                '</div>' +
+            '</div>';
+        }
+        html += '</div>';
+
+        /* Delivery / Payment Info */
+        var deliveryAddr = formatDeliveryAddress(deliveryInfo);
+        html += '<div class="od-m-section">';
+        html += '<p class="od-m-label"><i class="fa-solid fa-circle-info"></i> Order Information</p>';
+        html += '<div class="od-m-info-grid">';
+        html += '<div class="od-m-info-item"><div class="od-m-info-key">Status</div><div class="od-m-info-val"><span class="od-badge ' + normalizeStatus(order.status) + '"><i class="fa-solid ' + getStatusIcon(order.status) + '"></i> ' + getStatusLabel(order.status) + '</span></div></div>';
+        html += '<div class="od-m-info-item"><div class="od-m-info-key">Payment</div><div class="od-m-info-val">' + escapeHtml(order.paymentStatus || 'Pending') + '</div></div>';
+        html += '<div class="od-m-info-item"><div class="od-m-info-key">Total</div><div class="od-m-info-val" style="color:var(--od-green);font-weight:800;">' + formatDualPrice(order.totalPrice) + '</div></div>';
+        html += '<div class="od-m-info-item"><div class="od-m-info-key">Date</div><div class="od-m-info-val">' + formatDate(order.createdAt) + ' at ' + formatTime(order.createdAt) + '</div></div>';
+        html += '</div>';
+        html += '</div>';
+
+        /* Delivery Address */
+        html += '<div class="od-m-section">';
+        html += '<p class="od-m-label"><i class="fa-solid fa-location-dot"></i> Delivery Address</p>';
+        html += '<div class="od-m-info-grid">';
+        html += '<div class="od-m-info-item"><div class="od-m-info-key">Name</div><div class="od-m-info-val">' + escapeHtml(deliveryInfo.fullName || 'N/A') + '</div></div>';
+        html += '<div class="od-m-info-item"><div class="od-m-info-key">Phone</div><div class="od-m-info-val">' + escapeHtml(deliveryInfo.phone || 'N/A') + '</div></div>';
+        html += '<div class="od-m-info-item" style="grid-column:1/-1;"><div class="od-m-info-key">Address</div><div class="od-m-info-val">' + escapeHtml(deliveryAddr || 'Not provided') + '</div></div>';
+        html += '</div>';
+        html += '</div>';
+
+        /* Timeline */
+        html += '<div class="od-m-section">';
+        html += '<p class="od-m-label"><i class="fa-solid fa-clock-rotate-left"></i> Order Timeline</p>';
+        html += '<div class="od-m-timeline">';
+
+        var timeline = buildTimeline(order);
+        for (var t = 0; t < timeline.length; t++) {
+            var step = timeline[t];
+            html += '<div class="od-m-timeline-item ' + step.statusClass + '">' +
+                '<div class="od-m-timeline-dot"></div>' +
+                '<div class="od-m-timeline-title">' + escapeHtml(step.title) + '</div>' +
+                '<div class="od-m-timeline-time">' + escapeHtml(step.time) + '</div>' +
+            '</div>';
+        }
+
+        html += '</div></div>';
+
+        odModalBody.innerHTML = html;
+        odDetailModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeOrderDetailModal() {
+        if (!odDetailModal) return;
+        odDetailModal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function buildTimeline(order) {
+        var steps = [];
+        var created = order.createdAt ? formatDate(order.createdAt) + ' at ' + formatTime(order.createdAt) : 'N/A';
+
+        steps.push({ title: 'Order Placed', time: created, statusClass: 'completed' });
+
+        if (order.status === 'Pending' || order.status === 'pending') {
+            steps.push({ title: 'Awaiting Farmer Approval', time: 'In progress', statusClass: 'active' });
+        } else if (order.status === 'Accepted' || order.status === 'accepted') {
+            var acceptedAt = order.updatedAt ? formatDate(order.updatedAt) + ' at ' + formatTime(order.updatedAt) : 'N/A';
+            steps.push({ title: 'Accepted by Farmer', time: acceptedAt, statusClass: 'completed' });
+            steps.push({ title: 'Preparing for Delivery', time: 'In progress', statusClass: 'active' });
+        } else if (order.status === 'Completed' || order.status === 'completed') {
+            var acceptedAt2 = order.updatedAt ? formatDate(order.updatedAt) + ' at ' + formatTime(order.updatedAt) : 'N/A';
+            steps.push({ title: 'Accepted by Farmer', time: acceptedAt2, statusClass: 'completed' });
+            steps.push({ title: 'Delivered', time: acceptedAt2, statusClass: 'completed' });
+        } else if (order.status === 'Rejected' || order.status === 'rejected' || order.status === 'Cancelled' || order.status === 'cancelled') {
+            var rejectedAt = order.updatedAt ? formatDate(order.updatedAt) + ' at ' + formatTime(order.updatedAt) : 'N/A';
+            steps.push({ title: 'Rejected / Cancelled', time: rejectedAt, statusClass: '' });
+        }
+
+        return steps;
+    }
+
+    /* Modal event handlers */
+    if (odModalClose) odModalClose.addEventListener('click', closeOrderDetailModal);
+    if (odDetailModal) {
+        odDetailModal.addEventListener('click', function(e) {
+            if (e.target === odDetailModal) closeOrderDetailModal();
+        });
+    }
+
+    /* Extend card click to also support "View Order Details" button */
+    if (!odList._detailDelegated) {
+        odList.addEventListener('click', function(e) {
+            var detailBtn = e.target.closest('[data-view-order-detail]');
+            if (detailBtn) {
+                openOrderDetailModal(detailBtn.getAttribute('data-view-order-detail'));
+            }
+        });
+        odList._detailDelegated = true;
+    }
+
     function setTab(tab) {
         currentTab = tab;
 
@@ -624,6 +765,14 @@
         }
 
         if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (odDetailModal && odDetailModal.classList.contains('active')) {
+                    closeOrderDetailModal();
+                }
+            }
+        });
     }
 
     async function init() {

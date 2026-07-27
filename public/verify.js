@@ -73,8 +73,6 @@ function startResendCountdown(seconds = 60) {
 
                 const data = await res.json();
 
-                console.log("Verification response:", data);
-
                 if (res.ok) {
 
                     status.style.color = "green";

@@ -31,6 +31,7 @@
     })();
 
     var allProducts = [];
+    var WISHLIST_KEY = 'buyerWishlist';
 
     var marketplaceGrid = document.getElementById('marketplaceGrid');
     var marketplaceEmpty = document.getElementById('marketplaceEmpty');
@@ -40,6 +41,16 @@
     var priceSort = document.getElementById('priceSort');
     var dateFilter = document.getElementById('dateFilter');
     var availabilityFilter = document.getElementById('availabilityFilter');
+    var wishlistGrid = document.getElementById('wishlistGrid');
+    var wishlistEmpty = document.getElementById('wishlistEmpty');
+    var wishlistCount = document.getElementById('wishlistCount');
+    var wishlistBadge = document.getElementById('wishlistBadge');
+    var wishlistSection = document.getElementById('wishlistSection');
+    var wishlistToggleBtn = document.getElementById('wishlistToggleBtn');
+
+    if (marketplaceGrid) {
+        marketplaceGrid.innerHTML = '<div class="page-loading"><div class="spinner-lg"></div><p>Loading products...</p></div>';
+    }
 
     function getToken() {
         return localStorage.getItem('token');
@@ -95,6 +106,158 @@
         return Number(price).toLocaleString('en-RW');
     }
 
+    function formatDualPrice(price) {
+        return PriceFormatter.formatDual(price);
+    }
+
+    /* ── Wishlist (localStorage-based) ── */
+    function getWishlist() {
+        try {
+            return JSON.parse(localStorage.getItem(WISHLIST_KEY)) || [];
+        } catch (e) { return []; }
+    }
+
+    function saveWishlist(list) {
+        try { localStorage.setItem(WISHLIST_KEY, JSON.stringify(list)); } catch (e) { /* ignore */ }
+    }
+
+    function isInWishlist(productId) {
+        return getWishlist().indexOf(productId) !== -1;
+    }
+
+    function toggleWishlistItem(productId) {
+        var list = getWishlist();
+        var idx = list.indexOf(productId);
+        if (idx === -1) {
+            list.push(productId);
+            showToast('Added to wishlist!', 'success');
+        } else {
+            list.splice(idx, 1);
+            showToast('Removed from wishlist', 'info');
+        }
+        saveWishlist(list);
+        updateWishlistBadge();
+        renderWishlist();
+        renderProducts(allProducts.filter(function(p) { return true; }));
+        filterAndRender();
+    }
+
+    function updateWishlistBadge() {
+        var count = getWishlist().length;
+        if (wishlistBadge) {
+            if (count > 0) {
+                wishlistBadge.textContent = count > 99 ? '99+' : count;
+                wishlistBadge.style.display = 'flex';
+            } else {
+                wishlistBadge.style.display = 'none';
+            }
+        }
+    }
+
+    function renderWishlist() {
+        if (!wishlistGrid) return;
+        var list = getWishlist();
+        var items = [];
+        for (var i = 0; i < list.length; i++) {
+            var product = getProductById(list[i]);
+            if (product) items.push(product);
+        }
+
+        if (items.length === 0) {
+            wishlistGrid.style.display = 'none';
+            if (wishlistEmpty) wishlistEmpty.style.display = '';
+            if (wishlistCount) wishlistCount.textContent = '0 items';
+            return;
+        }
+
+        if (wishlistEmpty) wishlistEmpty.style.display = 'none';
+        wishlistGrid.style.display = '';
+
+        var html = '';
+        for (var j = 0; j < items.length; j++) {
+            var p = items[j];
+            var ownerName = (p.owner && p.owner.name) ? p.owner.name : 'Unknown Farmer';
+            var hasImage = p.imageUrl && p.imageUrl.length > 0;
+            var imgHtml = hasImage
+                ? '<img src="' + escapeHtml(p.imageUrl) + '" alt="' + escapeHtml(p.name) + '" loading="lazy">'
+                : '<div class="product-card-img-placeholder"><i class="fa-solid ' + getCategoryEmoji(p.category) + '"></i></div>';
+            var delay = Math.min(j * 0.06, 0.5);
+            html += '<div class="product-card" style="animation-delay:' + delay + 's">' +
+                '<div class="product-card-img">' +
+                    imgHtml +
+                    '<span class="product-card-category-badge"><i class="fa-solid ' + getCategoryEmoji(p.category) + '"></i> ' + escapeHtml(p.category) + '</span>' +
+                    '<span class="product-card-status status-approved">Available</span>' +
+                '</div>' +
+                '<div class="product-card-body">' +
+                    '<h3 class="product-card-name">' + escapeHtml(p.name) + '</h3>' +
+                    '<p class="product-card-price">' + formatDualPrice(p.price) + '</p>' +
+                    '<div class="product-card-stock"><span class="stock-dot"></span> In Stock</div>' +
+                    '<div class="product-card-meta">' +
+                        '<div class="product-card-meta-item"><i class="fa-solid fa-user"></i> ' + escapeHtml(ownerName) + '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="product-card-actions">' +
+                    '<button class="product-card-btn product-card-btn-secondary" data-wishlist-remove="' + p._id + '" title="Remove from wishlist"><i class="fa-solid fa-heart-broken"></i> Remove</button>' +
+                    '<button class="product-card-btn product-card-btn-primary" data-product-id="' + p._id + '" title="Add to cart"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>' +
+                '</div>' +
+            '</div>';
+        }
+        wishlistGrid.innerHTML = html;
+        if (wishlistCount) wishlistCount.textContent = items.length + (items.length === 1 ? ' item' : ' items');
+    }
+
+    if (wishlistGrid && !wishlistGrid._delegated) {
+        wishlistGrid.addEventListener('click', function (e) {
+            var removeBtn = e.target.closest('[data-wishlist-remove]');
+            if (removeBtn) {
+                toggleWishlistItem(removeBtn.getAttribute('data-wishlist-remove'));
+                return;
+            }
+            var addBtn = e.target.closest('[data-product-id]');
+            if (addBtn) {
+                handleAddToCart(addBtn.getAttribute('data-product-id'));
+            }
+        });
+        wishlistGrid._delegated = true;
+    }
+
+    if (wishlistToggleBtn) {
+        wishlistToggleBtn.addEventListener('click', function() {
+            if (wishlistSection) {
+                var isVisible = wishlistSection.style.display !== 'none';
+                wishlistSection.style.display = isVisible ? 'none' : '';
+                if (!isVisible) {
+                    renderWishlist();
+                    wishlistSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+                saveSession();
+            }
+        });
+    }
+
+    /* ── Session Preservation ── */
+    function saveSession() {
+        try {
+            var session = {
+                timestamp: Date.now(),
+                wishlistVisible: wishlistSection ? wishlistSection.style.display !== 'none' : false
+            };
+            localStorage.setItem('buyerSession', JSON.stringify(session));
+        } catch (e) { /* ignore */ }
+    }
+
+    function restoreSession() {
+        try {
+            var stored = localStorage.getItem('buyerSession');
+            if (!stored) return;
+            var session = JSON.parse(stored);
+            if (session.wishlistVisible && wishlistSection) {
+                wishlistSection.style.display = '';
+                renderWishlist();
+            }
+        } catch (e) { /* ignore */ }
+    }
+
     function getCategoryEmoji(category) {
         var map = {
             'Fruits': 'fa-apple-whole',
@@ -116,15 +279,20 @@
 
         var delay = Math.min(index * 0.06, 0.5);
 
+        var inWishlist = isInWishlist(product._id);
+        var heartIcon = inWishlist ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+        var heartClass = inWishlist ? 'product-card-btn-wishlist active' : 'product-card-btn-wishlist';
+
         return '<div class="product-card" style="animation-delay:' + delay + 's">' +
             '<div class="product-card-img">' +
                 imgHtml +
+                '<button class="' + heartClass + '" data-wishlist-toggle="' + product._id + '" title="' + (inWishlist ? 'Remove from wishlist' : 'Add to wishlist') + '"><i class="fa-' + (inWishlist ? 'solid' : 'regular') + ' fa-heart"></i></button>' +
                 '<span class="product-card-category-badge"><i class="fa-solid ' + getCategoryEmoji(product.category) + '"></i> ' + escapeHtml(product.category) + '</span>' +
                 '<span class="product-card-status status-approved">Available</span>' +
             '</div>' +
             '<div class="product-card-body">' +
                 '<h3 class="product-card-name">' + escapeHtml(product.name) + '</h3>' +
-                '<p class="product-card-price">' + formatPrice(product.price) + ' <span>RWF</span></p>' +
+                '<p class="product-card-price">' + formatDualPrice(product.price) + '</p>' +
                 '<div class="product-card-stock"><span class="stock-dot"></span> In Stock</div>' +
                 '<div class="product-card-meta">' +
                     '<div class="product-card-meta-item"><i class="fa-solid fa-user"></i> ' + escapeHtml(ownerName) + '</div>' +
@@ -175,6 +343,11 @@
             var viewTarget = e.target.closest('[data-view-details]');
             if (viewTarget) {
                 openProductModal(viewTarget.getAttribute('data-view-details'));
+                return;
+            }
+            var wishlistBtn = e.target.closest('[data-wishlist-toggle]');
+            if (wishlistBtn) {
+                toggleWishlistItem(wishlistBtn.getAttribute('data-wishlist-toggle'));
             }
         });
         marketplaceGrid._delegated = true;
@@ -198,7 +371,8 @@
         saveCart(cart);
         updateCartBadge();
         renderCart();
-        showToast('Product added to cart!', 'success');
+        var product = getProductById(productId);
+        showToast((product ? product.name : 'Product') + ' added to cart!', 'success');
     }
 
     var cartBtn = document.getElementById('cartBtn');
@@ -283,13 +457,13 @@
                 '<div class="cart-item-img">' + imgHtml + '</div>' +
                 '<div class="cart-item-info">' +
                     '<p class="cart-item-name">' + escapeHtml(product.name) + '</p>' +
-                    '<p class="cart-item-price">' + formatPrice(product.price) + ' RWF</p>' +
+                    '<p class="cart-item-price">' + formatDualPrice(product.price) + '</p>' +
                     '<div class="cart-item-controls">' +
                         '<button class="cart-qty-btn" data-cart-qty="-1" data-cart-pid="' + product._id + '" title="Decrease"><i class="fa-solid fa-minus"></i></button>' +
                         '<span class="cart-item-qty">' + qty + '</span>' +
                         '<button class="cart-qty-btn" data-cart-qty="1" data-cart-pid="' + product._id + '" title="Increase"><i class="fa-solid fa-plus"></i></button>' +
                     '</div>' +
-                    '<span class="cart-item-total">' + formatPrice(lineTotal) + ' RWF</span>' +
+                    '<span class="cart-item-total">' + formatDualPrice(lineTotal) + '</span>' +
                 '</div>' +
                 '<button class="cart-item-remove" data-cart-remove="' + product._id + '" title="Remove item"><i class="fa-solid fa-trash-can"></i></button>' +
             '</div>';
@@ -299,8 +473,8 @@
 
         if (cartDrawerFooter) {
             cartDrawerFooter.style.display = '';
-            if (cartSubtotal) cartSubtotal.textContent = formatPrice(subtotal) + ' RWF';
-            if (cartTotal) cartTotal.textContent = formatPrice(subtotal) + ' RWF';
+            if (cartSubtotal) cartSubtotal.innerHTML = formatDualPrice(subtotal);
+            if (cartTotal) cartTotal.innerHTML = formatDualPrice(subtotal);
         }
     }
 
@@ -411,7 +585,7 @@
         pdModalAvailability.textContent = isAvailable ? 'In Stock' : 'Out of Stock';
         pdModalAvailability.className = 'pd-modal-badge pd-modal-badge-availability' + (isAvailable ? '' : ' out-of-stock');
 
-        pdModalPrice.innerHTML = formatPrice(product.price) + ' <span>RWF</span>';
+        pdModalPrice.innerHTML = formatDualPrice(product.price);
 
         var descSpan = pdModalDescription.querySelector('.pd-modal-desc');
         if (descSpan) {
@@ -534,8 +708,9 @@
             }
         } catch (e) {
             console.error('Failed to load dashboard:', e);
-            if (marketplaceGrid) marketplaceGrid.style.display = 'none';
-            if (marketplaceEmpty) marketplaceEmpty.style.display = 'block';
+            if (marketplaceGrid) {
+                marketplaceGrid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p class="empty-state-text">Failed to load products</p><p class="empty-state-sub">Please refresh the page or try again later.</p></div>';
+            }
         }
     }
 
@@ -625,7 +800,11 @@
 
     initDarkMode();
     updateCartBadge();
+    updateWishlistBadge();
+    saveSession();
+    restoreSession();
     loadDashboard();
+    setTimeout(function() { renderWishlist(); }, 800);
 })();
 
 (function() {

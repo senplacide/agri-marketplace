@@ -2,10 +2,6 @@
 
 // --- 1. Utility Functions ---
 
-/**
- * Global alert utility
- * @param {string} message 
- */
 function escapeHtml(value) {
     return String(value)
         .replace(/&/g, '&amp;')
@@ -15,14 +11,55 @@ function escapeHtml(value) {
         .replace(/'/g, '&#39;');
 }
 
+// --- Global Toast Notification System ---
+function showToast(message, type) {
+    type = type || 'info';
+    if (typeof UX !== 'undefined' && UX.toast) {
+        UX.toast(message, type);
+        return;
+    }
+    var icons = { success: '\u2713', error: '\u2717', warning: '\u26A0', info: 'i' };
+    var container = document.getElementById('toastContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.className = 'toast-container';
+        container.setAttribute('aria-live', 'polite');
+        document.body.appendChild(container);
+    }
+    var toast = document.createElement('div');
+    toast.className = 'toast toast-' + type;
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = '<span class="toast-icon">' + (icons[type] || 'i') + '</span><span>' + escapeHtml(message) + '</span>';
+    container.appendChild(toast);
+    setTimeout(function () {
+        toast.classList.add('toast-hide');
+        setTimeout(function () { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 300);
+    }, 4000);
+}
+
 function showAlert(message) {
     if (message.includes("Failed to fetch")) {
-        alert("Invalid email or password.");
+        showToast("Unable to connect. Please check your internet and try again.", "error");
     } else {
-        alert(message);
+        showToast(message, "error");
     }
-
     console.error("ALERT:", message);
+}
+
+// --- Button Loading Helper ---
+function setBtnLoading(btn, loadingText) {
+    if (!btn) return;
+    if (loadingText === false) {
+        btn.disabled = false;
+        btn.classList.remove('btn-loading');
+        if (btn._originalText) btn.innerHTML = btn._originalText;
+        return;
+    }
+    btn._originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.classList.add('btn-loading');
+    btn.innerHTML = '<span class="spinner spinner-sm"></span> ' + loadingText;
 }
 /**
  * Standardized API Fetch utility with JWT handling.
@@ -156,11 +193,24 @@ function loadAuthForms() {
     if (signupForm) {
         signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            if (typeof UX !== 'undefined') {
+                var valid = UX.validateForm(signupForm, {
+                    'signup-name': { required: true, requiredMsg: 'Please enter your full name', minLength: 2 },
+                    'signup-email': { required: true, email: true },
+                    'signup-password': { required: true, minLength: 6 }
+                });
+                if (!valid) return;
+            }
+
             const name = document.getElementById('signup-name').value;
             const email = document.getElementById('signup-email').value;
             const password = document.getElementById('signup-password').value;
             const roleRadio = document.querySelector('input[name="signup-role"]:checked');
             const role = roleRadio ? roleRadio.value : 'farmer';
+
+            const submitBtn = signupForm.querySelector('button[type="submit"]');
+            setBtnLoading(submitBtn, 'Creating account...');
 
             try {
                 const data = await apiFetch('/api/auth/signup', {
@@ -175,6 +225,8 @@ encodeURIComponent(data.email);
 signupForm.reset();
             } catch (error) {
                 showAlert('Sign Up Failed: ' + error.message);
+            } finally {
+                setBtnLoading(submitBtn, false);
             }
         });
     }
@@ -182,29 +234,39 @@ signupForm.reset();
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            if (typeof UX !== 'undefined') {
+                var valid = UX.validateForm(loginForm, {
+                    'login-email': { required: true, email: true },
+                    'login-password': { required: true, minLength: 6 }
+                });
+                if (!valid) return;
+            }
+
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
 
+            const submitBtn = loginForm.querySelector('button[type="submit"]');
+            setBtnLoading(submitBtn, 'Signing in...');
+
             try {
-                // Hitting the backend route: POST /api/auth/login
                 const result = await apiFetch('/api/auth/login', { method: 'POST', body: { email, password }, headers: false });
                 
-                // Store the JWT token
-localStorage.setItem('token', result.token);
+                localStorage.setItem('token', result.token);
+                await loadCurrentUser();
+                updateNav();
 
-// Reload user and update UI
-await loadCurrentUser();
-updateNav();
-
-if (result.user.role === "admin") {
-    window.location.href = "/admin.html";
-} else if (result.user.role === "buyer") {
-    window.location.href = "/buyer-dashboard";
-} else {
-    window.location.href = "/dashboard";
-}
+                if (result.user.role === "admin") {
+                    window.location.href = "/admin.html";
+                } else if (result.user.role === "buyer") {
+                    window.location.href = "/buyer-dashboard";
+                } else {
+                    window.location.href = "/dashboard";
+                }
             } catch (error) {
                 showAlert('Login Failed: ' + error.message);
+            } finally {
+                setBtnLoading(submitBtn, false);
             }
         });
     }
@@ -217,23 +279,29 @@ async function renderProducts() {
     const productList = document.getElementById('product-list');
     if (!productList) return;
 
-    productList.innerHTML = '<p>Loading products...</p>';
+    if (typeof UX !== 'undefined') {
+        UX.pageLoading(productList, 'Loading products...');
+    } else {
+        productList.innerHTML = '<div class="page-loading"><div class="spinner-lg"></div><p>Loading products...</p></div>';
+    }
     try {
-        // Hitting the backend route: GET /api/products
         const response = await apiFetch('/api/products', { headers: false });
         const products = Array.isArray(response) ? response : (response.data || response.products || []);
 
         productList.innerHTML = '';
         if (products.length === 0) {
-            productList.innerHTML = '<p>No products listed yet. Be the first!</p>';
+            if (typeof UX !== 'undefined') {
+                UX.emptyState(productList, { icon: 'fa-box-open', title: 'No products listed yet', message: 'Be the first to list a product on the marketplace!' });
+            } else {
+                productList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📦</div><p class="empty-state-text">No products listed yet</p><p class="empty-state-sub">Be the first to list a product on the marketplace!</p></div>';
+            }
             return;
         }
 
         const fragment = document.createDocumentFragment();
-        const priceFormatter = new Intl.NumberFormat('en-RW', { style: 'currency', currency: 'RWF' });
         for (let i = 0; i < products.length; i++) {
             const product = products[i];
-            const price = priceFormatter.format(product.price);
+            const priceHtml = PriceFormatter.formatDual(product.price);
             const methods = product.paymentMethods?.join(', ') || 'Contact Seller';
 
             const card = document.createElement('div');
@@ -242,7 +310,7 @@ async function renderProducts() {
                 ${product.imageUrl ? `<img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.name)}">` : ''}
                 <h3>${escapeHtml(product.name)}</h3>
                 <p><strong>Category:</strong> ${escapeHtml(product.category)}</p>
-                <p><strong>Price:</strong> ${escapeHtml(price)}</p>
+                <p><strong>Price:</strong> <span class="price-dual">${priceHtml}</span></p>
                 <p><strong>Payment:</strong> <span style="color: var(--secondary-color); font-weight: 700;">${escapeHtml(methods)}</span></p>
                 <p><strong>Contact:</strong> ${escapeHtml(product.contact || 'Not provided')}</p>
                 <p>${escapeHtml(product.description || '')}</p>
@@ -252,7 +320,11 @@ async function renderProducts() {
         productList.appendChild(fragment);
 
     } catch (error) {
-        productList.innerHTML = `<p style="color: red;">Failed to load products: ${error.message}</p>`;
+        if (typeof UX !== 'undefined') {
+            UX.emptyState(productList, { icon: 'fa-triangle-exclamation', title: 'Failed to load products', message: error.message });
+        } else {
+            productList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p class="empty-state-text">Failed to load products</p><p class="empty-state-sub">' + escapeHtml(error.message) + '</p></div>';
+        }
     }
 }
 
@@ -302,14 +374,22 @@ if (imageFile) {
     productData.append("image", imageFile);
 }
 
+        var submitBtn = productForm.querySelector('button[type="submit"]');
+        if (submitBtn) setBtnLoading(submitBtn, 'Listing...');
+
         try {
-            // Hitting the backend route: POST /api/products
             await apiFetch('/api/products', { method: 'POST', body: productData });
-            alert('Product listed successfully!');
+            showToast('Product listed successfully!', 'success');
             productForm.reset();
-            renderProducts(); // Refresh the list
+            if (typeof Marketplace !== 'undefined') {
+                Marketplace.refresh();
+            } else {
+                renderProducts();
+            }
         } catch (error) {
             showAlert('Failed to list product: ' + error.message);
+        } finally {
+            if (submitBtn) setBtnLoading(submitBtn, false);
         }
     });
 }
@@ -330,7 +410,11 @@ async function renderDashboard() {
     }
 
     greeting.textContent = `Welcome, ${currentUser.name}! (User ID: ${currentUser._id})`;
-    dashboardProducts.innerHTML = '<p>Loading your listings...</p>';
+    if (typeof UX !== 'undefined') {
+        UX.pageLoading(dashboardProducts, 'Loading your listings...');
+    } else {
+        dashboardProducts.innerHTML = '<div class="page-loading"><div class="spinner-lg"></div><p>Loading your listings...</p></div>';
+    }
 
     try {
         // Hitting the backend route: GET /api/products/my-listings
@@ -339,15 +423,18 @@ async function renderDashboard() {
 
         dashboardProducts.innerHTML = '';
         if (myProducts.length === 0) {
-            dashboardProducts.innerHTML = '<p>You have no active listings. <a href="/items">List your first product here!</a></p>';
+            if (typeof UX !== 'undefined') {
+                UX.emptyState(dashboardProducts, { icon: 'fa-seedling', title: 'No listings yet', message: 'Start selling by listing your first product on the marketplace.', btnText: 'List a Product', btnHref: '/items', btnIcon: 'fa-plus' });
+            } else {
+                dashboardProducts.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🌱</div><p class="empty-state-text">No listings yet</p><p class="empty-state-sub">Start selling by listing your first product on the marketplace.</p><a href="/items" class="btn btn-primary" style="margin-top:8px;">List a Product</a></div>';
+            }
             return;
         }
 
         const fragment = document.createDocumentFragment();
-        const priceFormatter = new Intl.NumberFormat('en-RW', { style: 'currency', currency: 'RWF' });
         for (let i = 0; i < myProducts.length; i++) {
             const product = myProducts[i];
-            const price = priceFormatter.format(product.price);
+            const priceHtml = PriceFormatter.formatDual(product.price);
             const methods = product.paymentMethods?.join(', ') || 'Contact Seller';
 
             const card = document.createElement('div');
@@ -357,7 +444,7 @@ async function renderDashboard() {
                 ${product.imageUrl ? `<img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.name)}">` : ''}
                 <h3>${escapeHtml(product.name)} (Your Listing)</h3>
                 <p><strong>Category:</strong> ${escapeHtml(product.category)}</p>
-                <p><strong>Price:</strong> ${escapeHtml(price)}</p>
+                <p><strong>Price:</strong> <span class="price-dual">${priceHtml}</span></p>
                 <p><strong>Payment:</strong> <span style="color: var(--secondary-color); font-weight: 700;">${escapeHtml(methods)}</span></p>
                 <p><strong>Contact:</strong> ${escapeHtml(product.contact || 'Not provided')}</p>
                 <p>${escapeHtml(product.description || '')}</p>
@@ -384,7 +471,11 @@ async function renderDashboard() {
 });
 
     } catch (error) {
-        dashboardProducts.innerHTML = `<p style="color: red;">Failed to load listings: ${error.message}</p>`;
+        if (typeof UX !== 'undefined') {
+            UX.emptyState(dashboardProducts, { icon: 'fa-triangle-exclamation', title: 'Failed to load listings', message: error.message });
+        } else {
+            dashboardProducts.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p class="empty-state-text">Failed to load listings</p><p class="empty-state-sub">' + escapeHtml(error.message) + '</p></div>';
+        }
     }
 }
 async function handleEditProduct(e) {
@@ -479,7 +570,7 @@ async function handleSaveProduct(e) {
             body: formData
         });
 
-        alert("Listing updated successfully!");
+        showToast("Listing updated successfully!", 'success');
 
         renderDashboard();
 
@@ -496,15 +587,17 @@ async function handleDeleteProduct(e) {
         return;
     }
 
+    const btn = e.target.closest('button');
+    if (btn) setBtnLoading(btn, 'Deleting...');
+
     try {
-        // Hitting the backend route: DELETE /api/products/:id
         await apiFetch(`/api/products/${productId}`, { method: 'DELETE' });
-        
-        // Remove the card from the DOM
         document.getElementById(`product-${productId}`).remove();
-        alert('Listing deleted successfully.');
+        showToast('Listing deleted successfully.', 'success');
     } catch (error) {
         showAlert('Failed to delete listing: ' + error.message);
+    } finally {
+        if (btn) setBtnLoading(btn, false);
     }
 }
 
@@ -518,6 +611,16 @@ function loadContactForm() {
     if (contactForm) {
         contactForm.addEventListener("submit", async (e) => {
             e.preventDefault();
+
+            if (typeof UX !== 'undefined') {
+                var valid = UX.validateForm(contactForm, {
+                    'contact-name': { required: true, requiredMsg: 'Please enter your name' },
+                    'contact-email': { required: true, email: true },
+                    'contact-message': { required: true, requiredMsg: 'Please enter a message', minLength: 10 }
+                });
+                if (!valid) return;
+            }
+
             statusMessage.textContent = "Sending message...";
             statusMessage.style.color = "#4299e1"; 
 
@@ -528,23 +631,28 @@ function loadContactForm() {
                 message: document.getElementById("contact-message").value,
             };
 
+            const submitBtn = contactForm.querySelector('button[type="submit"]');
+            if (submitBtn) setBtnLoading(submitBtn, 'Sending...');
+
             try {
-                // Send data to the new /api/contact route
                 const result = await apiFetch("/api/contact", { 
                     method: "POST", 
                     body: data,
-                    headers: false // Public form, no token needed
+                    headers: false
                 });
 
                 statusMessage.textContent = result.message || "Message sent successfully! We will be in touch soon.";
-                statusMessage.style.color = result.status === 'success_with_warning' ? '#f6ad55' : 'green'; 
+                statusMessage.style.color = result.status === 'success_with_warning' ? '#f6ad55' : '#16a34a';
+                showToast(result.message || "Message sent successfully!", result.status === 'success_with_warning' ? 'warning' : 'success');
                 contactForm.reset();
 
             } catch (err) {
                 const errorMessage = "Failed to send message: " + err.message;
                 statusMessage.textContent = errorMessage;
-                statusMessage.style.color = "#e53e3e"; 
-                showAlert(errorMessage); 
+                statusMessage.style.color = "#e53e3e";
+                showToast(errorMessage, 'error');
+            } finally {
+                if (submitBtn) setBtnLoading(submitBtn, false);
             }
         });
     }
@@ -642,7 +750,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const startSellingBtn = document.getElementById("start-selling-btn");
 
     if (hasProductForm) loadProductForm();
-    if (hasProductList) renderProducts();
+    if (hasProductList && typeof Marketplace === 'undefined') renderProducts();
     if (hasSignupForm || hasLoginForm) loadAuthForms();
     if (hasDashboardProducts) renderDashboard();
     if (hasContactForm) loadContactForm();

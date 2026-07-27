@@ -2,6 +2,7 @@ const express = require("express");
 const User = require("../models/User");
 const Product = require("../models/Product");
 const Order = require("../models/Order");
+const Notification = require("../models/Notification");
 const { sendOrderAcceptedEmail, sendOrderRejectedEmail, sendOrderCompletedEmail } = require("../utils/email");
 const { requireAuth } = require("../middleware/auth");
 const { validateStatusInput, validateObjectId, FARMER_ORDER_STATUSES } = require("../utils/validation");
@@ -28,7 +29,8 @@ router.get("/dashboard", requireAuth, async function (req, res) {
 
         var products = await Product.find({ owner: req.userId })
             .populate("owner", "name email")
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .limit(100);
 
         var totalProducts = await Product.countDocuments({ owner: req.userId });
         var approvedProducts = await Product.countDocuments({ owner: req.userId, status: "approved" });
@@ -103,7 +105,8 @@ router.get("/orders", requireAuth, async function (req, res) {
 
         var orders = await Order.find({ "items.product": { $in: productIds } })
             .populate("buyer", "name email phone")
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .limit(100);
 
         var result = orders.map(function (order) {
             var orderObj = order.toObject();
@@ -217,6 +220,29 @@ router.patch("/orders/:orderId/status", requireAuth, async function (req, res) {
                     await sendOrderRejectedEmail(buyer.email, buyer.name, order);
                 } else if (newStatus === "Completed") {
                     await sendOrderCompletedEmail(buyer.email, buyer.name, order);
+                }
+            }
+
+            if (buyer) {
+                var notifType = newStatus === "Accepted" ? "order_accepted"
+                    : newStatus === "Rejected" ? "order_rejected"
+                    : "order_completed";
+                var notifTitle = newStatus === "Accepted" ? "Order Accepted"
+                    : newStatus === "Rejected" ? "Order Rejected"
+                    : "Order Completed";
+                var farmerLabel = farmer ? farmer.name : "Farmer";
+                var notifMsg = farmerLabel + " " + notifTitle.toLowerCase() + " your order (" + order.orderId + ").";
+
+                try {
+                    await Notification.create({
+                        user: order.buyer,
+                        type: notifType,
+                        title: notifTitle,
+                        message: notifMsg,
+                        orderId: order.orderId
+                    });
+                } catch (notifErr) {
+                    console.error("[Farmer] Buyer notification creation failed:", notifErr.message);
                 }
             }
         } catch (emailErr) {

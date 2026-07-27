@@ -56,7 +56,13 @@
         activeTab: 'dashboard',
         pollInterval: null,
         lastStatsHash: '',
-        lastPayload: null
+        lastPayload: null,
+        financialData: null,
+        withdrawals: [],
+        withdrawalsPage: 1,
+        withdrawalSearchQuery: '',
+        withdrawalStatusFilterVal: 'all',
+        auditActionFilter: 'all'
     };
 
     // =====================================
@@ -90,9 +96,16 @@
         ordersPagination: document.getElementById('ordersPagination'),
         orderSearch: document.getElementById('orderSearch'),
         orderStatusFilter: document.getElementById('orderStatusFilter'),
+        auditActionFilter: document.getElementById('auditActionFilter'),
         orderModal: document.getElementById('orderModal'),
         closeOrderModal: document.getElementById('closeOrderModal'),
-        orderDetailsBody: document.getElementById('orderDetailsBody')
+        orderDetailsBody: document.getElementById('orderDetailsBody'),
+        financialSection: document.getElementById('financialSection'),
+        withdrawalsTable: document.getElementById('withdrawalsTable'),
+        withdrawalsPagination: document.getElementById('withdrawalsPagination'),
+        withdrawalSearch: document.getElementById('withdrawalSearch'),
+        withdrawalStatusFilter: document.getElementById('withdrawalStatusFilter'),
+        finTransactionsTable: document.getElementById('finTransactionsTable')
     };
 
     // =====================================
@@ -129,7 +142,7 @@
     // LOADING SKELETONS
     // =====================================
     function showLoadingSkeletons() {
-        var cardIds = ['usersCount', 'productsCount', 'farmersCount', 'buyersCount'];
+        var cardIds = ['usersCount', 'productsCount', 'farmersCount', 'buyersCount', 'activeProductsCount', 'ordersTodayCount', 'pendingOrdersCount', 'completedOrdersCount', 'grossMarketValue', 'platformCommissionAmt', 'farmerEarningsAmt', 'pendingRevenueAmt'];
         for (var i = 0; i < cardIds.length; i++) {
             var el = document.getElementById(cardIds[i]);
             if (el) el.innerHTML = '<span class="skeleton-box card-number-skeleton"></span>';
@@ -407,12 +420,21 @@
             fragment.appendChild(row);
 
             row.querySelector('.viewUserBtn').addEventListener('click', function () {
+                var avatarHtml = user.avatar
+                    ? '<div style="margin-bottom:14px;"><img src="' + escapeHtml(user.avatar) + '" alt="Avatar" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:3px solid var(--admin-green);"></div>'
+                    : '<div style="margin-bottom:14px;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,rgba(46,125,50,.10),rgba(46,125,50,.20));display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--admin-green);font-weight:700;">' + escapeHtml((user.name || 'U').charAt(0).toUpperCase()) + '</div>';
                 dom.userDetails.innerHTML =
-                    '<p><strong>Name:</strong> ' + escapeHtml(user.name) + '</p>' +
-                    '<p><strong>Email:</strong> ' + escapeHtml(user.email) + '</p>' +
-                    '<p><strong>Role:</strong> ' + user.role + '</p>' +
-                    '<p><strong>Verified:</strong> ' + (user.isVerified ? '\u2705 Verified' : '\u274C Pending') + '</p>' +
-                    '<p><strong>Created:</strong> ' + new Date(user.createdAt).toLocaleString() + '</p>';
+                    avatarHtml +
+                    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
+                    '<p style="margin:0;font-size:.88rem;color:var(--td-color);line-height:1.8;"><strong style="color:var(--admin-text);">Name:</strong> ' + escapeHtml(user.name) + '</p>' +
+                    '<p style="margin:0;font-size:.88rem;color:var(--td-color);line-height:1.8;"><strong style="color:var(--admin-text);">Email:</strong> ' + escapeHtml(user.email) + '</p>' +
+                    '<p style="margin:0;font-size:.88rem;color:var(--td-color);line-height:1.8;"><strong style="color:var(--admin-text);">Role:</strong> ' + getRoleBadge(user.role) + '</p>' +
+                    '<p style="margin:0;font-size:.88rem;color:var(--td-color);line-height:1.8;"><strong style="color:var(--admin-text);">Status:</strong> ' + getVerifyBadge(user) + '</p>' +
+                    (user.phone ? '<p style="margin:0;font-size:.88rem;color:var(--td-color);line-height:1.8;"><strong style="color:var(--admin-text);">Phone:</strong> ' + escapeHtml(user.phone) + '</p>' : '') +
+                    (user.address ? '<p style="margin:0;font-size:.88rem;color:var(--td-color);line-height:1.8;grid-column:1/-1;"><strong style="color:var(--admin-text);">Address:</strong> ' + escapeHtml(user.address) + '</p>' : '') +
+                    (user.businessName ? '<p style="margin:0;font-size:.88rem;color:var(--td-color);line-height:1.8;grid-column:1/-1;"><strong style="color:var(--admin-text);">Business:</strong> ' + escapeHtml(user.businessName) + '</p>' : '') +
+                    '<p style="margin:0;font-size:.88rem;color:var(--td-color);line-height:1.8;grid-column:1/-1;"><strong style="color:var(--admin-text);">Created:</strong> ' + new Date(user.createdAt).toLocaleString() + '</p>' +
+                    '</div>';
                 dom.userModal.style.display = 'flex';
             });
 
@@ -422,8 +444,11 @@
                     return;
                 }
                 dom.userDetails.innerHTML =
-                    '<p><strong>Name:</strong> ' + escapeHtml(user.name) + '</p>' +
-                    '<p><strong>Email:</strong> ' + escapeHtml(user.email) + '</p>';
+                    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
+                    '<p style="margin:0;font-size:.88rem;color:var(--td-color);line-height:1.8;"><strong style="color:var(--admin-text);">Name:</strong> ' + escapeHtml(user.name) + '</p>' +
+                    '<p style="margin:0;font-size:.88rem;color:var(--td-color);line-height:1.8;"><strong style="color:var(--admin-text);">Email:</strong> ' + escapeHtml(user.email) + '</p>' +
+                    '</div>' +
+                    '<p style="margin:8px 0 0;font-size:.82rem;color:var(--admin-text-muted);">Change the user\'s role using the dropdown below:</p>';
                 dom.editRole.value = user.role;
                 dom.saveRoleBtn.dataset.id = user._id;
                 dom.userModal.style.display = 'flex';
@@ -525,7 +550,7 @@
         dom.productsTable.innerHTML = '';
 
         if (filtered.length === 0) {
-            dom.productsTable.innerHTML = '<tr><td colspan="6"><div class="empty-state"><span class="empty-state-icon">\uD83D\uDCE6</span><span class="empty-state-text">No products match your search or filters.</span></div></td></tr>';
+            dom.productsTable.innerHTML = '<tr><td colspan="7"><div class="empty-state"><span class="empty-state-icon">\uD83D\uDCE6</span><span class="empty-state-text">No products match your search or filters.</span></div></td></tr>';
             dom.productsPagination.innerHTML = '';
             return;
         }
@@ -539,19 +564,55 @@
                 : '\uD83D\uDFE1 Pending';
             var ownerName = product.owner ? product.owner.name : 'Unknown';
 
+            var qty = product.quantity != null ? product.quantity : '-';
+            var stockBadge = '';
+            if (product.quantity != null) {
+                if (product.quantity === 0) {
+                    stockBadge = '<span style="background:rgba(211,47,47,.10);color:#d32f2f;padding:3px 8px;border-radius:12px;font-size:.72rem;font-weight:700;">Out of Stock</span>';
+                } else if (product.quantity < 10) {
+                    stockBadge = '<span style="background:rgba(234,88,12,.10);color:#ea580c;padding:3px 8px;border-radius:12px;font-size:.72rem;font-weight:700;">Low Stock</span>';
+                } else {
+                    stockBadge = '<span style="background:rgba(22,163,74,.10);color:#16a34a;padding:3px 8px;border-radius:12px;font-size:.72rem;font-weight:700;">In Stock</span>';
+                }
+            }
+
             row.innerHTML =
                 '<td>' + escapeHtml(product.name) + '</td>' +
                 '<td>' + escapeHtml(product.category) + '</td>' +
-                '<td>' + product.price + '</td>' +
+                '<td><div class="admin-price-cell">' + PriceFormatter.formatDual(product.price) + '</div></td>' +
                 '<td>' + escapeHtml(ownerName) + '</td>' +
                 '<td>' + statusText + '</td>' +
+                '<td style="text-align:center;">' + qty + (product.quantity != null ? '<br>' + stockBadge : '') + '</td>' +
                 '<td>' +
-                    '<button class="approveProductBtn" style="background:#2e7d32;color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;margin-right:5px;">\u2705 Approve</button>' +
-                    '<button class="rejectProductBtn" style="background:#f39c12;color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;margin-right:5px;">\u274C Reject</button>' +
-                    '<button class="deleteProductBtn" data-id="' + product._id + '" style="background:#dc3545;color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;">\uD83D\uDDD1 Delete</button>' +
+                    '<button class="viewProductBtn" style="background:#1976d2;color:white;border:none;padding:5px 10px;border-radius:6px;cursor:pointer;margin-right:4px;font-size:.8rem;" title="View Details"><i class="fa-solid fa-eye"></i></button>' +
+                    '<button class="approveProductBtn" style="background:#2e7d32;color:white;border:none;padding:5px 10px;border-radius:6px;cursor:pointer;margin-right:4px;font-size:.8rem;" title="Approve">\u2705</button>' +
+                    '<button class="rejectProductBtn" style="background:#f39c12;color:white;border:none;padding:5px 10px;border-radius:6px;cursor:pointer;margin-right:4px;font-size:.8rem;" title="Reject">\u274C</button>' +
+                    '<button class="deleteProductBtn" data-id="' + product._id + '" style="background:#dc3545;color:white;border:none;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:.8rem;" title="Delete">\uD83D\uDDD1</button>' +
                 '</td>';
 
             fragment.appendChild(row);
+
+            row.querySelector('.viewProductBtn').addEventListener('click', function () {
+                var imgHtml = '';
+                if (product.imageUrl && product.imageUrl.length > 0) {
+                    imgHtml = '<div style="margin-bottom:14px;"><img src="' + escapeHtml(product.imageUrl) + '" alt="" style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;border:1px solid var(--admin-border);"></div>';
+                }
+                var desc = product.description ? '<p style="margin:4px 0 0;font-size:.85rem;color:var(--td-color);line-height:1.6;">' + escapeHtml(product.description) + '</p>' : '';
+                dom.userDetails.innerHTML =
+                    imgHtml +
+                    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
+                    '<p style="margin:0;font-size:.88rem;color:var(--td-color);line-height:1.8;"><strong style="color:var(--admin-text);">Product:</strong> ' + escapeHtml(product.name) + '</p>' +
+                    '<p style="margin:0;font-size:.88rem;color:var(--td-color);line-height:1.8;"><strong style="color:var(--admin-text);">Category:</strong> ' + escapeHtml(product.category) + '</p>' +
+                    '<p style="margin:0;font-size:.88rem;color:var(--td-color);line-height:1.8;"><strong style="color:var(--admin-text);">Price:</strong> ' + PriceFormatter.formatDual(product.price) + '</p>' +
+                    '<p style="margin:0;font-size:.88rem;color:var(--td-color);line-height:1.8;"><strong style="color:var(--admin-text);">Quantity:</strong> ' + qty + '</p>' +
+                    '<p style="margin:0;font-size:.88rem;color:var(--td-color);line-height:1.8;"><strong style="color:var(--admin-text);">Owner:</strong> ' + escapeHtml(ownerName) + '</p>' +
+                    '<p style="margin:0;font-size:.88rem;color:var(--td-color);line-height:1.8;"><strong style="color:var(--admin-text);">Status:</strong> ' + statusText + '</p>' +
+                    '<p style="margin:0;font-size:.88rem;color:var(--td-color);line-height:1.8;grid-column:1/-1;"><strong style="color:var(--admin-text);">Created:</strong> ' + new Date(product.createdAt).toLocaleString() + '</p>' +
+                    '</div>' +
+                    (desc ? '<div style="margin-top:10px;"><strong style="color:var(--admin-text);font-size:.85rem;">Description:</strong>' + desc + '</div>' : '');
+                document.getElementById('modalTitle').textContent = 'Product Details';
+                dom.userModal.style.display = 'flex';
+            });
 
             row.querySelector('.approveProductBtn').addEventListener('click', async function () {
                 try {
@@ -839,7 +900,7 @@
             var stats = payload.stats || {};
 
             // Check if data changed (for polling)
-            var newHash = JSON.stringify(stats.totalUsers) + JSON.stringify(stats.totalProducts) + JSON.stringify(stats.farmers) + JSON.stringify(stats.buyers);
+            var newHash = JSON.stringify(stats.totalUsers) + JSON.stringify(stats.totalProducts) + JSON.stringify(stats.farmers) + JSON.stringify(stats.buyers) + JSON.stringify(stats.totalOrders) + JSON.stringify(stats.totalRevenue);
             var dataChanged = (newHash !== state.lastStatsHash);
             state.lastStatsHash = newHash;
 
@@ -856,6 +917,21 @@
             animateCounter('productsCount', stats.totalProducts || 0);
             animateCounter('farmersCount', stats.farmers || 0);
             animateCounter('buyersCount', stats.buyers || 0);
+
+            animateCounter('activeProductsCount', stats.approvedProducts || 0);
+            animateCounter('ordersTodayCount', stats.ordersToday || 0);
+            animateCounter('pendingOrdersCount', stats.pendingOrders || 0);
+            animateCounter('completedOrdersCount', stats.completedOrders || 0);
+
+            var fmtRwf = function (n) { return Number(n || 0).toLocaleString() + ' RWF'; };
+            var grossEl = document.getElementById('grossMarketValue');
+            var commEl = document.getElementById('platformCommissionAmt');
+            var earnEl = document.getElementById('farmerEarningsAmt');
+            var pendEl = document.getElementById('pendingRevenueAmt');
+            if (grossEl) grossEl.textContent = fmtRwf(stats.totalRevenue || 0);
+            if (commEl) commEl.textContent = fmtRwf(stats.platformCommission || 0);
+            if (earnEl) earnEl.textContent = fmtRwf(stats.farmerEarnings || 0);
+            if (pendEl) pendEl.textContent = fmtRwf(stats.pendingRevenue || 0);
 
             // Render charts only on first load or when data actually changed
             if (dataChanged || !state.lastStatsHash) {
@@ -904,7 +980,9 @@
 
     function renderAuditLogsTable() {
         var searchVal = dom.auditSearch ? dom.auditSearch.value.toLowerCase() : '';
+        var actionFilter = state.auditActionFilter || 'all';
         var filtered = state.auditLogs.filter(function (log) {
+            if (actionFilter !== 'all' && log.action !== actionFilter) return false;
             if (!searchVal) return true;
             return (log.action || '').toLowerCase().indexOf(searchVal) !== -1 ||
                 (log.target || '').toLowerCase().indexOf(searchVal) !== -1 ||
@@ -1051,6 +1129,10 @@
         return Number(price).toLocaleString('en-RW');
     }
 
+    function formatOrderDualPrice(price) {
+        return PriceFormatter.formatDual(price);
+    }
+
     function formatOrderDate(dateStr) {
         var d = new Date(dateStr);
         var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -1144,8 +1226,8 @@
                 '<td>' + escapeHtml(farmerDisplay) + '</td>' +
                 '<td>' + productHtml + '</td>' +
                 '<td>' + totalQty + '</td>' +
-                '<td>' + formatOrderPrice(unitPrice) + ' RWF</td>' +
-                '<td><strong>' + formatOrderPrice(order.totalPrice) + ' RWF</strong></td>' +
+                '<td><div class="admin-price-cell">' + formatOrderDualPrice(unitPrice) + '</div></td>' +
+                '<td><strong>' + formatOrderDualPrice(order.totalPrice) + '</strong></td>' +
                 '<td><span style="font-size:.82rem;">' + escapeHtml(deliveryAddr || 'N/A') + '</span></td>' +
                 '<td><span class="order-status-badge ' + normalizedStatus + '"><i class="fa-solid ' + statusIcon + '"></i> ' + statusLabel + '</span></td>' +
                 '<td><button class="orders-view-btn" data-order-idx="' + state.orders.indexOf(order) + '"><i class="fa-solid fa-eye"></i> View</button></td>';
@@ -1217,16 +1299,16 @@
                 html += '<div class="order-detail-product-img">' + imgHtml + '</div>';
                 html += '<div class="order-detail-product-info">';
                 html += '<p class="order-detail-product-name">' + escapeHtml(item.productName) + '</p>';
-                html += '<p class="order-detail-product-meta">Qty: ' + (item.quantity || 1) + ' &middot; ' + formatOrderPrice(item.unitPrice) + ' RWF/unit</p>';
+                html += '<p class="order-detail-product-meta">Qty: ' + (item.quantity || 1) + ' &middot; <span class="price-dual">' + formatOrderDualPrice(item.unitPrice) + '</span>/unit</p>';
                 html += '</div>';
                 html += '<div class="order-detail-product-price">';
-                html += '<p class="order-detail-product-price-value">' + formatOrderPrice(item.lineTotal || (item.unitPrice * item.quantity)) + ' RWF</p>';
+                html += '<p class="order-detail-product-price-value">' + formatOrderDualPrice(item.lineTotal || (item.unitPrice * item.quantity)) + '</p>';
                 html += '<p class="order-detail-product-price-label">Subtotal</p>';
                 html += '</div>';
                 html += '</div>';
             }
         }
-        html += '<div class="order-detail-total"><span class="order-detail-total-label">Order Total</span><span class="order-detail-total-value">' + formatOrderPrice(order.totalPrice) + ' RWF</span></div>';
+        html += '<div class="order-detail-total"><span class="order-detail-total-label">Order Total</span><span class="order-detail-total-value">' + formatOrderDualPrice(order.totalPrice) + '</span></div>';
         html += '</div>';
 
         // Delivery Address
@@ -1348,9 +1430,11 @@
 
     function exportProducts(format) {
         var filtered = getFilteredProducts();
-        var headers = ['Product', 'Category', 'Price', 'Owner', 'Status', 'Created'];
+        var headers = ['Product', 'Category', 'Price', 'Owner', 'Status', 'Quantity', 'Created'];
         var rows = filtered.map(function (p) {
-            return [p.name, p.category, p.price, p.owner ? p.owner.name : 'Unknown', p.status, new Date(p.createdAt).toLocaleDateString()];
+            var qty = p.quantity != null ? p.quantity : '';
+            var stock = p.quantity === 0 ? 'Out of Stock' : (p.quantity != null && p.quantity < 10 ? 'Low Stock' : 'In Stock');
+            return [p.name, p.category, p.price, p.owner ? p.owner.name : 'Unknown', p.status, qty + (p.quantity != null ? ' (' + stock + ')' : ''), new Date(p.createdAt).toLocaleDateString()];
         });
         if (format === 'csv') exportToCsv(headers, rows, 'agriconnect-products');
         else exportToExcel(headers, rows, 'agriconnect-products');
@@ -1438,18 +1522,24 @@
         // Show/hide sections
         dom.dashboardSection.style.display = tab === 'dashboard' ? '' : 'none';
         dom.ordersSection.style.display = tab === 'orders' ? '' : 'none';
+        dom.financialSection.style.display = tab === 'financial' ? '' : 'none';
         dom.auditLogsSection.style.display = tab === 'audit-logs' ? '' : 'none';
         // Show/hide search based on tab
         if (tab === 'orders') {
             dom.globalSearch.placeholder = 'Search orders...';
+        } else if (tab === 'financial') {
+            dom.globalSearch.placeholder = 'Search withdrawals...';
         } else if (tab === 'audit-logs') {
             dom.globalSearch.placeholder = 'Search audit logs...';
         } else {
             dom.globalSearch.placeholder = 'Search users, products...';
         }
-        // Load orders when switching to orders tab
+        // Load data when switching tabs
         if (tab === 'orders' && state.orders.length === 0) {
             loadOrders();
+        }
+        if (tab === 'financial' && !state.financialData) {
+            loadFinancialData();
         }
     }
 
@@ -1497,6 +1587,228 @@
         div.appendChild(document.createTextNode(str));
         return div.innerHTML;
     }
+
+    // =====================================
+    // FINANCIAL DASHBOARD
+    // =====================================
+    var finCharts = {};
+
+    function loadFinancialData() {
+        fetch('/api/admin/financial', { headers: { 'Authorization': 'Bearer ' + token } })
+            .then(function (res) {
+                if (res.status === 401) { localStorage.removeItem('token'); location.href = '/auth'; return null; }
+                if (!res.ok) throw new Error('Failed to load financial data');
+                return res.json();
+            })
+            .then(function (json) {
+                if (!json) return;
+                state.financialData = json.data || {};
+                renderFinancialStats(state.financialData);
+                renderFinancialChart(state.financialData.monthlyCommission || []);
+                loadWithdrawals();
+            })
+            .catch(function (err) {
+                console.error('loadFinancialData error:', err);
+            });
+    }
+
+    function renderFinancialStats(data) {
+        var stats = data.stats || {};
+        var elMap = {
+            finPlatformBalance: stats.totalPlatformBalance || 0,
+            finTotalCommission: stats.totalCommissionEarned || 0,
+            finFarmerBalances: stats.totalFarmerBalance || 0,
+            finPendingWithdrawals: stats.pendingWithdrawals || 0,
+            finApprovedWithdrawals: stats.approvedWithdrawals || 0,
+            finRejectedWithdrawals: stats.rejectedWithdrawals || 0,
+            finTotalWithdrawn: stats.totalFarmerWithdrawn || 0,
+            finFarmersWithWallets: stats.totalFarmersWithWallets || 0
+        };
+        Object.keys(elMap).forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) {
+                el.textContent = Number(elMap[id]).toLocaleString('en-RW') + ' RWF';
+            }
+        });
+
+        if (data.recentTransactions) {
+            renderFinTransactions(data.recentTransactions);
+        }
+    }
+
+    function renderFinTransactions(transactions) {
+        var tbody = dom.finTransactionsTable;
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        if (!transactions || transactions.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><span class="empty-state-icon">&#128179;</span><span class="empty-state-text">No transactions yet.</span></div></td></tr>';
+            return;
+        }
+        var fragment = document.createDocumentFragment();
+        for (var i = 0; i < transactions.length; i++) {
+            var txn = transactions[i];
+            var row = document.createElement('tr');
+            var isPositive = txn.amount > 0;
+            var date = new Date(txn.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            row.innerHTML =
+                '<td><span class="txn-type ' + txn.type + '" style="font-weight:600;font-size:.82rem;text-transform:capitalize;">' + txn.type + '</span></td>' +
+                '<td style="text-transform:capitalize;font-size:.82rem;">' + txn.walletType + '</td>' +
+                '<td style="font-weight:700;color:' + (isPositive ? '#16a34a' : '#d32f2f') + ';">' + (isPositive ? '+' : '') + Number(txn.amount).toLocaleString('en-RW') + ' RWF</td>' +
+                '<td style="font-size:.82rem;">' + Number(txn.balanceBefore).toLocaleString('en-RW') + '</td>' +
+                '<td style="font-size:.82rem;">' + Number(txn.balanceAfter).toLocaleString('en-RW') + '</td>' +
+                '<td><span style="font-size:.82rem;color:var(--admin-text-muted);">' + escapeHtml(txn.description || '-') + '</span></td>' +
+                '<td style="font-size:.82rem;">' + date + '</td>';
+            fragment.appendChild(row);
+        }
+        tbody.appendChild(fragment);
+    }
+
+    function renderFinancialChart(monthlyData) {
+        if (!monthlyData || monthlyData.length === 0) return;
+        if (finCharts.monthly) { finCharts.monthly.destroy(); finCharts.monthly = null; }
+        var canvas = document.getElementById('finMonthlyChart');
+        if (!canvas) return;
+        var labels = monthlyData.map(function (m) {
+            return new Date(m._id.year, m._id.month - 1).toLocaleString('default', { month: 'short' });
+        });
+        var values = monthlyData.map(function (m) { return m.total || 0; });
+        var ctx = canvas.getContext('2d');
+        var grad = ctx.createLinearGradient(0, 0, 0, 350);
+        grad.addColorStop(0, 'rgba(22,163,74,0.25)');
+        grad.addColorStop(1, 'rgba(22,163,74,0)');
+        finCharts.monthly = new Chart(canvas, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Commission (RWF)',
+                    data: values,
+                    borderColor: '#16a34a',
+                    backgroundColor: grad,
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 2.5,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#16a34a',
+                    pointBorderWidth: 2.5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 1200 },
+                plugins: { legend: { display: true } },
+                scales: {
+                    x: { border: { display: false }, grid: { display: false } },
+                    y: { beginAtZero: true, border: { display: false }, grid: { color: 'rgba(148,163,184,0.08)' } }
+                }
+            }
+        });
+    }
+
+    function loadWithdrawals() {
+        fetch('/api/admin/withdrawals', { headers: { 'Authorization': 'Bearer ' + token } })
+            .then(function (res) { return res.json(); })
+            .then(function (json) {
+                state.withdrawals = json.data || [];
+                renderWithdrawalsTable();
+            })
+            .catch(function (err) {
+                console.error('loadWithdrawals error:', err);
+            });
+    }
+
+    function renderWithdrawalsTable() {
+        var tbody = dom.withdrawalsTable;
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        var filtered = state.withdrawals.slice();
+        if (state.withdrawalStatusFilterVal && state.withdrawalStatusFilterVal !== 'all') {
+            filtered = filtered.filter(function (w) { return w.status === state.withdrawalStatusFilterVal; });
+        }
+        if (state.withdrawalSearchQuery) {
+            var q = state.withdrawalSearchQuery.toLowerCase();
+            filtered = filtered.filter(function (w) {
+                return (w.requestId && w.requestId.toLowerCase().indexOf(q) !== -1) ||
+                       (w.farmerId && w.farmerId.name && w.farmerId.name.toLowerCase().indexOf(q) !== -1) ||
+                       (w.farmerId && w.farmerId.email && w.farmerId.email.toLowerCase().indexOf(q) !== -1);
+            });
+        }
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><span class="empty-state-icon">&#128176;</span><span class="empty-state-text">No withdrawal requests found.</span></div></td></tr>';
+            return;
+        }
+
+        var fragment = document.createDocumentFragment();
+        for (var i = 0; i < filtered.length; i++) {
+            var w = filtered[i];
+            var row = document.createElement('tr');
+            var date = new Date(w.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            var farmerName = w.farmerId ? w.farmerId.name : 'Unknown';
+            var statusClass = 'order-status-badge ' + w.status;
+            var actionHtml = '';
+            if (w.status === 'pending') {
+                actionHtml = '<button class="orders-view-btn" style="background:#16a34a!important;margin-right:4px;" onclick="adminApproveWithdrawal(\'' + w.requestId + '\')"><i class="fa-solid fa-check"></i></button>' +
+                    '<button class="orders-view-btn" style="background:#d32f2f!important;" onclick="adminRejectWithdrawal(\'' + w.requestId + '\')"><i class="fa-solid fa-xmark"></i></button>';
+            } else {
+                actionHtml = '<span style="font-size:.82rem;color:var(--admin-text-muted);">Processed</span>';
+            }
+
+            row.innerHTML =
+                '<td><strong style="font-size:.82rem;">' + escapeHtml(w.requestId) + '</strong></td>' +
+                '<td>' + escapeHtml(farmerName) + '</td>' +
+                '<td style="font-weight:700;">' + Number(w.amount).toLocaleString('en-RW') + ' RWF</td>' +
+                '<td>' + escapeHtml(w.payoutMethod) + '</td>' +
+                '<td><span class="' + statusClass + '">' + w.status.charAt(0).toUpperCase() + w.status.slice(1) + '</span></td>' +
+                '<td><span style="font-size:.82rem;color:var(--admin-text-muted);">' + escapeHtml(w.adminNote || '-') + '</span></td>' +
+                '<td style="font-size:.82rem;">' + date + '</td>' +
+                '<td>' + actionHtml + '</td>';
+
+            fragment.appendChild(row);
+        }
+        tbody.appendChild(fragment);
+    }
+
+    window.adminApproveWithdrawal = function (requestId) {
+        var note = prompt('Admin note (optional):');
+        if (note === null) return;
+        fetch('/api/admin/withdrawals/' + requestId + '/approve', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ adminNote: note })
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (json) {
+            if (!json.success) throw new Error(json.error || 'Failed');
+            showToast('Withdrawal approved!', 'success');
+            loadWithdrawals();
+            loadFinancialData();
+        })
+        .catch(function (err) { showToast(err.message, 'error'); });
+    };
+
+    window.adminRejectWithdrawal = function (requestId) {
+        var note = prompt('Rejection reason:');
+        if (note === null) return;
+        if (!note) { showToast('Please provide a reason.', 'warning'); return; }
+        fetch('/api/admin/withdrawals/' + requestId + '/reject', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ adminNote: note })
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (json) {
+            if (!json.success) throw new Error(json.error || 'Failed');
+            showToast('Withdrawal rejected.', 'warning');
+            loadWithdrawals();
+            loadFinancialData();
+        })
+        .catch(function (err) { showToast(err.message, 'error'); });
+    };
 
     // =====================================
     // INITIALIZATION
@@ -1550,6 +1862,13 @@
                 renderAuditLogsTable();
             });
         }
+        if (dom.auditActionFilter) {
+            dom.auditActionFilter.addEventListener('change', function () {
+                state.auditActionFilter = this.value;
+                state.auditPage = 1;
+                renderAuditLogsTable();
+            });
+        }
 
         // Export buttons
         document.getElementById('exportUsersCsv').addEventListener('click', function () { exportUsers('csv'); });
@@ -1564,6 +1883,20 @@
             state.ordersPage = 1;
             renderOrdersTable();
         });
+
+        // Withdrawal filters
+        if (dom.withdrawalSearch) {
+            dom.withdrawalSearch.addEventListener('input', function () {
+                state.withdrawalSearchQuery = this.value.trim();
+                renderWithdrawalsTable();
+            });
+        }
+        if (dom.withdrawalStatusFilter) {
+            dom.withdrawalStatusFilter.addEventListener('change', function () {
+                state.withdrawalStatusFilterVal = this.value;
+                renderWithdrawalsTable();
+            });
+        }
 
         // Order search
         if (dom.orderSearch) {
@@ -1644,11 +1977,123 @@
         setTimeout(function () {
             dom.userModal.style.display = 'none';
             dom.userModal.classList.remove('modal-closing');
+            document.getElementById('modalTitle').textContent = 'User Details';
         }, 200);
+    }
+
+    // =====================================
+    // ADMIN NOTIFICATIONS DROPDOWN
+    // =====================================
+    function initAdminNotifications() {
+        var notifBtn = document.getElementById('adminNotifBtn');
+        var notifDropdown = document.getElementById('adminNotifDropdown');
+        var notifBadge = document.getElementById('adminNotifBadge');
+        var notifList = document.getElementById('adminNotifList');
+        var markAllBtn = document.getElementById('adminNotifMarkAll');
+        if (!notifBtn || !notifDropdown) return;
+
+        var notifOpen = false;
+        notifBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            notifOpen = !notifOpen;
+            notifDropdown.style.display = notifOpen ? 'block' : 'none';
+            if (notifOpen) loadAdminNotifications();
+        });
+        document.addEventListener('click', function (e) {
+            if (!notifDropdown.contains(e.target) && e.target !== notifBtn && !notifBtn.contains(e.target)) {
+                notifDropdown.style.display = 'none';
+                notifOpen = false;
+            }
+        });
+
+        if (markAllBtn) {
+            markAllBtn.addEventListener('click', async function () {
+                try {
+                    await fetch('/api/notifications/read-all', {
+                        method: 'PUT',
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    });
+                    loadAdminNotifications();
+                } catch (e) { /* silent */ }
+            });
+        }
+
+        async function loadAdminNotifications() {
+            try {
+                var res = await fetch('/api/notifications?limit=20', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) return;
+                var data = await res.json();
+                var notifications = data.data || data.notifications || data || [];
+                if (!Array.isArray(notifications)) return;
+
+                var unreadCount = notifications.filter(function (n) { return !n.read; }).length;
+                if (notifBadge) {
+                    notifBadge.style.display = unreadCount > 0 ? 'block' : 'none';
+                    notifBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                }
+
+                if (notifications.length === 0) {
+                    notifList.innerHTML = '<div style="text-align:center;padding:24px;color:var(--admin-text-muted);font-size:.85rem;"><i class="fa-solid fa-bell-slash" style="font-size:1.5rem;margin-bottom:8px;display:block;opacity:.4;"></i>No notifications yet.</div>';
+                    return;
+                }
+
+                var typeIcons = {
+                    'order_submitted': { icon: 'fa-receipt', bg: 'rgba(21,101,192,.10)', color: '#1565c0' },
+                    'payment_received': { icon: 'fa-money-bill', bg: 'rgba(22,163,74,.10)', color: '#16a34a' },
+                    'order_delivered': { icon: 'fa-truck', bg: 'rgba(142,68,173,.10)', color: '#8e44ad' },
+                    'order_accepted': { icon: 'fa-check-circle', bg: 'rgba(22,163,74,.10)', color: '#16a34a' },
+                    'order_rejected': { icon: 'fa-times-circle', bg: 'rgba(211,47,47,.10)', color: '#d32f2f' },
+                    'order_completed': { icon: 'fa-flag-checkered', bg: 'rgba(46,125,50,.10)', color: '#2e7d32' },
+                    'withdrawal_approved': { icon: 'fa-hand-holding-dollar', bg: 'rgba(22,163,74,.10)', color: '#16a34a' },
+                    'withdrawal_rejected': { icon: 'fa-ban', bg: 'rgba(211,47,47,.10)', color: '#d32f2f' },
+                    'low_stock': { icon: 'fa-box', bg: 'rgba(234,88,12,.10)', color: '#ea580c' },
+                    'out_of_stock': { icon: 'fa-box', bg: 'rgba(211,47,47,.10)', color: '#d32f2f' }
+                };
+
+                notifList.innerHTML = '';
+                for (var i = 0; i < Math.min(notifications.length, 20); i++) {
+                    var n = notifications[i];
+                    var typeInfo = typeIcons[n.type] || { icon: 'fa-bell', bg: 'rgba(148,163,184,.10)', color: '#64748b' };
+                    var timeAgo = getTimeAgo(n.createdAt);
+                    var item = document.createElement('div');
+                    item.className = 'admin-notif-item' + (n.read ? '' : ' unread');
+                    item.innerHTML =
+                        '<div class="notif-icon" style="background:' + typeInfo.bg + ';color:' + typeInfo.color + ';"><i class="fa-solid ' + typeInfo.icon + '"></i></div>' +
+                        '<div class="notif-content">' +
+                            '<p class="notif-text">' + escapeHtml(n.message || n.title || n.type || 'Notification') + '</p>' +
+                            '<p class="notif-time">' + timeAgo + '</p>' +
+                        '</div>';
+                    notifList.appendChild(item);
+                }
+            } catch (e) {
+                console.error('loadAdminNotifications error:', e);
+            }
+        }
+
+        function getTimeAgo(dateStr) {
+            if (!dateStr) return '';
+            var diff = Date.now() - new Date(dateStr).getTime();
+            var mins = Math.floor(diff / 60000);
+            if (mins < 1) return 'Just now';
+            if (mins < 60) return mins + 'm ago';
+            var hours = Math.floor(mins / 60);
+            if (hours < 24) return hours + 'h ago';
+            var days = Math.floor(hours / 24);
+            if (days < 7) return days + 'd ago';
+            return new Date(dateStr).toLocaleDateString();
+        }
+
+        loadAdminNotifications();
+        setInterval(function () {
+            if (!document.hidden) loadAdminNotifications();
+        }, 30000);
     }
 
     // Start
     init();
+    initAdminNotifications();
 
 })();
 

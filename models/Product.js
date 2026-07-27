@@ -39,6 +39,11 @@ const ProductSchema = new mongoose.Schema({
     type: String,
     default: ""
 },
+    quantity: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
     contact: {
         type: String,
         trim: true

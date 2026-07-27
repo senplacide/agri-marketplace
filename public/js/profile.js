@@ -79,7 +79,22 @@
         reqUpper: document.getElementById('reqUpper'),
         reqLower: document.getElementById('reqLower'),
         reqNumber: document.getElementById('reqNumber'),
-        reqSpecial: document.getElementById('reqSpecial')
+        reqSpecial: document.getElementById('reqSpecial'),
+
+        businessCard: document.getElementById('businessCard'),
+        businessForm: document.getElementById('businessForm'),
+        editBusinessName: document.getElementById('editBusinessName'),
+        editCountry: document.getElementById('editCountry'),
+        editCity: document.getElementById('editCity'),
+        editPayoutMethod: document.getElementById('editPayoutMethod'),
+        editBankName: document.getElementById('editBankName'),
+        editBankAccountName: document.getElementById('editBankAccountName'),
+        editBankAccountNumber: document.getElementById('editBankAccountNumber'),
+        editMomoNumber: document.getElementById('editMomoNumber'),
+        bankFields: document.getElementById('bankFields'),
+        momoFields: document.getElementById('momoFields'),
+        cancelBusinessBtn: document.getElementById('cancelBusinessBtn'),
+        saveBusinessBtn: document.getElementById('saveBusinessBtn')
     };
 
     // =====================================
@@ -111,6 +126,25 @@
         var d = document.createElement('div');
         d.textContent = text;
         return d.innerHTML;
+    }
+
+    // =====================================
+    // PAYOUT METHOD TOGGLE
+    // =====================================
+    function togglePayoutFields() {
+        var val = dom.editPayoutMethod ? dom.editPayoutMethod.value : 'none';
+        if (dom.bankFields) dom.bankFields.style.display = (val === 'bank_transfer') ? '' : 'none';
+        if (dom.momoFields) dom.momoFields.style.display = (val === 'mobile_money') ? '' : 'none';
+    }
+
+    if (dom.editPayoutMethod) {
+        dom.editPayoutMethod.addEventListener('change', togglePayoutFields);
+    }
+
+    if (dom.cancelBusinessBtn) {
+        dom.cancelBusinessBtn.addEventListener('click', function () {
+            if (user) renderBusinessCard(user);
+        });
     }
 
     // =====================================
@@ -285,6 +319,29 @@
         dom.editAddress.value = u.address || '';
         dom.editBio.value = u.bio || '';
         dom.bioCharCount.textContent = (u.bio || '').length;
+
+        // Business / Payout card (farmers only)
+        renderBusinessCard(u);
+    }
+
+    // =====================================
+    // RENDER BUSINESS / PAYOUT CARD
+    // =====================================
+    function renderBusinessCard(u) {
+        if (!dom.businessCard) return;
+        var isFarmer = u && u.role === 'farmer';
+        dom.businessCard.style.display = isFarmer ? '' : 'none';
+        if (!isFarmer) return;
+
+        dom.editBusinessName.value = u.businessName || '';
+        dom.editCountry.value = u.country || '';
+        dom.editCity.value = u.city || '';
+        dom.editPayoutMethod.value = u.preferredPayoutMethod || 'none';
+        dom.editBankName.value = u.bankName || '';
+        dom.editBankAccountName.value = u.bankAccountName || '';
+        dom.editBankAccountNumber.value = u.bankAccountNumber || '';
+        dom.editMomoNumber.value = u.momoNumber || '';
+        togglePayoutFields();
     }
 
     // =====================================
@@ -364,6 +421,79 @@
             } finally {
                 dom.saveProfileBtn.disabled = false;
                 dom.saveProfileBtn.innerHTML = '<i class="fa-solid fa-check"></i> Save Changes';
+            }
+        });
+    }
+
+    // =====================================
+    // BUSINESS / PAYOUT FORM SUBMIT
+    // =====================================
+    if (dom.businessForm) {
+        dom.businessForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            var businessName = dom.editBusinessName.value.trim();
+            var country = dom.editCountry.value.trim();
+            var city = dom.editCity.value.trim();
+            var payoutMethod = dom.editPayoutMethod.value;
+            var bankName = dom.editBankName.value.trim();
+            var bankAccountName = dom.editBankAccountName.value.trim();
+            var bankAccountNumber = dom.editBankAccountNumber.value.trim();
+            var momoNumber = dom.editMomoNumber.value.trim();
+
+            if (payoutMethod === 'bank_transfer') {
+                if (!bankName || !bankAccountNumber || !bankAccountName) {
+                    showToast('Please fill in all bank details.', 'error');
+                    return;
+                }
+            }
+            if (payoutMethod === 'mobile_money') {
+                if (!momoNumber) {
+                    showToast('Please enter your Mobile Money number.', 'error');
+                    return;
+                }
+            }
+
+            dom.saveBusinessBtn.disabled = true;
+            dom.saveBusinessBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+            try {
+                var body = {
+                    businessName: businessName,
+                    country: country,
+                    city: city,
+                    preferredPayoutMethod: payoutMethod,
+                    bankName: bankName,
+                    bankAccountName: bankAccountName,
+                    bankAccountNumber: bankAccountNumber,
+                    momoNumber: momoNumber
+                };
+
+                var res = await fetch('/api/auth/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(body)
+                });
+
+                var data = await res.json();
+
+                if (!res.ok) {
+                    showToast(data.error || data.message || 'Failed to update payout details.', 'error');
+                    return;
+                }
+
+                user = data.user;
+                renderProfile(user);
+                showToast('Payout details saved!', 'success');
+            } catch (err) {
+                console.error('Business update error:', err);
+                showToast('Failed to save payout details.', 'error');
+            } finally {
+                dom.saveBusinessBtn.disabled = false;
+                dom.saveBusinessBtn.innerHTML = '<i class="fa-solid fa-check"></i> Save Payout Details';
             }
         });
     }

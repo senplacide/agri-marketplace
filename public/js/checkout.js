@@ -26,6 +26,7 @@
 
     var currentProducts = [];
     var currentCart = [];
+    var isSubmitting = false;
 
     function showToast(message, type) {
         if (!ckToastContainer) return;
@@ -48,6 +49,10 @@
 
     function formatPrice(price) {
         return Number(price).toLocaleString('en-RW');
+    }
+
+    function formatDualPrice(price) {
+        return PriceFormatter.formatDual(price);
     }
 
     function getCategoryEmoji(category) {
@@ -148,8 +153,8 @@
                 '</div>' +
                 '<span class="ck-product-qty">Qty: ' + qty + '</span>' +
                 '<div class="ck-product-price">' +
-                    '<p class="ck-product-unit">' + formatPrice(product.price) + ' RWF each</p>' +
-                    '<p class="ck-product-total">' + formatPrice(lineTotal) + ' RWF</p>' +
+                    '<p class="ck-product-unit">' + formatDualPrice(product.price) + ' each</p>' +
+                    '<p class="ck-product-total">' + formatDualPrice(lineTotal) + '</p>' +
                 '</div>' +
             '</div>';
         }
@@ -216,7 +221,7 @@
         ckSummary.innerHTML =
             '<div class="ck-summary-row">' +
                 '<span class="ck-summary-label">Items (' + totalItems + ')</span>' +
-                '<span class="ck-summary-value">' + formatPrice(subtotal) + ' RWF</span>' +
+                '<span class="ck-summary-value">' + formatDualPrice(subtotal) + '</span>' +
             '</div>' +
             '<div class="ck-summary-row">' +
                 '<span class="ck-summary-label">Delivery Fee</span>' +
@@ -224,7 +229,7 @@
             '</div>' +
             '<div class="ck-summary-total">' +
                 '<span class="ck-summary-total-label">Grand Total</span>' +
-                '<span class="ck-summary-total-value">' + formatPrice(total) + ' RWF</span>' +
+                '<span class="ck-summary-total-value">' + formatDualPrice(total) + '</span>' +
             '</div>';
     }
 
@@ -356,6 +361,32 @@
         return parts.join(', ') || 'Not provided';
     }
 
+    /* ── Confirmation Modal ── */
+    function showConfirmationModal(data, deliveryData, orderItems) {
+        var modal = document.getElementById('ckConfirmModal');
+        var details = document.getElementById('ckConfirmDetails');
+        if (!modal || !details) { window.location.href = '/orders'; return; }
+
+        var totalItems = 0;
+        var subtotal = 0;
+        for (var i = 0; i < orderItems.length; i++) {
+            totalItems += orderItems[i].quantity;
+            subtotal += orderItems[i].unitPrice * orderItems[i].quantity;
+        }
+
+        var orderId = (data.data && data.data.orderId) ? data.data.orderId : (data.orderId || 'N/A');
+        var address = deliveryData.sector + ', ' + deliveryData.district;
+
+        details.innerHTML =
+            '<div class="ck-confirm-detail-row"><span class="ck-confirm-detail-key">Order ID</span><span class="ck-confirm-detail-val">' + escapeHtml(orderId.slice(-12).toUpperCase()) + '</span></div>' +
+            '<div class="ck-confirm-detail-row"><span class="ck-confirm-detail-key">Items</span><span class="ck-confirm-detail-val">' + totalItems + '</span></div>' +
+            '<div class="ck-confirm-detail-row"><span class="ck-confirm-detail-key">Delivery To</span><span class="ck-confirm-detail-val">' + escapeHtml(address) + '</span></div>' +
+            '<div class="ck-confirm-detail-row"><span class="ck-confirm-detail-key">Total</span><span class="ck-confirm-detail-val" style="color:var(--bd-green);">' + formatDualPrice(subtotal) + '</span></div>';
+
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
     async function init() {
         var token = getToken();
         if (!token) {
@@ -380,6 +411,8 @@
 
         if (ckPlaceOrderBtn) {
             ckPlaceOrderBtn.addEventListener('click', async function () {
+                if (isSubmitting) return;
+
                 var cart = getCart();
                 if (cart.length === 0) {
                     showToast('Your cart is empty', 'warning');
@@ -393,10 +426,11 @@
                     return;
                 }
 
+                isSubmitting = true;
                 var deliveryData = getDeliveryFormData();
 
                 ckPlaceOrderBtn.disabled = true;
-                ckPlaceOrderBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin-pulse"></i> Processing...';
+                ckPlaceOrderBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin-pulse"></i> Submitting order...';
 
                 var orderItems = [];
                 for (var i = 0; i < currentProducts.length; i++) {
@@ -443,6 +477,7 @@
 
                     if (!res.ok) {
                         showToast(data.error || 'Failed to place order. Please try again.', 'error');
+                        isSubmitting = false;
                         ckPlaceOrderBtn.disabled = false;
                         ckPlaceOrderBtn.innerHTML = '<i class="fa-solid fa-lock"></i> Place Order';
                         return;
@@ -453,14 +488,13 @@
                         localStorage.removeItem('ckDeliveryForm');
                     } catch (e) { /* ignore */ }
 
-                    showToast('Order placed successfully!', 'success');
-                    setTimeout(function () {
-                        window.location.href = '/orders';
-                    }, 1200);
+                    /* Show confirmation modal */
+                    showConfirmationModal(data, deliveryData, orderItems);
 
                 } catch (err) {
                     console.error('Order placement error:', err);
                     showToast('Failed to place order. Please try again.', 'error');
+                    isSubmitting = false;
                     ckPlaceOrderBtn.disabled = false;
                     ckPlaceOrderBtn.innerHTML = '<i class="fa-solid fa-lock"></i> Place Order';
                 }

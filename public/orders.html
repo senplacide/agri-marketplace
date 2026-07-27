@@ -8,6 +8,7 @@
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="ux-styles.css">
 
     <style>
         :root {
@@ -27,15 +28,15 @@
             --od-pending: #e6a817;
             --od-pending-bg: rgba(230,168,23,.10);
             --od-pending-border: rgba(230,168,23,.22);
-            --od-processing: #1565c0;
-            --od-processing-bg: rgba(21,101,192,.10);
-            --od-processing-border: rgba(21,101,192,.22);
+            --od-accepted: #1565c0;
+            --od-accepted-bg: rgba(21,101,192,.10);
+            --od-accepted-border: rgba(21,101,192,.22);
             --od-completed: #16a34a;
             --od-completed-bg: rgba(22,163,74,.10);
             --od-completed-border: rgba(22,163,74,.22);
-            --od-cancelled: #d32f2f;
-            --od-cancelled-bg: rgba(211,47,47,.10);
-            --od-cancelled-border: rgba(211,47,47,.22);
+            --od-rejected: #d32f2f;
+            --od-rejected-bg: rgba(211,47,47,.10);
+            --od-rejected-border: rgba(211,47,47,.22);
         }
 
         body.dark-mode {
@@ -49,12 +50,12 @@
             --od-shadow-lg: 0 10px 30px rgba(0,0,0,.45);
             --od-pending-bg: rgba(230,168,23,.15);
             --od-pending-border: rgba(230,168,23,.28);
-            --od-processing-bg: rgba(21,101,192,.15);
-            --od-processing-border: rgba(21,101,192,.28);
+            --od-accepted-bg: rgba(21,101,192,.15);
+            --od-accepted-border: rgba(21,101,192,.28);
             --od-completed-bg: rgba(22,163,74,.15);
             --od-completed-border: rgba(22,163,74,.28);
-            --od-cancelled-bg: rgba(211,47,47,.15);
-            --od-cancelled-border: rgba(211,47,47,.28);
+            --od-rejected-bg: rgba(211,47,47,.15);
+            --od-rejected-border: rgba(211,47,47,.28);
         }
 
         body.dark-mode .buyer-nav { background: linear-gradient(135deg, #0d3b12 0%, #1a5c22 50%, #2e7d32 100%); }
@@ -358,9 +359,9 @@
         .od-stat:hover .od-stat-icon { transform: scale(1.08); }
 
         .od-stat-icon.pending { background: var(--od-pending-bg); color: var(--od-pending); }
-        .od-stat-icon.processing { background: var(--od-processing-bg); color: var(--od-processing); }
+        .od-stat-icon.accepted { background: var(--od-accepted-bg); color: var(--od-accepted); }
         .od-stat-icon.completed { background: var(--od-completed-bg); color: var(--od-completed); }
-        .od-stat-icon.cancelled { background: var(--od-cancelled-bg); color: var(--od-cancelled); }
+        .od-stat-icon.rejected { background: var(--od-rejected-bg); color: var(--od-rejected); }
 
         .od-stat-body { flex: 1; min-width: 0; }
         .od-stat-label { margin: 0 0 4px; font-size: .78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; color: var(--od-text-muted); }
@@ -377,9 +378,9 @@
             letter-spacing: .3px;
         }
         .od-stat-badge.pending { background: var(--od-pending-bg); color: var(--od-pending); }
-        .od-stat-badge.processing { background: var(--od-processing-bg); color: var(--od-processing); }
+        .od-stat-badge.accepted { background: var(--od-accepted-bg); color: var(--od-accepted); }
         .od-stat-badge.completed { background: var(--od-completed-bg); color: var(--od-completed); }
-        .od-stat-badge.cancelled { background: var(--od-cancelled-bg); color: var(--od-cancelled); }
+        .od-stat-badge.rejected { background: var(--od-rejected-bg); color: var(--od-rejected); }
 
         .od-tabs {
             display: flex;
@@ -877,20 +878,20 @@
             color: var(--od-pending);
             border: 1px solid var(--od-pending-border);
         }
-        .od-badge.processing {
-            background: var(--od-processing-bg);
-            color: var(--od-processing);
-            border: 1px solid var(--od-processing-border);
+        .od-badge.accepted {
+            background: var(--od-accepted-bg);
+            color: var(--od-accepted);
+            border: 1px solid var(--od-accepted-border);
         }
         .od-badge.completed {
             background: var(--od-completed-bg);
             color: var(--od-completed);
             border: 1px solid var(--od-completed-border);
         }
-        .od-badge.cancelled {
-            background: var(--od-cancelled-bg);
-            color: var(--od-cancelled);
-            border: 1px solid var(--od-cancelled-border);
+        .od-badge.rejected {
+            background: var(--od-rejected-bg);
+            color: var(--od-rejected);
+            border: 1px solid var(--od-rejected-border);
         }
 
         .od-empty {
@@ -1158,6 +1159,7 @@
 </head>
 
 <body>
+<a href="#main-content" class="ux-skip-link">Skip to main content</a>
 
 <nav class="buyer-nav" id="buyerNav">
     <div class="nav-left">
@@ -1185,7 +1187,7 @@
     </div>
 </nav>
 
-<div class="od-container">
+<div class="od-container" id="main-content">
 
     <div class="od-breadcrumb">
         <a href="/buyer-dashboard"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
@@ -1205,12 +1207,12 @@
                 <p class="od-stat-count" id="odCountPending">0</p>
             </div>
         </div>
-        <div class="od-stat animate-in animate-in-d2" data-filter-tab="processing">
-            <span class="od-stat-badge processing">Active</span>
-            <div class="od-stat-icon processing"><i class="fa-solid fa-spinner"></i></div>
+        <div class="od-stat animate-in animate-in-d2" data-filter-tab="accepted">
+            <span class="od-stat-badge accepted">Active</span>
+            <div class="od-stat-icon accepted"><i class="fa-solid fa-circle-check"></i></div>
             <div class="od-stat-body">
                 <p class="od-stat-label">Accepted</p>
-                <p class="od-stat-count" id="odCountProcessing">0</p>
+                <p class="od-stat-count" id="odCountAccepted">0</p>
             </div>
         </div>
         <div class="od-stat animate-in animate-in-d3" data-filter-tab="completed">
@@ -1221,12 +1223,12 @@
                 <p class="od-stat-count" id="odCountCompleted">0</p>
             </div>
         </div>
-        <div class="od-stat animate-in animate-in-d4" data-filter-tab="cancelled">
-            <span class="od-stat-badge cancelled">Closed</span>
-            <div class="od-stat-icon cancelled"><i class="fa-solid fa-circle-xmark"></i></div>
+        <div class="od-stat animate-in animate-in-d4" data-filter-tab="rejected">
+            <span class="od-stat-badge rejected">Closed</span>
+            <div class="od-stat-icon rejected"><i class="fa-solid fa-circle-xmark"></i></div>
             <div class="od-stat-body">
                 <p class="od-stat-label">Rejected</p>
-                <p class="od-stat-count" id="odCountCancelled">0</p>
+                <p class="od-stat-count" id="odCountRejected">0</p>
             </div>
         </div>
     </div>
@@ -1234,9 +1236,9 @@
     <div class="od-tabs" id="odTabs">
         <button class="od-tab active" data-tab="all"><i class="fa-solid fa-layer-group"></i> All <span class="od-tab-count" id="odTabAll">0</span></button>
         <button class="od-tab" data-tab="pending"><i class="fa-solid fa-clock"></i> Pending <span class="od-tab-count" id="odTabPending">0</span></button>
-        <button class="od-tab" data-tab="processing"><i class="fa-solid fa-spinner"></i> Accepted <span class="od-tab-count" id="odTabProcessing">0</span></button>
+        <button class="od-tab" data-tab="accepted"><i class="fa-solid fa-circle-check"></i> Accepted <span class="od-tab-count" id="odTabAccepted">0</span></button>
         <button class="od-tab" data-tab="completed"><i class="fa-solid fa-circle-check"></i> Completed <span class="od-tab-count" id="odTabCompleted">0</span></button>
-        <button class="od-tab" data-tab="cancelled"><i class="fa-solid fa-circle-xmark"></i> Rejected <span class="od-tab-count" id="odTabCancelled">0</span></button>
+        <button class="od-tab" data-tab="rejected"><i class="fa-solid fa-circle-xmark"></i> Rejected <span class="od-tab-count" id="odTabRejected">0</span></button>
     </div>
 
     <div class="od-toolbar">
@@ -1320,8 +1322,128 @@
     </div>
 </footer>
 
-<div id="toastContainer" class="toast-container" aria-live="polite"></div>
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
 
+    <!-- Order Detail Modal -->
+    <div class="od-modal-overlay" id="odDetailModal">
+        <div class="od-modal">
+            <div class="od-modal-header">
+                <h2 class="od-modal-title"><i class="fa-solid fa-receipt"></i> Order Details</h2>
+                <button class="od-modal-close" id="odModalClose" aria-label="Close modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="od-modal-body" id="odModalBody"></div>
+        </div>
+    </div>
+
+    <style>
+        .od-modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,.55);
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+            z-index: 10000; display: flex; align-items: center; justify-content: center;
+            padding: 24px; opacity: 0; visibility: hidden;
+            transition: opacity .3s ease, visibility .3s ease;
+        }
+        .od-modal-overlay.active { opacity: 1; visibility: visible; }
+        .od-modal {
+            background: var(--od-surface); border-radius: 20px; width: 100%; max-width: 700px;
+            max-height: 85vh; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.25);
+            border: 1px solid var(--od-border);
+            transform: scale(.92) translateY(20px);
+            transition: transform .35s cubic-bezier(.4,0,.2,1);
+            display: flex; flex-direction: column;
+        }
+        .od-modal-overlay.active .od-modal { transform: scale(1) translateY(0); }
+        .od-modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 24px; border-bottom: 1px solid var(--od-border);
+            flex-shrink: 0;
+        }
+        .od-modal-title {
+            margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--od-text);
+            display: flex; align-items: center; gap: 10px;
+        }
+        .od-modal-title i { color: var(--od-green); }
+        .od-modal-close {
+            width: 34px; height: 34px; border-radius: 10px; border: 1.5px solid var(--od-border);
+            background: var(--od-bg); color: var(--od-text-muted);
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            transition: var(--od-transition); font-size: .85rem;
+        }
+        .od-modal-close:hover { border-color: #e53e3e; color: #e53e3e; background: rgba(229,62,62,.06); }
+        .od-modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+
+        .od-m-section { margin-bottom: 22px; }
+        .od-m-section:last-child { margin-bottom: 0; }
+        .od-m-label { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--od-text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+        .od-m-label i { font-size: .72rem; color: var(--od-green); }
+
+        .od-m-order-id { font-size: .88rem; font-weight: 600; color: var(--od-text); display: flex; align-items: center; gap: 6px; }
+        .od-m-order-id i { color: var(--od-green); }
+
+        .od-m-product {
+            display: flex; align-items: center; gap: 14px; padding: 12px;
+            background: rgba(0,0,0,.02); border: 1px solid var(--od-border);
+            border-radius: 12px; margin-bottom: 8px;
+        }
+        .od-m-product:last-child { margin-bottom: 0; }
+        .od-m-product-img {
+            width: 56px; height: 56px; border-radius: 10px; overflow: hidden;
+            flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, rgba(46,125,50,.04), rgba(46,125,50,.08));
+        }
+        .od-m-product-img img { width: 100%; height: 100%; object-fit: cover; }
+        .od-m-product-img i { font-size: 1.2rem; color: rgba(46,125,50,.30); }
+        .od-m-product-info { flex: 1; min-width: 0; }
+        .od-m-product-name { margin: 0 0 2px; font-size: .9rem; font-weight: 600; color: var(--od-text); }
+        .od-m-product-farmer { margin: 0; font-size: .78rem; color: var(--od-text-muted); display: flex; align-items: center; gap: 5px; }
+        .od-m-product-farmer i { color: var(--od-green); font-size: .68rem; }
+        .od-m-product-price { text-align: right; flex-shrink: 0; }
+        .od-m-product-qty { font-size: .78rem; color: var(--od-text-muted); margin-bottom: 2px; }
+        .od-m-product-total { font-size: .92rem; font-weight: 700; color: var(--od-green); }
+
+        .od-m-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .od-m-info-item { padding: 10px 14px; background: rgba(0,0,0,.02); border: 1px solid var(--od-border); border-radius: 10px; }
+        .od-m-info-key { font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; color: var(--od-text-muted); margin-bottom: 3px; }
+        .od-m-info-val { font-size: .85rem; font-weight: 600; color: var(--od-text); word-break: break-word; }
+
+        /* Timeline */
+        .od-m-timeline { position: relative; padding-left: 28px; }
+        .od-m-timeline::before {
+            content: ''; position: absolute; left: 10px; top: 6px; bottom: 6px;
+            width: 2px; background: var(--od-border); border-radius: 2px;
+        }
+        .od-m-timeline-item { position: relative; padding-bottom: 18px; }
+        .od-m-timeline-item:last-child { padding-bottom: 0; }
+        .od-m-timeline-dot {
+            position: absolute; left: -22px; top: 4px;
+            width: 12px; height: 12px; border-radius: 50%;
+            border: 2px solid var(--od-border); background: var(--od-surface);
+        }
+        .od-m-timeline-item.active .od-m-timeline-dot {
+            background: var(--od-green); border-color: var(--od-green);
+            box-shadow: 0 0 0 3px rgba(46,125,50,.15);
+        }
+        .od-m-timeline-item.completed .od-m-timeline-dot {
+            background: var(--od-completed); border-color: var(--od-completed);
+        }
+        .od-m-timeline-title { font-size: .85rem; font-weight: 600; color: var(--od-text); margin-bottom: 2px; }
+        .od-m-timeline-time { font-size: .72rem; color: var(--od-text-muted); }
+
+        body.dark-mode .od-m-product { background: rgba(0,0,0,.15); border-color: #334155; }
+        body.dark-mode .od-m-info-item { background: rgba(0,0,0,.15); border-color: #334155; }
+        body.dark-mode .od-m-timeline-dot { background: #1e293b; border-color: #475569; }
+
+        @media(max-width:767px) {
+            .od-modal { max-width: 100%; border-radius: 16px; max-height: 90vh; }
+            .od-modal-overlay { padding: 12px; }
+            .od-m-info-grid { grid-template-columns: 1fr; }
+            .od-m-product { flex-direction: column; align-items: flex-start; }
+            .od-m-product-price { text-align: left; }
+        }
+    </style>
+
+<script src="ux-utils.js"></script>
+<script src="js/currency.js"></script>
 <script src="script.js"></script>
 <script src="js/orders.js"></script>
 

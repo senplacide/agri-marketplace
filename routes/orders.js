@@ -2,9 +2,11 @@ const express = require("express");
 const User = require("../models/User");
 const Product = require("../models/Product");
 const Order = require("../models/Order");
+const Notification = require("../models/Notification");
 const { sendOrderPlacedEmail, sendNewOrderReceivedEmail } = require("../utils/email");
 const { requireAuthWithUser } = require("../middleware/auth");
 const { validateOrderInput, validateStatusInput, validateObjectId, ORDER_STATUSES } = require("../utils/validation");
+const { PLATFORM_COMMISSION_PERCENT } = require("../config/payment");
 
 const router = express.Router();
 
@@ -23,23 +25,37 @@ router.post("/", requireAuthWithUser, async function (req, res) {
         var items = validation.value.items;
         var deliveryInfo = validation.value.deliveryInfo;
 
+        var productIds = items.map(function (item) { return item.productId; });
+        var products = await Product.find({ _id: { $in: productIds } }).populate("owner", "name email");
+        var productMap = {};
+        for (var p = 0; p < products.length; p++) {
+            productMap[products[p]._id.toString()] = products[p];
+        }
+
         var totalPrice = 0;
         var processedItems = items.map(function (item) {
-            var lineTotal = item.unitPrice * item.quantity;
+            var dbProduct = productMap[item.productId];
+            var unitPrice = dbProduct ? dbProduct.price : item.unitPrice;
+            var lineTotal = unitPrice * item.quantity;
             totalPrice += lineTotal;
             return {
                 product: item.productId,
-                productName: item.productName,
-                category: item.category || "Other",
-                imageUrl: item.imageUrl || "",
-                farmerName: item.farmerName || "Unknown Farmer",
-                unitPrice: item.unitPrice,
+                productName: dbProduct ? dbProduct.name : item.productName,
+                category: dbProduct ? dbProduct.category : (item.category || "Other"),
+                imageUrl: dbProduct ? dbProduct.imageUrl : (item.imageUrl || ""),
+                farmerName: dbProduct ? dbProduct.farmerName : (item.farmerName || "Unknown Farmer"),
+                unitPrice: unitPrice,
                 quantity: item.quantity,
                 lineTotal: lineTotal
             };
         });
 
         var orderId = "ORD-" + Date.now() + "-" + Math.random().toString(36).substr(2, 6);
+
+        var commissionRate = PLATFORM_COMMISSION_PERCENT;
+        var commissionAmount = Math.round(totalPrice * commissionRate / 100);
+        var farmerAmount = totalPrice - commissionAmount;
+        var platformAmount = commissionAmount;
 
         var order = new Order({
             orderId: orderId,
@@ -54,7 +70,13 @@ router.post("/", requireAuthWithUser, async function (req, res) {
                 village: deliveryInfo.village
             },
             totalPrice: totalPrice,
-            status: "Pending"
+            status: "Pending",
+            grossAmount: totalPrice,
+            commissionRate: commissionRate,
+            commissionAmount: commissionAmount,
+            farmerAmount: farmerAmount,
+            platformAmount: platformAmount,
+            sellerAmount: farmerAmount
         });
 
         await order.save();
@@ -66,8 +88,6 @@ router.post("/", requireAuthWithUser, async function (req, res) {
         }
 
         try {
-            var productIds = processedItems.map(function (item) { return item.product; });
-            var products = await Product.find({ _id: { $in: productIds } }).populate("owner", "name email");
             var notifiedFarmers = {};
             for (var i = 0; i < products.length; i++) {
                 var farmer = products[i].owner;
@@ -78,6 +98,19 @@ router.post("/", requireAuthWithUser, async function (req, res) {
                     });
                     var farmerOrder = { orderId: order.orderId, items: farmerItems, totalPrice: order.totalPrice, deliveryInfo: order.deliveryInfo };
                     await sendNewOrderReceivedEmail(farmer.email, farmer.name, farmerOrder, req.user.name);
+
+                    try {
+                        var itemNames = farmerItems.map(function (fi) { return fi.productName; }).join(", ");
+                        await Notification.create({
+                            user: farmer._id,
+                            type: "new_order",
+                            title: "New Order Received",
+                            message: req.user.name + " placed an order (" + order.orderId + ") for: " + itemNames,
+                            orderId: order.orderId
+                        });
+                    } catch (notifErr) {
+                        console.error("[Orders] Farmer notification creation failed:", notifErr.message);
+                    }
                 }
             }
         } catch (emailErr) {
@@ -101,7 +134,7 @@ router.post("/", requireAuthWithUser, async function (req, res) {
 
 router.get("/", requireAuthWithUser, async function (req, res) {
     try {
-        var orders = await Order.find({ buyer: req.user._id }).sort({ createdAt: -1 });
+        var orders = await Order.find({ buyer: req.user._id }).sort({ createdAt: -1 }).limit(100);
         res.json({
             success: true,
             data: orders

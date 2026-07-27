@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Wallet - AgriConnect</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="ux-styles.css">
+    <style>
+        :root {
+            --fd-green: #2e7d32;
+            --fd-green-light: #43a047;
+            --fd-green-dark: #1b5e20;
+            --fd-bg: #f0f2f5;
+            --fd-surface: #ffffff;
+            --fd-text: #1a202c;
+            --fd-text-muted: #64748b;
+            --fd-border: #e2e8f0;
+            --fd-radius: 12px;
+            --fd-shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+            --fd-shadow-md: 0 4px 12px rgba(0,0,0,.07);
+            --fd-transition: all .25s cubic-bezier(.4,0,.2,1);
+            --fd-td-color: #334155;
+            --fd-table-border: #f0f3f7;
+        }
+        body.dark-mode {
+            --fd-bg: #0f172a;
+            --fd-surface: #1e293b;
+            --fd-text: #e2e8f0;
+            --fd-text-muted: #94a3b8;
+            --fd-border: #334155;
+            --fd-shadow: 0 1px 3px rgba(0,0,0,.3);
+            --fd-shadow-md: 0 4px 12px rgba(0,0,0,.35);
+            --fd-td-color: #cbd5e1;
+            --fd-table-border: #2d3f56;
+        }
+        body.dark-mode .farmer-nav { background: linear-gradient(135deg, #0d3b12 0%, #1a5c22 50%, #2e7d32 100%); }
+        body.dark-mode .card { background: #1e293b; border-color: rgba(46,125,50,.15); }
+        body.dark-mode .card p { color: #f1f5f9; }
+        body.dark-mode .card-label { color: #94a3b8; }
+        body.dark-mode table { background: #1e293b; border-color: #334155; }
+        body.dark-mode td { color: var(--fd-td-color); border-bottom-color: var(--fd-table-border); }
+        body.dark-mode tbody tr:nth-child(even) { background: #1a2742; }
+        body.dark-mode tbody tr:nth-child(even):hover { background: #243352; }
+        body.dark-mode tbody tr:hover { background: #243352; }
+        body.dark-mode h2 { color: #e2e8f0; border-bottom-color: #334155; }
+        body.dark-mode .welcome-section { background: linear-gradient(135deg, #0d3b12 0%, #1a5c22 50%, #2e7d32 100%); }
+        body.dark-mode .fd-footer { background: #1e293b; border-top-color: #334155; color: #94a3b8; }
+        body.dark-mode .fd-footer-brand { color: #4ade80; }
+        body.dark-mode .fd-footer-status { color: #4ade80; background: rgba(74,222,128,.10); border-color: rgba(74,222,128,.22); }
+        body.dark-mode .fd-footer-status-dot { background: #4ade80; }
+        body.dark-mode .fd-footer-divider { background: linear-gradient(90deg, transparent, #4ade80, transparent); }
+        body.dark-mode .fd-footer-links a { color: #94a3b8; }
+        body.dark-mode .fd-footer-links a:hover { color: #4ade80; }
+        body.dark-mode .fd-footer-copy { color: #64748b; }
+        body.dark-mode .fd-footer-version { color: #475569; }
+        body { background: var(--fd-bg); font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif; margin: 0; color: var(--fd-text); line-height: 1.6; -webkit-font-smoothing: antialiased; transition: background .3s ease, color .3s ease; display: flex; flex-direction: column; min-height: 100vh; }
+
+        .farmer-nav { background: linear-gradient(135deg, var(--fd-green-dark) 0%, var(--fd-green) 50%, var(--fd-green-light) 100%); color: white; padding: 0 32px; height: 64px; display: flex; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 16px rgba(46,125,50,.20); gap: 12px; }
+        .nav-left { flex-shrink: 0; }
+        .nav-logo { color: white; text-decoration: none; font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .nav-center { display: flex; align-items: center; gap: 4px; margin: 0 auto; }
+        .nav-center .nav-link { color: rgba(255,255,255,.8); text-decoration: none; font-size: .875rem; font-weight: 500; padding: 7px 14px; border-radius: 8px; transition: all .2s ease; white-space: nowrap; }
+        .nav-center .nav-link:hover { color: white; background: rgba(255,255,255,.12); }
+        .nav-right { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+        .nav-right .nav-link { color: rgba(255,255,255,.8); text-decoration: none; font-size: .8rem; font-weight: 500; padding: 6px 10px; border-radius: 8px; transition: all .2s ease; white-space: nowrap; display: flex; align-items: center; gap: 5px; }
+        .nav-right .nav-link:hover { color: white; background: rgba(255,255,255,.12); }
+        .nav-right .nav-link.active { color: white; background: rgba(255,255,255,.18); font-weight: 600; }
+        .nav-icon-btn { background: rgba(255,255,255,.12); color: white; border: 1.5px solid rgba(255,255,255,.25); border-radius: 10px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1rem; cursor: pointer; transition: all .2s ease; position: relative; flex-shrink: 0; }
+        .nav-icon-btn:hover { background: rgba(255,255,255,.25); transform: translateY(-1px); }
+        .nav-profile-dropdown { position: relative; }
+        .nav-profile-trigger { display: flex; align-items: center; gap: 8px; padding: 5px 10px; border-radius: 10px; border: 1.5px solid rgba(255,255,255,.25); background: rgba(255,255,255,.12); color: white; cursor: pointer; transition: all .2s ease; font-family: inherit; }
+        .nav-profile-trigger:hover { background: rgba(255,255,255,.25); }
+        .nav-profile-avatar { width: 30px; height: 30px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.18); flex-shrink: 0; }
+        .nav-profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .nav-profile-avatar i { font-size: .8rem; }
+        .nav-profile-name { font-size: .8rem; font-weight: 600; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .nav-profile-chevron { font-size: .6rem; opacity: .7; transition: transform .2s ease; }
+        .nav-profile-dropdown.open .nav-profile-chevron { transform: rotate(180deg); }
+        .nav-profile-menu { position: absolute; top: calc(100% + 8px); right: 0; background: var(--fd-surface); border: 1px solid var(--fd-border); border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,.15); min-width: 180px; padding: 6px; opacity: 0; visibility: hidden; transform: translateY(-8px) scale(.96); transition: all .2s cubic-bezier(.4,0,.2,1); z-index: 1001; }
+        .nav-profile-dropdown.open .nav-profile-menu { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
+        .nav-profile-menu-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 14px; border: none; border-radius: 8px; background: transparent; color: var(--fd-text); font-size: .85rem; font-weight: 500; text-decoration: none; cursor: pointer; transition: background .15s ease; font-family: inherit; text-align: left; }
+        .nav-profile-menu-item:hover { background: var(--fd-bg); }
+        .nav-profile-menu-item i { width: 16px; text-align: center; font-size: .82rem; color: var(--fd-text-muted); }
+        .nav-profile-menu-item:hover i { color: var(--fd-green); }
+        .nav-profile-divider { border: none; border-top: 1px solid var(--fd-border); margin: 4px 0; }
+        .nav-profile-logout { color: #d32f2f; }
+        .nav-profile-logout i { color: #d32f2f !important; }
+        .nav-profile-logout:hover { background: rgba(211,47,47,.08); }
+        body.dark-mode .nav-profile-menu { background: #1e293b; border-color: #334155; }
+        body.dark-mode .nav-profile-menu-item { color: #e2e8f0; }
+        body.dark-mode .nav-profile-menu-item:hover { background: #334155; }
+        .nav-hamburger { display: none; background: rgba(255,255,255,.12); color: white; border: 1.5px solid rgba(255,255,255,.25); border-radius: 10px; width: 38px; height: 38px; align-items: center; justify-content: center; font-size: 1.05rem; cursor: pointer; margin-left: auto; flex-shrink: 0; }
+
+        .container { width: 92%; max-width: 1360px; margin: 0 auto; padding: 36px 24px 72px; opacity: 0; animation: fadeInUp .4s cubic-bezier(.4,0,.2,1) .05s forwards; flex: 1; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
+        .welcome-section { background: linear-gradient(135deg, var(--fd-green-dark) 0%, var(--fd-green) 50%, var(--fd-green-light) 100%); border-radius: 20px; padding: 36px 40px; color: white; margin-bottom: 36px; position: relative; overflow: hidden; }
+        .welcome-section::before { content: ""; position: absolute; top: -40px; right: -40px; width: 180px; height: 180px; background: rgba(255,255,255,.06); border-radius: 50%; }
+        .welcome-section h1 { margin: 0 0 6px; font-size: 1.6rem; font-weight: 800; letter-spacing: -.3px; position: relative; z-index: 1; }
+        .welcome-section p { margin: 0; font-size: .95rem; opacity: .9; position: relative; z-index: 1; }
+        .welcome-icon { position: absolute; right: 40px; top: 50%; transform: translateY(-50%); font-size: 3.5rem; opacity: .15; z-index: 0; }
+
+        .wallet-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; margin-bottom: 48px; }
+        .card { background: var(--fd-surface); padding: 26px 28px; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 6px 16px rgba(0,0,0,.06); border: 1px solid rgba(46,125,50,.08); border-left: 5px solid #2e7d32; transition: transform .3s cubic-bezier(.4,0,.2,1), box-shadow .3s cubic-bezier(.4,0,.2,1); cursor: default; position: relative; overflow: hidden; display: flex; align-items: center; gap: 20px; }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 4px 12px rgba(46,125,50,.10), 0 12px 28px rgba(0,0,0,.08); }
+        .card-icon { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+        .card-icon.available { background: rgba(22,163,74,.10); color: #16a34a; }
+        .card-icon.pending-bal { background: rgba(230,126,34,.10); color: #e67e22; }
+        .card-icon.earned { background: rgba(46,125,50,.10); color: #2e7d32; }
+        .card-icon.withdrawn { background: rgba(142,68,173,.10); color: #8e44ad; }
+        .card-body { flex: 1; min-width: 0; }
+        .card .card-label { margin: 0 0 6px; color: #8a8f98; font-size: 1.875rem; font-weight: 600; letter-spacing: .3px; text-transform: capitalize; }
+        .card p { margin: 0; font-size: 2.35rem; font-weight: 800; color: #1a1d23; line-height: 1.1; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+        .card-badge { position: absolute; top: 16px; right: 18px; padding: 4px 10px; border-radius: 20px; font-size: .68rem; font-weight: 700; letter-spacing: .3px; background: rgba(46,125,50,.08); color: #2e7d32; }
+
+        h2 { color: var(--fd-text); font-size: 1.4rem; font-weight: 800; letter-spacing: -.3px; margin: 48px 0 24px; padding: 0 0 14px; border-bottom: 2px solid var(--fd-border); position: relative; transition: color .3s ease, border-color .3s ease; }
+        h2::after { content: ""; position: absolute; bottom: -2px; left: 0; width: 64px; height: 3px; background: linear-gradient(90deg, var(--fd-green), var(--fd-green-light)); border-radius: 3px; }
+
+        .table-wrapper { overflow-x: auto; border-radius: var(--fd-radius); }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--fd-surface); border-radius: var(--fd-radius); overflow: hidden; box-shadow: var(--fd-shadow); border: 1px solid var(--fd-border); margin-bottom: 16px; transition: background .3s ease, border-color .3s ease; }
+        thead tr { background: linear-gradient(135deg, var(--fd-green-dark), var(--fd-green)); }
+        th { padding: 14px 18px; color: white; font-weight: 600; font-size: .8rem; text-transform: uppercase; letter-spacing: .6px; text-align: left; border: none; background: transparent; }
+        td { padding: 14px 18px; border-bottom: 1px solid var(--fd-table-border); font-size: .9rem; color: var(--fd-td-color); transition: background .25s ease; vertical-align: middle; }
+        tbody tr { transition: background .25s ease; animation: fadeInUp .3s cubic-bezier(.4,0,.2,1) both; }
+        tbody tr:nth-child(even) { background: #f7faf8; }
+        tbody tr:hover { background: #eaf4ea; }
+
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: .78rem; font-weight: 600; letter-spacing: .2px; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+        .status-pending { background: rgba(230,126,34,.10); color: #e67e22; }
+        .status-approved { background: rgba(22,163,74,.10); color: #16a34a; }
+        .status-rejected { background: rgba(211,47,47,.10); color: #d32f2f; }
+        .status-completed { background: rgba(22,163,74,.10); color: #16a34a; }
+        .status-processing { background: rgba(21,101,192,.10); color: #1565c0; }
+
+        .txn-type { font-weight: 600; font-size: .82rem; }
+        .txn-type.credit { color: #16a34a; }
+        .txn-type.debit { color: #d32f2f; }
+        .txn-type.commission { color: #1565c0; }
+        .txn-type.withdrawal { color: #8e44ad; }
+        .txn-type.refund { color: #e67e22; }
+        .txn-type.adjustment { color: #64748b; }
+        .txn-amount { font-weight: 700; font-variant-numeric: tabular-nums; }
+        .txn-amount.positive { color: #16a34a; }
+        .txn-amount.negative { color: #d32f2f; }
+
+        .withdraw-form-card { background: var(--fd-surface); border-radius: 20px; padding: 28px 32px; box-shadow: var(--fd-shadow); border: 1px solid var(--fd-border); margin-bottom: 32px; }
+        .withdraw-form-card h3 { margin: 0 0 20px; font-size: 1.1rem; font-weight: 700; color: var(--fd-text); display: flex; align-items: center; gap: 8px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: .78rem; font-weight: 600; color: var(--fd-text-muted); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 6px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border: 1.5px solid var(--fd-border); border-radius: 10px; font-size: .88rem; font-family: inherit; background: var(--fd-surface); color: var(--fd-text); outline: none; transition: var(--fd-transition); box-sizing: border-box; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--fd-green); box-shadow: 0 0 0 3px rgba(46,125,50,.10); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-submit { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        .btn-primary { padding: 11px 28px; background: linear-gradient(135deg, var(--fd-green), var(--fd-green-light)); color: #fff; border: none; border-radius: 10px; font-size: .88rem; font-weight: 600; font-family: inherit; cursor: pointer; transition: var(--fd-transition); box-shadow: 0 2px 8px rgba(46,125,50,.20); display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(46,125,50,.30); }
+        .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+        .btn-secondary { padding: 11px 28px; background: transparent; color: var(--fd-text-muted); border: 1.5px solid var(--fd-border); border-radius: 10px; font-size: .88rem; font-weight: 600; font-family: inherit; cursor: pointer; transition: var(--fd-transition); }
+        .btn-secondary:hover { background: var(--fd-bg); }
+
+        .empty-state { text-align: center; padding: 48px 24px; color: var(--fd-text-muted); }
+        .empty-state-icon { font-size: 2.6rem; margin-bottom: 12px; display: block; line-height: 1; }
+        .empty-state-text { font-size: .95rem; font-weight: 500; letter-spacing: -.1px; }
+
+        .withdraw-history-summary { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+        .summary-chip { padding: 8px 16px; border-radius: 20px; font-size: .82rem; font-weight: 600; background: var(--fd-bg); color: var(--fd-text-muted); border: 1px solid var(--fd-border); display: inline-flex; align-items: center; gap: 6px; }
+        .summary-chip i { font-size: .78rem; }
+
+        .fd-footer { background: #ffffff; border-top: 1px solid #e5e7eb; box-shadow: 0 -4px 16px rgba(0,0,0,.04); padding: 36px 40px 28px; text-align: center; font-size: .82rem; color: #64748b; transition: background .3s ease; width: 100%; }
+        .fd-footer-top { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-bottom: 18px; }
+        .fd-footer-brand { font-size: 1rem; font-weight: 700; color: #2e7d32; }
+        .fd-footer-tagline { font-size: .8rem; color: #94a3b8; margin: 0; }
+        .fd-footer-status { display: inline-flex; align-items: center; gap: 6px; font-size: .73rem; font-weight: 500; color: #16a34a; background: rgba(22,163,74,.08); border: 1px solid rgba(22,163,74,.18); border-radius: 20px; padding: 4px 14px; margin: 10px 0 18px; }
+        .fd-footer-status-dot { width: 7px; height: 7px; background: #16a34a; border-radius: 50%; animation: footerPulse 2s ease-in-out infinite; }
+        @keyframes footerPulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+        .fd-footer-divider { width: 60px; height: 2px; background: linear-gradient(90deg, transparent, #2e7d32, transparent); margin: 0 auto 16px; border: none; }
+        .fd-footer-links { display: flex; justify-content: center; gap: 28px; flex-wrap: wrap; margin-bottom: 14px; }
+        .fd-footer-links a { color: #64748b; text-decoration: none; font-size: .78rem; font-weight: 500; transition: color .2s ease; }
+        .fd-footer-links a:hover { color: #2e7d32; }
+        .fd-footer-bottom { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .fd-footer-copy { font-size: .75rem; color: #94a3b8; margin: 0; }
+        .fd-footer-version { font-size: .68rem; color: #b0b8c4; margin: 0; }
+
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { display: flex; align-items: center; gap: 12px; min-width: 300px; max-width: 420px; padding: 14px 20px; border-radius: 10px; background: var(--fd-surface, #fff); color: var(--fd-text, #1e1e1e); font-family: 'Segoe UI', system-ui, sans-serif; font-size: .92rem; box-shadow: 0 4px 12px rgba(0,0,0,.07); pointer-events: auto; animation: toastSlideIn 0.35s cubic-bezier(0.21,1.02,0.73,1) forwards; border-left: 4px solid var(--fd-green, #2e7d32); transition: opacity 0.3s ease, transform 0.3s ease; }
+        .toast.toast-hide { opacity: 0; transform: translateX(30px); }
+        .toast-icon { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #fff; font-weight: 700; }
+        .toast-success .toast-icon { background: var(--fd-green, #2e7d32); }
+        .toast-success { border-left-color: var(--fd-green, #2e7d32); }
+        .toast-error .toast-icon { background: #d32f2f; }
+        .toast-error { border-left-color: #d32f2f; }
+        .toast-warning .toast-icon { background: #ed6c02; }
+        .toast-warning { border-left-color: #ed6c02; }
+        @keyframes toastSlideIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+
+        @media(max-width:767px) {
+            .farmer-nav { flex-wrap: wrap; height: auto; padding: 12px 16px; gap: 10px; }
+            .nav-left { width: 100%; }
+            .nav-hamburger { display: flex; }
+            .nav-center, .nav-right { display: none; width: 100%; flex-direction: column; align-items: stretch; gap: 2px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,.15); }
+            .nav-center.open, .nav-right.open { display: flex; }
+            .container { width: 96%; padding: 20px 12px 48px; }
+            .wallet-cards { grid-template-columns: 1fr 1fr; gap: 14px; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+<a href="#main-content" class="ux-skip-link">Skip to main content</a>
+
+<!-- NAVIGATION -->
+<nav class="farmer-nav" id="farmerNav">
+    <div class="nav-left">
+        <a href="/dashboard" class="nav-logo"><i class="fa-solid fa-leaf"></i> AgriConnect</a>
+    </div>
+    <button class="nav-hamburger" id="navHamburger" aria-label="Toggle menu"><i class="fa-solid fa-bars"></i></button>
+    <div class="nav-center" id="navCenter">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/items" class="nav-link">Marketplace</a>
+        <a href="/about" class="nav-link">About</a>
+        <a href="/contact" class="nav-link">Contact</a>
+    </div>
+    <div class="nav-right" id="navRight">
+        <a href="/dashboard" class="nav-link"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+        <a href="/dashboard#products-section" class="nav-link"><i class="fa-solid fa-box-open"></i> My Products</a>
+        <a href="/farmer-orders" class="nav-link"><i class="fa-solid fa-receipt"></i> Orders</a>
+        <a href="/farmer-wallet" class="nav-link active"><i class="fa-solid fa-wallet"></i> Wallet</a>
+        <div class="nav-profile-dropdown" id="profileDropdown">
+            <button class="nav-profile-trigger" id="profileTrigger" aria-haspopup="true" aria-expanded="false">
+                <div class="nav-profile-avatar" id="navProfileAvatar"><i class="fa-solid fa-user"></i></div>
+                <span class="nav-profile-name" id="navProfileName">Account</span>
+                <i class="fa-solid fa-chevron-down nav-profile-chevron"></i>
+            </button>
+            <div class="nav-profile-menu" id="profileMenu" role="menu">
+                <a href="/profile" class="nav-profile-menu-item" role="menuitem"><i class="fa-solid fa-user-pen"></i> My Profile</a>
+                <a href="/farmer-wallet" class="nav-profile-menu-item" role="menuitem"><i class="fa-solid fa-wallet"></i> My Wallet</a>
+                <hr class="nav-profile-divider">
+                <button class="nav-profile-menu-item nav-profile-logout" id="navLogoutBtn" role="menuitem"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+            </div>
+        </div>
+        <button id="darkModeToggle" class="nav-icon-btn" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i></button>
+    </div>
+</nav>
+
+<!-- MAIN CONTAINER -->
+<div class="container" id="main-content">
+
+    <!-- WELCOME -->
+    <div class="welcome-section">
+        <h1 id="walletTitle">My Wallet</h1>
+        <p id="walletSubtext">View your balance, transaction history, and request withdrawals.</p>
+        <span class="welcome-icon"><i class="fa-solid fa-wallet"></i></span>
+    </div>
+
+    <!-- WALLET BALANCE CARDS -->
+    <div class="wallet-cards">
+        <div class="card" id="cardAvailable">
+            <div class="card-icon available"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="card-body">
+                <p class="card-label">Available</p>
+                <p id="walletAvailable">0</p>
+            </div>
+        </div>
+        <div class="card" id="cardPending">
+            <div class="card-icon pending-bal"><i class="fa-solid fa-hourglass-half"></i></div>
+            <div class="card-body">
+                <p class="card-label">Pending</p>
+                <p id="walletPending">0</p>
+            </div>
+        </div>
+        <div class="card" id="cardEarned">
+            <div class="card-icon earned"><i class="fa-solid fa-coins"></i></div>
+            <div class="card-body">
+                <p class="card-label">Total Earned</p>
+                <p id="walletEarned">0</p>
+            </div>
+        </div>
+        <div class="card" id="cardWithdrawn">
+            <div class="card-icon withdrawn"><i class="fa-solid fa-arrow-up-from-bracket"></i></div>
+            <div class="card-body">
+                <p class="card-label">Withdrawn</p>
+                <p id="walletWithdrawn">0</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- WITHDRAW REQUEST FORM -->
+    <h2>Request Withdrawal</h2>
+    <div class="withdraw-form-card">
+        <h3><i class="fa-solid fa-arrow-up-from-bracket" style="color:var(--fd-green);"></i> Withdraw Funds</h3>
+        <p style="font-size:.88rem;color:var(--fd-text-muted);margin:0 0 20px;">Available for withdrawal: <strong id="withdrawAvailable" style="color:var(--fd-text);">0 RWF</strong></p>
+        <form id="withdrawForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="withdrawAmount">Amount (RWF) *</label>
+                    <input type="number" id="withdrawAmount" min="1" step="1" placeholder="Enter amount" required>
+                </div>
+                <div class="form-group">
+                    <label for="withdrawMethod">Payout Method *</label>
+                    <select id="withdrawMethod" required>
+                        <option value="Mobile Money">Mobile Money</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Cash">Cash</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group" id="payoutDetailsGroup">
+                <label for="withdrawDetails">Payout Details (MoMo number / bank details) *</label>
+                <input type="text" id="withdrawDetails" placeholder="e.g. 078XXXXXXX or bank account details" maxlength="300">
+            </div>
+            <div class="form-submit">
+                <button type="button" class="btn-secondary" id="withdrawResetBtn">Clear</button>
+                <button type="submit" class="btn-primary" id="withdrawSubmitBtn"><i class="fa-solid fa-paper-plane"></i> Submit Request</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- WITHDRAWAL HISTORY -->
+    <h2>Withdrawal History</h2>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Request ID</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Status</th>
+                    <th>Admin Note</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody id="withdrawHistoryTable"></tbody>
+        </table>
+    </div>
+
+    <!-- WALLET TRANSACTIONS -->
+    <h2>Transaction History</h2>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Balance Before</th>
+                    <th>Balance After</th>
+                    <th>Description</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody id="walletTransactionsTable"></tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="fd-footer">
+    <div class="fd-footer-top">
+        <div class="fd-footer-brand">&#127806; AgriConnect Farmer Dashboard</div>
+        <p class="fd-footer-tagline">Helping connect farmers and buyers across Rwanda.</p>
+    </div>
+    <div class="fd-footer-status">
+        <span class="fd-footer-status-dot"></span> System Status: Online
+    </div>
+    <hr class="fd-footer-divider">
+    <div class="fd-footer-links">
+        <a href="/">Home</a>
+        <a href="/items">Marketplace</a>
+        <a href="/about">About</a>
+        <a href="/contact">Contact</a>
+    </div>
+    <div class="fd-footer-bottom">
+        <p class="fd-footer-copy">&copy; 2026 AgriConnect. All rights reserved.</p>
+        <p class="fd-footer-version">Version 1.0.0</p>
+    </div>
+</footer>
+
+<div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+<script src="ux-utils.js"></script>
+<script src="js/currency.js"></script>
+<script src="js/notification-center.js"></script>
+<script src="js/wallet.js"></script>
+
+</body>
+</html>

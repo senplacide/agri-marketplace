@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details | AgriConnect</title>
+    <meta name="description" content="View product details on AgriConnect marketplace.">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="ux-styles.css">
+    <link rel="stylesheet" href="marketplace.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body class="public-page">
+<a href="#main-content" class="ux-skip-link">Skip to main content</a>
+
+<!-- Navigation -->
+<nav class="public-navbar">
+    <a href="/" class="public-logo">
+        <span class="logo-icon">🌾</span> AgriConnect
+    </a>
+    <button class="public-hamburger" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+    </button>
+    <ul class="public-nav-links">
+        <li data-role="guest,buyer,farmer"><a href="/">Home</a></li>
+        <li><a href="/items">Marketplace</a></li>
+        <li data-role="buyer"><a href="/items?wishlist=1">Wishlist</a></li>
+        <li data-role="buyer"><a href="/items?cart=1">Cart</a></li>
+        <li data-role="buyer,farmer"><a href="/orders">Orders</a></li>
+        <li data-role="farmer"><a href="/dashboard">My Products</a></li>
+        <li data-role="guest,buyer,farmer"><a href="/about">About</a></li>
+        <li data-role="guest,buyer,farmer"><a href="/contact">Contact</a></li>
+        <li id="auth-link"></li>
+    </ul>
+</nav>
+
+<!-- Product Detail Content -->
+<div class="pd-layout" id="main-content" role="main">
+    <!-- Loading state -->
+    <div id="pd-loading" class="ux-page-loading">
+        <div class="ux-spinner ux-spinner-page"></div>
+        <p>Loading product details...</p>
+    </div>
+
+    <!-- Not found state -->
+    <div id="pd-not-found" style="display:none;" class="mp-no-results">
+        <div class="mp-no-results-icon"><i class="fa-solid fa-box-open"></i></div>
+        <h3>Product Not Found</h3>
+        <p>This product may have been removed or is no longer available.</p>
+        <a href="/items" class="mp-clear-btn"><i class="fa-solid fa-arrow-left"></i> Back to Marketplace</a>
+    </div>
+
+    <!-- Product detail (populated by JS) -->
+    <div id="pd-content" style="display:none;">
+        <a href="/items" class="pd-back"><i class="fa-solid fa-arrow-left"></i> Back to Marketplace</a>
+
+        <div class="pd-grid">
+            <!-- Image -->
+            <div class="pd-image-section">
+                <div class="pd-image-main" id="pd-image"></div>
+            </div>
+
+            <!-- Info -->
+            <div class="pd-info-section" id="pd-info"></div>
+        </div>
+
+        <!-- Related Products -->
+        <div class="pd-related" id="pd-related" style="display:none;">
+            <h2>Related Products</h2>
+            <div class="pd-related-grid" id="pd-related-grid"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="public-footer">
+    <div class="public-footer-grid">
+        <div class="public-footer-brand">
+            <div class="footer-logo">🌾 AgriConnect</div>
+            <p class="footer-desc">Connecting farmers and buyers through a trusted digital agricultural marketplace.</p>
+        </div>
+        <div class="public-footer-col">
+            <h4>Marketplace</h4>
+            <ul>
+                <li><a href="/items">Browse Products</a></li>
+                <li><a href="/items">List Produce</a></li>
+                <li><a href="/items">Categories</a></li>
+            </ul>
+        </div>
+        <div class="public-footer-col">
+            <h4>Company</h4>
+            <ul>
+                <li><a href="/about">About Us</a></li>
+                <li><a href="/contact">Contact</a></li>
+                <li><a href="#">Privacy Policy</a></li>
+                <li><a href="#">Terms of Service</a></li>
+            </ul>
+        </div>
+        <div class="public-footer-col">
+            <h4>Support</h4>
+            <ul>
+                <li><a href="/contact">Help Center</a></li>
+                <li><a href="/contact">Email Support</a></li>
+                <li><a href="/auth">Sign In</a></li>
+                <li><a href="/auth">Create Account</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="public-footer-bottom">
+        &copy; 2026 AgriConnect. Empowering Farmers. Connecting Buyers. All rights reserved.
+    </div>
+</footer>
+
+    <script src="js/currency.js"></script>
+    <script src="script.js"></script>
+    <script src="public-ui.js"></script>
+    <script src="ux-utils.js"></script>
+    <script src="product-detail.js"></script>
+</body>
+</html>

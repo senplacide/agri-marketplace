@@ -61,6 +61,48 @@ router.get("/dashboard", requireAdmin, async function (req, res) {
             });
         }
 
+        var totalOrders = await Order.countDocuments();
+        var pendingOrders = await Order.countDocuments({ status: "Pending" });
+        var completedOrders = await Order.countDocuments({ status: "Completed" });
+        var acceptedOrders = await Order.countDocuments({ status: "Accepted" });
+        var rejectedOrders = await Order.countDocuments({ status: "Rejected" });
+        var cancelledOrders = await Order.countDocuments({ status: "Cancelled" });
+
+        var todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        var ordersToday = await Order.countDocuments({ createdAt: { $gte: todayStart } });
+
+        var revenueResult = await Order.aggregate([
+            { $match: { status: { $in: ["Completed", "Accepted"] } } },
+            { $group: { _id: null, total: { $sum: "$totalPrice" } } }
+        ]);
+        var totalRevenue = revenueResult.length > 0 ? revenueResult[0].total : 0;
+
+        var pendingRevenueResult = await Order.aggregate([
+            { $match: { status: "Pending" } },
+            { $group: { _id: null, total: { $sum: "$totalPrice" } } }
+        ]);
+        var pendingRevenue = pendingRevenueResult.length > 0 ? pendingRevenueResult[0].total : 0;
+
+        var commissionRate = 0.02;
+        var platformCommission = Math.round(totalRevenue * commissionRate);
+        var farmerEarnings = totalRevenue - platformCommission;
+
+        var categoriesCount = productsByCategory.length;
+
+        var avgProductPrice = 0;
+        if (totalProducts > 0) {
+            var priceResult = await Product.aggregate([
+                { $group: { _id: null, avg: { $avg: "$price" } } }
+            ]);
+            avgProductPrice = priceResult.length > 0 ? Math.round(priceResult[0].avg) : 0;
+        }
+
+        var outOfStockProducts = await Product.countDocuments({ quantity: 0 });
+        var availableProducts = totalProducts - outOfStockProducts;
+
+        var avgOrderValue = totalOrders > 0 ? Math.round(totalRevenue / (completedOrders + acceptedOrders || 1)) : 0;
+
         var users = await User.find()
             .select("-passwordHash -verificationCode -verificationCodeExpires -resetPasswordCode -resetPasswordExpires")
             .sort({ createdAt: -1 });
@@ -87,7 +129,23 @@ router.get("/dashboard", requireAdmin, async function (req, res) {
                     admins: admins,
                     verifiedUsers: verifiedUsers,
                     unverifiedUsers: unverifiedUsers,
-                    usersByRole: usersByRole
+                    usersByRole: usersByRole,
+                    totalOrders: totalOrders,
+                    pendingOrders: pendingOrders,
+                    completedOrders: completedOrders,
+                    acceptedOrders: acceptedOrders,
+                    rejectedOrders: rejectedOrders,
+                    cancelledOrders: cancelledOrders,
+                    ordersToday: ordersToday,
+                    totalRevenue: totalRevenue,
+                    platformCommission: platformCommission,
+                    farmerEarnings: farmerEarnings,
+                    pendingRevenue: pendingRevenue,
+                    categoriesCount: categoriesCount,
+                    avgProductPrice: avgProductPrice,
+                    outOfStockProducts: outOfStockProducts,
+                    availableProducts: availableProducts,
+                    avgOrderValue: avgOrderValue
                 },
                 users: users,
                 products: products,
@@ -142,7 +200,8 @@ router.get("/products", requireAdmin, async function (req, res) {
     try {
         var products = await Product.find()
             .populate("owner", "name email")
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .limit(500);
 
         res.json({
             success: true,
@@ -445,7 +504,8 @@ router.get("/orders", requireAdmin, async function (req, res) {
     try {
         var orders = await Order.find()
             .populate("buyer", "name email phone")
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .limit(500);
 
         var result = orders.map(function (order) {
             return order.toObject();
@@ -460,6 +520,177 @@ router.get("/orders", requireAdmin, async function (req, res) {
         res.status(500).json({
             success: false,
             message: "Failed to fetch orders.",
+            error: "An unexpected error occurred."
+        });
+    }
+});
+
+/*
+==================================================
+ADMIN FINANCIAL DASHBOARD
+==================================================
+*/
+
+router.get("/financial", requireAdmin, async function (req, res) {
+    try {
+        var Wallet = require("../models/Wallet");
+        var PlatformWallet = require("../models/PlatformWallet");
+        var WithdrawRequest = require("../models/WithdrawRequest");
+        var WalletTransaction = require("../models/WalletTransaction");
+
+        var platformWallet = await PlatformWallet.findOne({ isActive: true });
+        if (!platformWallet) {
+            platformWallet = { availableBalance: 0, pendingBalance: 0, totalCommissionEarned: 0, totalWithdrawn: 0 };
+        }
+
+        var totalPlatformBalance = platformWallet.availableBalance || 0;
+        var totalCommissionEarned = platformWallet.totalCommissionEarned || 0;
+        var totalPlatformWithdrawn = platformWallet.totalWithdrawn || 0;
+
+        var farmerWallets = await Wallet.find();
+        var totalFarmerBalance = 0;
+        var totalFarmerEarned = 0;
+        var totalFarmerWithdrawn = 0;
+        var totalFarmersWithWallets = farmerWallets.length;
+
+        for (var i = 0; i < farmerWallets.length; i++) {
+            totalFarmerBalance += farmerWallets[i].availableBalance || 0;
+            totalFarmerEarned += farmerWallets[i].totalEarned || 0;
+            totalFarmerWithdrawn += farmerWallets[i].totalWithdrawn || 0;
+        }
+
+        var pendingWithdrawals = await WithdrawRequest.countDocuments({ status: "pending" });
+        var approvedWithdrawals = await WithdrawRequest.countDocuments({ status: "approved" });
+        var rejectedWithdrawals = await WithdrawRequest.countDocuments({ status: "rejected" });
+        var completedWithdrawals = await WithdrawRequest.countDocuments({ status: "completed" });
+        var totalWithdrawalRequests = await WithdrawRequest.countDocuments();
+
+        var recentWithdrawals = await WithdrawRequest.find()
+            .populate("farmerId", "name email")
+            .sort({ createdAt: -1 })
+            .limit(20);
+
+        var recentTransactions = await WalletTransaction.find()
+            .sort({ createdAt: -1 })
+            .limit(30);
+
+        var monthlyCommission = await WalletTransaction.aggregate([
+            { $match: { type: "commission", createdAt: { $gte: new Date(new Date().getFullYear(), 0, 1) } } },
+            { $group: { _id: { month: { $month: "$createdAt" } }, total: { $sum: "$amount" }, count: { $sum: 1 } } },
+            { $sort: { "_id.month": 1 } }
+        ]);
+
+        var monthlyData = [];
+        for (var m = 1; m <= 12; m++) {
+            var found = monthlyCommission.find(function (item) { return item._id.month === m; });
+            monthlyData.push({
+                _id: { year: new Date().getFullYear(), month: m },
+                total: found ? found.total : 0,
+                count: found ? found.count : 0
+            });
+        }
+
+        res.json({
+            success: true,
+            data: {
+                platformWallet: platformWallet,
+                stats: {
+                    totalPlatformBalance: totalPlatformBalance,
+                    totalCommissionEarned: totalCommissionEarned,
+                    totalPlatformWithdrawn: totalPlatformWithdrawn,
+                    totalFarmerBalance: totalFarmerBalance,
+                    totalFarmerEarned: totalFarmerEarned,
+                    totalFarmerWithdrawn: totalFarmerWithdrawn,
+                    totalFarmersWithWallets: totalFarmersWithWallets,
+                    pendingWithdrawals: pendingWithdrawals,
+                    approvedWithdrawals: approvedWithdrawals,
+                    rejectedWithdrawals: rejectedWithdrawals,
+                    completedWithdrawals: completedWithdrawals,
+                    totalWithdrawalRequests: totalWithdrawalRequests
+                },
+                recentWithdrawals: recentWithdrawals,
+                recentTransactions: recentTransactions,
+                monthlyCommission: monthlyData
+            }
+        });
+    } catch (err) {
+        console.error("[Admin] Financial dashboard error:", err.message);
+        res.status(500).json({
+            success: false,
+            message: "Failed to load financial data.",
+            error: "An unexpected error occurred."
+        });
+    }
+});
+
+/*
+==================================================
+ADMIN - GET WITHDRAWAL REQUESTS
+==================================================
+*/
+
+router.get("/withdrawals", requireAdmin, async function (req, res) {
+    try {
+        var walletService = require("../services/walletService");
+        var status = req.query.status || null;
+        var requests = await walletService.getWithdrawRequests(null, status);
+        res.json({
+            success: true,
+            data: requests
+        });
+    } catch (err) {
+        console.error("[Admin] Withdrawals fetch error:", err.message);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch withdrawals.",
+            error: "An unexpected error occurred."
+        });
+    }
+});
+
+/*
+==================================================
+ADMIN - APPROVE / REJECT WITHDRAWAL
+==================================================
+*/
+
+router.put("/withdrawals/:requestId/approve", requireAdmin, async function (req, res) {
+    try {
+        var walletService = require("../services/walletService");
+        var adminNote = req.body.adminNote || "";
+        var request = await walletService.approveWithdrawal(req.params.requestId, req.user._id, adminNote);
+
+        res.json({
+            success: true,
+            message: "Withdrawal approved.",
+            data: request
+        });
+    } catch (err) {
+        console.error("[Admin] Withdrawal approve error:", err.message);
+        res.status(400).json({
+            success: false,
+            message: "Failed to approve withdrawal.",
+            error: "An unexpected error occurred."
+        });
+    }
+});
+
+router.put("/withdrawals/:requestId/reject", requireAdmin, async function (req, res) {
+    try {
+        var walletService = require("../services/walletService");
+        var adminNote = req.body.adminNote || "";
+        var request = await walletService.rejectWithdrawal(req.params.requestId, req.user._id, adminNote);
+
+        res.json({
+            success: true,
+            message: "Withdrawal rejected.",
+            data: request
+        });
+    } catch (err) {
+        console.error("[Admin] Withdrawal reject error:", err.message);
+        res.status(400).json({
+            success: false,
+            message: "Failed to reject withdrawal.",
             error: "An unexpected error occurred."
         });
     }

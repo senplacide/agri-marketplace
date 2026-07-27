@@ -74,6 +74,10 @@
         return Number(price).toLocaleString('en-RW');
     }
 
+    function formatDualPrice(price) {
+        return PriceFormatter.formatDual(price);
+    }
+
     function formatDate(dateStr) {
         var d = new Date(dateStr);
         var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -183,7 +187,7 @@
             }
             if (!res.ok) return [];
             var data = await res.json();
-            return Array.isArray(data) ? data : [];
+            return (data && Array.isArray(data.data)) ? data.data : [];
         } catch (err) {
             console.error('Fetch farmer orders error:', err);
             return [];
@@ -325,11 +329,11 @@
                     '<p class="fo-detail-name">' + escapeHtml(item.productName) + '</p>' +
                     '<div class="fo-detail-meta">' +
                         '<span><i class="fa-solid fa-cubes"></i> Qty: <strong>' + (item.quantity || 1) + '</strong></span>' +
-                        '<span><i class="fa-solid fa-money-bill"></i> ' + formatPrice(item.unitPrice) + ' RWF/unit</span>' +
+                        '<span><i class="fa-solid fa-money-bill"></i> <span class="price-dual">' + formatDualPrice(item.unitPrice) + '</span>/unit</span>' +
                     '</div>' +
                 '</div>' +
                 '<div class="fo-detail-price">' +
-                    '<p class="fo-detail-price-value">' + formatPrice(item.lineTotal || (item.unitPrice * item.quantity)) + ' RWF</p>' +
+                    '<p class="fo-detail-price-value">' + formatDualPrice(item.lineTotal || (item.unitPrice * item.quantity)) + '</p>' +
                     '<p class="fo-detail-price-unit">Subtotal</p>' +
                 '</div>' +
             '</div>';
@@ -342,14 +346,15 @@
             '<div class="fo-buyer-row"><span class="fo-buyer-label">Phone:</span> <span class="fo-buyer-value">' + escapeHtml(buyerPhone) + '</span></div>' +
         '</div>';
 
+        var di = order.deliveryInfo || {};
         detailsHtml += '<div class="fo-delivery-section">' +
             '<p class="fo-delivery-title"><i class="fa-solid fa-location-dot"></i> Delivery Information</p>' +
-            '<div class="fo-delivery-row"><span class="fo-delivery-label">Full Name:</span> <span class="fo-delivery-value">' + escapeHtml(order.deliveryInfo.fullName || '') + '</span></div>' +
-            '<div class="fo-delivery-row"><span class="fo-delivery-label">Phone:</span> <span class="fo-delivery-value">' + escapeHtml(order.deliveryInfo.phone || '') + '</span></div>' +
-            '<div class="fo-delivery-row"><span class="fo-delivery-label">District:</span> <span class="fo-delivery-value">' + escapeHtml(order.deliveryInfo.district || '') + '</span></div>' +
-            '<div class="fo-delivery-row"><span class="fo-delivery-label">Sector:</span> <span class="fo-delivery-value">' + escapeHtml(order.deliveryInfo.sector || '') + '</span></div>' +
-            '<div class="fo-delivery-row"><span class="fo-delivery-label">Cell:</span> <span class="fo-delivery-value">' + escapeHtml(order.deliveryInfo.cell || '') + '</span></div>' +
-            '<div class="fo-delivery-row"><span class="fo-delivery-label">Village:</span> <span class="fo-delivery-value">' + escapeHtml(order.deliveryInfo.village || '') + '</span></div>' +
+            '<div class="fo-delivery-row"><span class="fo-delivery-label">Full Name:</span> <span class="fo-delivery-value">' + escapeHtml(di.fullName || '') + '</span></div>' +
+            '<div class="fo-delivery-row"><span class="fo-delivery-label">Phone:</span> <span class="fo-delivery-value">' + escapeHtml(di.phone || '') + '</span></div>' +
+            '<div class="fo-delivery-row"><span class="fo-delivery-label">District:</span> <span class="fo-delivery-value">' + escapeHtml(di.district || '') + '</span></div>' +
+            '<div class="fo-delivery-row"><span class="fo-delivery-label">Sector:</span> <span class="fo-delivery-value">' + escapeHtml(di.sector || '') + '</span></div>' +
+            '<div class="fo-delivery-row"><span class="fo-delivery-label">Cell:</span> <span class="fo-delivery-value">' + escapeHtml(di.cell || '') + '</span></div>' +
+            '<div class="fo-delivery-row"><span class="fo-delivery-label">Village:</span> <span class="fo-delivery-value">' + escapeHtml(di.village || '') + '</span></div>' +
         '</div>';
 
         var detailActions = '';
@@ -384,7 +389,7 @@
                     '</div>' +
                 '</div>' +
                 '<div class="fo-card-price">' +
-                    '<p class="fo-card-price-value">' + formatPrice(order.totalPrice) + ' RWF</p>' +
+                    '<p class="fo-card-price-value">' + formatDualPrice(order.totalPrice) + '</p>' +
                     '<p class="fo-card-price-unit">Order Total</p>' +
                 '</div>' +
             '</div>' +
@@ -501,7 +506,11 @@
 
         var html = '';
         for (var i = 0; i < orders.length; i++) {
-            html += renderOrderCard(orders[i], i);
+            try {
+                html += renderOrderCard(orders[i], i);
+            } catch (e) {
+                console.error('Error rendering order card:', orders[i], e);
+            }
         }
         dom.foList.innerHTML = html;
 
@@ -588,7 +597,15 @@
     async function changeStatus(orderId, newStatus) {
         var success = await updateOrderStatus(orderId, newStatus);
         if (success) {
-            await loadOrders();
+            for (var i = 0; i < allOrders.length; i++) {
+                if (allOrders[i].orderId === orderId) {
+                    allOrders[i].status = newStatus;
+                    break;
+                }
+            }
+            updateCounts();
+            filterAndRender();
+            loadOrders();
         }
     }
 
@@ -617,12 +634,16 @@
     // LOAD ORDERS
     // =====================================
     async function loadOrders() {
-        allOrders = await fetchOrders();
-        expandedOrders = {};
-        updateCounts();
-        filterAndRender();
-
-        if (dom.foSkeleton) dom.foSkeleton.style.display = 'none';
+        try {
+            allOrders = await fetchOrders();
+            expandedOrders = {};
+            updateCounts();
+            filterAndRender();
+        } catch (e) {
+            console.error('Error loading/rendering orders:', e);
+        } finally {
+            if (dom.foSkeleton) dom.foSkeleton.style.display = 'none';
+        }
     }
 
     // =====================================

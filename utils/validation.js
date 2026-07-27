@@ -340,12 +340,57 @@ function validateProfileInput(body) {
         return { error: "Bio must be 500 characters or less." };
     }
 
+    var businessName = stripHtml(body && body.businessName);
+    var country = stripHtml(body && body.country);
+    var city = stripHtml(body && body.city);
+    var preferredPayoutMethod = sanitizeText(body && body.preferredPayoutMethod);
+    var bankName = stripHtml(body && body.bankName);
+    var bankAccountName = stripHtml(body && body.bankAccountName);
+    var bankAccountNumber = sanitizeText(body && body.bankAccountNumber);
+    var momoNumber = sanitizeText(body && body.momoNumber);
+
+    if (businessName && businessName.length > 100) {
+        return { error: "Business name must be 100 characters or less." };
+    }
+
+    if (country && country.length > 60) {
+        return { error: "Country must be 60 characters or less." };
+    }
+
+    if (city && city.length > 80) {
+        return { error: "City must be 80 characters or less." };
+    }
+
+    if (preferredPayoutMethod && !['none', 'bank_transfer', 'mobile_money'].includes(preferredPayoutMethod)) {
+        return { error: "Invalid payout method." };
+    }
+
+    if (preferredPayoutMethod === 'bank_transfer') {
+        if (!bankName || !bankAccountNumber || !bankAccountName) {
+            return { error: "Bank name, account number, and account holder name are required for bank transfers." };
+        }
+    }
+
+    if (preferredPayoutMethod === 'mobile_money') {
+        if (!momoNumber) {
+            return { error: "Mobile Money number is required for mobile money payouts." };
+        }
+    }
+
     return {
         value: {
             name: name,
             phone: phone || "",
             address: address || "",
-            bio: bio || ""
+            bio: bio || "",
+            businessName: businessName || "",
+            country: country || "",
+            city: city || "",
+            preferredPayoutMethod: preferredPayoutMethod || "none",
+            bankName: bankName || "",
+            bankAccountName: bankAccountName || "",
+            bankAccountNumber: bankAccountNumber || "",
+            momoNumber: momoNumber || ""
         }
     };
 }

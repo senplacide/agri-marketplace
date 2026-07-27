@@ -1,6 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const User = require("../models/User");
 const {
     sendVerificationEmail,
@@ -12,7 +13,8 @@ const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("../config/cloudinary");
 const { validateSignupInput, validateAuthInput, validateProfileInput, validatePasswordChangeInput, normalizeEmail, isValidEmail, isValidObjectId, stripHtml } = require("../utils/validation");
 const { requireAuth, JWT_SECRET } = require("../middleware/auth");
-const { registerLimiter, loginLimiter, passwordResetLimiter, profileLimiter, passwordChangeLimiter } = require("../middleware/rateLimiter");
+const { registerLimiter, loginLimiter, passwordResetLimiter, profileLimiter, passwordChangeLimiter, verifyLimiter } = require("../middleware/rateLimiter");
+const { findOrCreateWallet } = require("../services/walletService");
 
 const router = express.Router();
 
@@ -32,7 +34,7 @@ function createToken(user) {
 }
 
 function generateVerificationCode() {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+    return crypto.randomInt(100000, 999999).toString();
 }
 
 async function findUserByEmail(email) {
@@ -105,6 +107,14 @@ router.post("/signup", registerLimiter, async function (req, res) {
             throw saveErr;
         }
 
+        if (role === "farmer") {
+            try {
+                await findOrCreateWallet(user._id);
+            } catch (walletErr) {
+                console.error("[Auth] Wallet creation failed:", walletErr.message);
+            }
+        }
+
         try {
             await sendVerificationEmail(user.email, user.name, verificationCode);
         } catch (emailErr) {
@@ -138,7 +148,7 @@ router.post("/signup", registerLimiter, async function (req, res) {
 //
 // VERIFY EMAIL
 //
-router.post("/verify-email", async function (req, res) {
+router.post("/verify-email", verifyLimiter, async function (req, res) {
     try {
         var email = req.body && req.body.email;
         var code = req.body && req.body.code;
@@ -583,6 +593,15 @@ router.put("/profile", requireAuth, profileLimiter, async function (req, res) {
         user.address = profileValidation.value.address;
         user.bio = profileValidation.value.bio;
 
+        if (typeof profileValidation.value.businessName !== 'undefined') user.businessName = profileValidation.value.businessName;
+        if (typeof profileValidation.value.country !== 'undefined') user.country = profileValidation.value.country;
+        if (typeof profileValidation.value.city !== 'undefined') user.city = profileValidation.value.city;
+        if (typeof profileValidation.value.preferredPayoutMethod !== 'undefined') user.preferredPayoutMethod = profileValidation.value.preferredPayoutMethod;
+        if (typeof profileValidation.value.bankName !== 'undefined') user.bankName = profileValidation.value.bankName;
+        if (typeof profileValidation.value.bankAccountName !== 'undefined') user.bankAccountName = profileValidation.value.bankAccountName;
+        if (typeof profileValidation.value.bankAccountNumber !== 'undefined') user.bankAccountNumber = profileValidation.value.bankAccountNumber;
+        if (typeof profileValidation.value.momoNumber !== 'undefined') user.momoNumber = profileValidation.value.momoNumber;
+
         await user.save();
 
         res.json({
@@ -618,7 +637,7 @@ router.put("/avatar", requireAuth, profileLimiter, function (req, res) {
             return res.status(400).json({
                 success: false,
                 message: "Upload failed.",
-                error: err.message || "Failed to upload avatar."
+                error: "Failed to upload avatar."
             });
         }
 

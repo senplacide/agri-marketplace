@@ -43,7 +43,9 @@
         filterCategory: '',
         filterStatus: '',
         currentPage: 1,
-        perPage: 8
+        perPage: 8,
+        orders: [],
+        ordersLoaded: false
     };
 
     // =====================================
@@ -57,6 +59,8 @@
         pendingProductsCount: document.getElementById('pendingProductsCount'),
         rejectedProductsCount: document.getElementById('rejectedProductsCount'),
         recentProductsTable: document.getElementById('recentProductsTable'),
+        recentOrdersTable: document.getElementById('recentOrdersTable'),
+        ordersCount: document.getElementById('ordersCount'),
         darkModeToggle: document.getElementById('darkModeToggle'),
         logoutBtn: document.getElementById('logoutBtn'),
         productsSearchInput: document.getElementById('productsSearchInput'),
@@ -68,7 +72,18 @@
         categoryFilter: document.getElementById('categoryFilter'),
         statusFilter: document.getElementById('statusFilter'),
         addProductBtn: document.getElementById('addProductBtn'),
-        addModal: document.getElementById('addModal')
+        addModal: document.getElementById('addModal'),
+        pendingOrdersCount: document.getElementById('pendingOrdersCount'),
+        approvedOrdersCount: document.getElementById('approvedOrdersCount'),
+        completedOrdersCount: document.getElementById('completedOrdersCount'),
+        totalSalesCount: document.getElementById('totalSalesCount'),
+        estimatedEarningsCount: document.getElementById('estimatedEarningsCount'),
+        walletBalanceCount: document.getElementById('walletBalanceCount'),
+        avgOrderValueCount: document.getElementById('avgOrderValueCount'),
+        netEarningsCount: document.getElementById('netEarningsCount'),
+        platformCommissionCount: document.getElementById('platformCommissionCount'),
+        pendingPaymentsCount: document.getElementById('pendingPaymentsCount'),
+        walletBalanceEarnings: document.getElementById('walletBalanceEarnings')
     };
 
     // =====================================
@@ -358,6 +373,17 @@
     // =====================================
     // RENDER RECENT PRODUCTS TABLE
     // =====================================
+    function renderQuantityCell(quantity) {
+        if (quantity === undefined || quantity === null) return '<span class="quantity-cell">\u2014</span>';
+        var qty = parseInt(quantity) || 0;
+        if (qty === 0) {
+            return '<span class="stock-badge out-of-stock"><i class="fa-solid fa-circle-xmark"></i> Out of Stock</span>';
+        } else if (qty < 10) {
+            return '<span class="stock-badge low-stock"><i class="fa-solid fa-triangle-exclamation"></i> Low (' + qty + ')</span>';
+        }
+        return '<span class="stock-badge in-stock"><i class="fa-solid fa-check-circle"></i> ' + qty + '</span>';
+    }
+
     function renderRecentProducts(products) {
         dom.recentProductsTable.innerHTML = '';
 
@@ -413,8 +439,8 @@
                 '<td>' + imageHtml + '</td>' +
                 '<td><strong>' + escapeHtml(product.name) + '</strong></td>' +
                 '<td>' + escapeHtml(product.category) + '</td>' +
-                '<td><strong>RWF ' + Number(product.price).toLocaleString() + '</strong></td>' +
-                '<td><span class="quantity-cell">\u2014</span></td>' +
+                '<td><div class="farmer-price-cell">' + PriceFormatter.formatDual(product.price) + '</div></td>' +
+                '<td>' + renderQuantityCell(product.quantity) + '</td>' +
                 '<td><span class="status-badge ' + statusClass + '">' + statusEmoji + statusLabel + '</span></td>' +
                 '<td>' + date + '</td>' +
                 '<td><div class="action-btns">' +
@@ -594,7 +620,8 @@
                     imgHtml +
                     '<div class="modal-field"><span class="modal-field-label">Name</span><span class="modal-field-value"><strong>' + escapeHtml(product.name) + '</strong></span></div>' +
                     '<div class="modal-field"><span class="modal-field-label">Category</span><span class="modal-field-value">' + escapeHtml(product.category) + '</span></div>' +
-                    '<div class="modal-field"><span class="modal-field-label">Price</span><span class="modal-field-value"><strong>RWF ' + Number(product.price).toLocaleString() + '</strong></span></div>' +
+                    '<div class="modal-field"><span class="modal-field-label">Price</span><span class="modal-field-value"><div class="price-dual">' + PriceFormatter.formatDual(product.price) + '</div></span></div>' +
+                    '<div class="modal-field"><span class="modal-field-label">Stock</span><span class="modal-field-value">' + renderQuantityCell(product.quantity) + '</span></div>' +
                     '<div class="modal-field"><span class="modal-field-label">Status</span><span class="modal-field-value"><span class="status-badge status-' + product.status + '">' + statusEmoji + ' ' + statusLabel + '</span></span></div>' +
                     '<div class="modal-field"><span class="modal-field-label">Created</span><span class="modal-field-value">' + date + '</span></div>' +
                     (product.description ? '<div class="modal-field"><span class="modal-field-label">Description</span><span class="modal-field-value">' + escapeHtml(product.description) + '</span></div>' : '') +
@@ -634,6 +661,7 @@
                     '<div class="edit-form-group"><label for="editProductName">Product Name</label><input type="text" id="editProductName" value="' + escapeHtml(product.name) + '" maxlength="100"></div>' +
                     '<div class="edit-form-group"><label for="editProductCategory">Category</label><select id="editProductCategory">' + categoryOptions + '</select></div>' +
                     '<div class="edit-form-group"><label for="editProductPrice">Price (RWF)</label><input type="number" id="editProductPrice" value="' + product.price + '" min="0" step="1"></div>' +
+                    '<div class="edit-form-group"><label for="editProductQuantity">Stock Quantity</label><input type="number" id="editProductQuantity" value="' + (product.quantity || 0) + '" min="0" step="1" placeholder="0"></div>' +
                 '</div>' +
                 '<div class="modal-footer">' +
                     '<button class="modal-btn modal-btn-cancel" onclick="closeModal(\'editModal\')">Cancel</button>' +
@@ -657,6 +685,7 @@
         var name = document.getElementById('editProductName').value.trim();
         var category = document.getElementById('editProductCategory').value;
         var price = parseFloat(document.getElementById('editProductPrice').value);
+        var quantity = parseInt(document.getElementById('editProductQuantity').value) || 0;
 
         if (!name || name.length < 2) { showToast('Product name must be at least 2 characters.', 'warning'); return; }
         if (isNaN(price) || price < 0) { showToast('Please enter a valid price.', 'warning'); return; }
@@ -672,7 +701,7 @@
                     'Content-Type': 'application/json',
                     Authorization: 'Bearer ' + token
                 },
-                body: JSON.stringify({ name: name, category: category, price: price })
+                body: JSON.stringify({ name: name, category: category, price: price, quantity: quantity })
             });
 
             if (response.status === 401) {
@@ -783,6 +812,7 @@
                     '<div class="add-form-group"><label for="addProductName">Product Name *</label><input type="text" id="addProductName" placeholder="e.g. Fresh Mangoes" maxlength="100"></div>' +
                     '<div class="add-form-group"><label for="addProductCategory">Category *</label><select id="addProductCategory"><option value="">Select category</option>' + categoryOptions + '</select></div>' +
                     '<div class="add-form-group"><label for="addProductPrice">Price (RWF) *</label><input type="number" id="addProductPrice" placeholder="0" min="0" step="1"></div>' +
+                    '<div class="add-form-group"><label for="addProductQuantity">Stock Quantity *</label><input type="number" id="addProductQuantity" placeholder="0" min="0" step="1"></div>' +
                     '<div class="add-form-group"><label for="addProductContact">Contact *</label><input type="text" id="addProductContact" placeholder="Phone or email" maxlength="100"></div>' +
                     '<div class="add-form-group"><label for="addProductDescription">Description</label><textarea id="addProductDescription" placeholder="Describe your product..." maxlength="1000"></textarea></div>' +
                     '<div class="add-form-group"><label for="addProductImage">Product Image</label><input type="file" id="addProductImage" accept="image/*"></div>' +
@@ -810,6 +840,7 @@
         var name = document.getElementById('addProductName').value.trim();
         var category = document.getElementById('addProductCategory').value;
         var price = parseFloat(document.getElementById('addProductPrice').value);
+        var quantity = parseInt(document.getElementById('addProductQuantity').value) || 0;
         var contact = document.getElementById('addProductContact').value.trim();
         var description = document.getElementById('addProductDescription').value.trim();
         var imageFile = document.getElementById('addProductImage').files[0];
@@ -835,6 +866,7 @@
             formData.append('name', name);
             formData.append('category', category);
             formData.append('price', price);
+            formData.append('quantity', quantity);
             formData.append('contact', contact);
             if (description) formData.append('description', description);
             paymentMethods.forEach(function (m) { formData.append('paymentMethods', m); });
@@ -893,6 +925,98 @@
     }
 
     // =====================================
+    // LOAD ORDERS SUMMARY FOR DASHBOARD
+    // =====================================
+    async function loadOrdersSummary() {
+        try {
+            var response = await fetch('/api/farmer/orders', {
+                headers: { Authorization: 'Bearer ' + token }
+            });
+            if (!response.ok) return;
+            var result = await response.json();
+            var orders = (result && Array.isArray(result.data)) ? result.data : [];
+
+            var pending = 0, accepted = 0, completed = 0, totalSales = 0;
+            var uniqueCustomers = {};
+            var totalQtySold = 0;
+
+            for (var i = 0; i < orders.length; i++) {
+                var o = orders[i];
+                if (o.status === 'Pending') pending++;
+                else if (o.status === 'Accepted') accepted++;
+                else if (o.status === 'Completed') {
+                    completed++;
+                    totalSales += o.totalPrice || 0;
+                }
+                if (o.status === 'Completed' || o.status === 'Accepted') {
+                    if (o.buyerName) uniqueCustomers[o.buyerName] = true;
+                    for (var j = 0; j < (o.items || []).length; j++) {
+                        totalQtySold += (o.items[j].quantity || 0);
+                    }
+                }
+            }
+
+            var avgOrderValue = completed > 0 ? Math.round(totalSales / completed) : 0;
+            var commissionRate = 2;
+            var commission = Math.round(totalSales * commissionRate / 100);
+            var netEarnings = totalSales - commission;
+            var pendingPayments = accepted * 0;
+            var customerCount = Object.keys(uniqueCustomers).length;
+
+            animateCounter('pendingOrdersCount', pending);
+            animateCounter('approvedOrdersCount', accepted);
+            animateCounter('completedOrdersCount', completed);
+            animateCounter('totalSalesCount', totalSales);
+            animateCounter('estimatedEarningsCount', netEarnings);
+            animateCounter('avgOrderValueCount', avgOrderValue);
+            animateCounter('netEarningsCount', netEarnings);
+            animateCounter('platformCommissionCount', commission);
+            animateCounter('pendingPaymentsCount', pendingPayments);
+
+            state.orders = orders;
+        } catch (err) {
+            console.error('loadOrdersSummary error:', err);
+        }
+    }
+
+    // =====================================
+    // LOAD WALLET BALANCE FOR DASHBOARD
+    // =====================================
+    async function loadWalletBalance() {
+        try {
+            var response = await fetch('/api/farmer/wallet', {
+                headers: { Authorization: 'Bearer ' + token }
+            });
+            if (!response.ok) return;
+            var json = await response.json();
+            var wallet = (json.data && json.data.wallet) || json.data || {};
+            var balance = wallet.availableBalance || 0;
+            animateCounter('walletBalanceCount', balance);
+            animateCounter('walletBalanceEarnings', balance);
+        } catch (err) {
+            console.error('loadWalletBalance error:', err);
+        }
+    }
+
+    // =====================================
+    // INVENTORY ALERTS
+    // =====================================
+    function renderInventoryAlerts(products) {
+        var alerts = [];
+        for (var i = 0; i < products.length; i++) {
+            var p = products[i];
+            if (p.status !== 'approved') continue;
+            var qty = parseInt(p.quantity) || 0;
+            if (qty === 0) {
+                alerts.push({ name: p.name, qty: qty, type: 'out' });
+            } else if (qty < 10) {
+                alerts.push({ name: p.name, qty: qty, type: 'low' });
+            }
+        }
+        state.inventoryAlerts = alerts;
+    }
+
+    // =====================================
     // LOAD DASHBOARD DATA
     // =====================================
     async function loadDashboardData() {
@@ -933,6 +1057,7 @@
 
             // Render recent products table
             renderRecentProducts(state.products);
+            renderInventoryAlerts(state.products);
 
             state.dashboardLoaded = true;
 
@@ -948,6 +1073,155 @@
     function handleLogout() {
         localStorage.removeItem('token');
         location.href = '/auth';
+    }
+
+    // =====================================
+    // LOAD AND RENDER ORDERS
+    // =====================================
+    function getOrderStatusLabel(status) {
+        var labels = {
+            'Pending': 'Pending',
+            'Accepted': 'Accepted',
+            'Rejected': 'Rejected',
+            'Completed': 'Completed'
+        };
+        return labels[status] || status;
+    }
+
+    function getOrderStatusIcon(status) {
+        var icons = {
+            'Pending': 'fa-solid fa-clock',
+            'Accepted': 'fa-solid fa-circle-check',
+            'Rejected': 'fa-solid fa-circle-xmark',
+            'Completed': 'fa-solid fa-check-double'
+        };
+        return icons[status] || 'fa-solid fa-circle';
+    }
+
+    function renderRecentOrders(orders) {
+        if (!dom.recentOrdersTable) return;
+        dom.recentOrdersTable.innerHTML = '';
+
+        if (!orders || orders.length === 0) {
+            dom.recentOrdersTable.innerHTML = '<tr><td colspan="7"><div class="empty-state"><span class="empty-state-icon">\uD83D\uDCE6</span><span class="empty-state-text">No incoming orders yet.</span></div></td></tr>';
+            if (dom.ordersCount) dom.ordersCount.textContent = '';
+            return;
+        }
+
+        var displayOrders = orders.slice(0, 5);
+        if (dom.ordersCount) {
+            var pendingCount = orders.filter(function(o) { return o.status === 'Pending'; }).length;
+            dom.ordersCount.textContent = orders.length + ' order' + (orders.length !== 1 ? 's' : '') + (pendingCount > 0 ? ' (' + pendingCount + ' pending)' : '');
+        }
+
+        var fragment = document.createDocumentFragment();
+        for (var i = 0; i < displayOrders.length; i++) {
+            var order = displayOrders[i];
+            var row = document.createElement('tr');
+            row.style.animationDelay = (i * 0.04) + 's';
+
+            var statusClass = 'status-' + order.status.toLowerCase();
+            var date = new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            var itemsList = (order.items || []).map(function(item) { return escapeHtml(item.productName); }).join(', ');
+            if (itemsList.length > 40) itemsList = itemsList.substring(0, 37) + '...';
+
+            var actionHtml = '';
+            if (order.status === 'Pending') {
+                actionHtml = '<div class="action-btns">' +
+                    '<button class="action-btn view" data-tooltip="View" data-order-id="' + order.orderId + '"><i class="fa-solid fa-eye"></i></button>' +
+                    '<button class="action-btn edit" data-tooltip="Accept" data-order-id="' + order.orderId + '" data-action="accept"><i class="fa-solid fa-check"></i></button>' +
+                    '<button class="action-btn delete" data-tooltip="Reject" data-order-id="' + order.orderId + '" data-action="reject"><i class="fa-solid fa-xmark"></i></button>' +
+                '</div>';
+            } else {
+                actionHtml = '<div class="action-btns">' +
+                    '<button class="action-btn view" data-tooltip="View" data-order-id="' + order.orderId + '"><i class="fa-solid fa-eye"></i></button>' +
+                '</div>';
+            }
+
+            row.innerHTML =
+                '<td><strong style="font-size:.82rem;">' + escapeHtml(order.orderId) + '</strong></td>' +
+                '<td>' + escapeHtml(order.buyerName || 'Unknown') + '</td>' +
+                '<td><span style="font-size:.82rem;color:var(--fd-text-muted);">' + itemsList + '</span></td>' +
+                '<td><div class="farmer-price-cell">' + PriceFormatter.formatDual(order.totalPrice) + '</div></td>' +
+                '<td><span class="status-badge ' + statusClass + '">' + getOrderStatusLabel(order.status) + '</span></td>' +
+                '<td>' + date + '</td>' +
+                '<td>' + actionHtml + '</td>';
+
+            fragment.appendChild(row);
+        }
+
+        dom.recentOrdersTable.appendChild(fragment);
+
+        dom.recentOrdersTable.querySelectorAll('.action-btn.view').forEach(function(btn) {
+            btn.addEventListener('click', function() { window.location.href = '/farmer-orders'; });
+        });
+        dom.recentOrdersTable.querySelectorAll('.action-btn.edit[data-action="accept"]').forEach(function(btn) {
+            btn.addEventListener('click', function() { updateOrderStatus(btn.dataset.orderId, 'Accepted'); });
+        });
+        dom.recentOrdersTable.querySelectorAll('.action-btn.delete[data-action="reject"]').forEach(function(btn) {
+            btn.addEventListener('click', function() { updateOrderStatus(btn.dataset.orderId, 'Rejected'); });
+        });
+    }
+
+    async function updateOrderStatus(orderId, newStatus) {
+        try {
+            var response = await fetch('/api/farmer/orders/' + orderId + '/status', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: 'Bearer ' + token
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                location.href = '/auth';
+                return;
+            }
+
+            if (!response.ok) {
+                var errData = await response.json().catch(function() { return {}; });
+                throw new Error(errData.error || errData.message || 'Failed to update order');
+            }
+
+            showToast('Order ' + newStatus.toLowerCase() + ' successfully!', 'success');
+            loadOrders();
+        } catch (err) {
+            showToast(err.message, 'error');
+        }
+    }
+
+    async function loadOrders() {
+        try {
+            var response = await fetch('/api/farmer/orders', {
+                headers: { Authorization: 'Bearer ' + token }
+            });
+
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                location.href = '/auth';
+                return;
+            }
+
+            if (!response.ok) throw new Error('Failed to load orders');
+
+            var result = await response.json();
+            state.orders = (result && Array.isArray(result.data)) ? result.data : [];
+            state.ordersLoaded = true;
+
+            var pendingOrders = state.orders.filter(function(o) { return o.status === 'Pending'; });
+            var sortedOrders = pendingOrders.concat(
+                state.orders.filter(function(o) { return o.status !== 'Pending'; })
+            );
+
+            renderRecentOrders(sortedOrders);
+        } catch (err) {
+            console.error('loadOrders error:', err);
+            if (dom.recentOrdersTable) {
+                dom.recentOrdersTable.innerHTML = '<tr><td colspan="7"><div class="empty-state"><span class="empty-state-icon">\u26A0\uFE0F</span><span class="empty-state-text">Failed to load orders.</span></div></td></tr>';
+            }
+        }
     }
 
     // =====================================
@@ -977,6 +1251,9 @@
         }
         showLoadingSkeletons();
         loadDashboardData();
+        loadOrders();
+        loadOrdersSummary();
+        loadWalletBalance();
     }
 
     init();

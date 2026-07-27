@@ -75,7 +75,7 @@ router.get("/farmer", requireAuth, async function (req, res) {
         var query = { "items.product": { $in: productIds } };
         if (dateStart) query.createdAt = { $gte: dateStart };
 
-        var orders = await Order.find(query).sort({ createdAt: -1 });
+        var orders = await Order.find(query).sort({ createdAt: -1 }).limit(500);
 
         var totalSales = 0;
         var totalRevenue = 0;
@@ -161,7 +161,7 @@ router.get("/buyer", requireAuth, async function (req, res) {
         var query = { buyer: buyerId };
         if (dateStart) query.createdAt = { $gte: dateStart };
 
-        var orders = await Order.find(query).sort({ createdAt: -1 });
+        var orders = await Order.find(query).sort({ createdAt: -1 }).limit(500);
 
         var totalAmountSpent = 0;
         var completedOrders = 0;
@@ -216,7 +216,8 @@ router.get("/admin", requireAdmin, async function (req, res) {
 
         var orders = await Order.find(query)
             .populate("buyer", "name email")
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .limit(1000);
 
         var marketplaceRevenue = 0;
         var totalOrders = orders.length;

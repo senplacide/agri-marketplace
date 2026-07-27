@@ -91,16 +91,13 @@ function globalErrorHandler(err, req, res, next) {
     }
 
     const statusCode = err.statusCode || 500;
-    const message = statusCode === 500
-        ? "Internal server error."
-        : err.message;
 
     res.status(statusCode).json({
         success: false,
-        message: message,
+        message: "An unexpected error occurred.",
         error: process.env.NODE_ENV === "production"
             ? "An unexpected error occurred."
-            : err.message
+            : (err.message || "An unexpected error occurred.")
     });
 }
 

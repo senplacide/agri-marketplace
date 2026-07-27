@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AgriConnect Admin</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="ux-styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <style>
@@ -97,6 +98,11 @@
         body.dark-mode .order-detail-delivery { background: rgba(96,165,250,.08); border-color: rgba(96,165,250,.18); }
         body.dark-mode .order-timeline::before { background: #334155; }
         body.dark-mode .order-timeline-dot { border-color: #4ade80; background: #1e293b; }
+        body.dark-mode #adminNotifDropdown { background: #1e293b; border-color: #334155; }
+        body.dark-mode #adminNotifDropdown > div:first-child { border-bottom-color: #334155; }
+        body.dark-mode .admin-notif-item:hover { background: #243352; }
+        body.dark-mode .admin-notif-item.unread { background: rgba(74,222,128,.06); }
+        body.dark-mode .admin-notif-item .notif-text { color: #e2e8f0; }
         body.dark-mode .order-timeline-item.active .order-timeline-dot { background: #4ade80; }
         body.dark-mode .order-detail-section-title { color: #4ade80; }
 
@@ -1054,6 +1060,33 @@
         }
         .orders-view-btn:hover { background: #1565c0 !important; transform: translateY(-1px); }
 
+        /* Admin Notification Dropdown */
+        .admin-notif-item {
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            transition: background .2s;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .admin-notif-item:hover { background: var(--table-row-hover); }
+        .admin-notif-item.unread { background: rgba(46,125,50,.04); }
+        .admin-notif-item .notif-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .8rem;
+            flex-shrink: 0;
+        }
+        .admin-notif-item .notif-content { flex: 1; min-width: 0; }
+        .admin-notif-item .notif-text { margin: 0; font-size: .82rem; color: var(--admin-text); line-height: 1.4; }
+        .admin-notif-item .notif-time { margin: 2px 0 0; font-size: .72rem; color: var(--admin-text-muted); }
+
         /* Order Detail Modal */
         .order-modal-content {
             width: 640px;
@@ -1511,6 +1544,7 @@
 </head>
 
 <body>
+<a href="#main-content" class="ux-skip-link">Skip to main content</a>
 
 <!-- ══════════════════════════════════════════
      HEADER
@@ -1534,6 +1568,21 @@
         <button id="darkModeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
             <i class="fa-solid fa-moon"></i>
         </button>
+        <div class="admin-notif-wrapper" id="adminNotifWrapper" style="position:relative;">
+            <button id="adminNotifBtn" aria-label="Notifications" title="Notifications" style="background:none;border:none;color:white;font-size:1.1rem;cursor:pointer;padding:8px;border-radius:8px;transition:background .2s;position:relative;">
+                <i class="fa-solid fa-bell"></i>
+                <span id="adminNotifBadge" style="display:none;position:absolute;top:2px;right:2px;background:#d32f2f;color:white;font-size:.65rem;font-weight:700;min-width:16px;height:16px;border-radius:8px;text-align:center;line-height:16px;padding:0 4px;"></span>
+            </button>
+            <div id="adminNotifDropdown" style="display:none;position:absolute;right:0;top:100%;margin-top:8px;width:360px;max-height:420px;overflow-y:auto;background:var(--admin-surface);border:1px solid var(--admin-border);border-radius:12px;box-shadow:var(--admin-shadow-lg);z-index:1000;">
+                <div style="padding:14px 16px;border-bottom:1px solid var(--admin-border);display:flex;justify-content:space-between;align-items:center;">
+                    <strong style="font-size:.9rem;color:var(--admin-text);">Notifications</strong>
+                    <button id="adminNotifMarkAll" style="background:none;border:none;color:var(--admin-green);font-size:.78rem;font-weight:600;cursor:pointer;">Mark all read</button>
+                </div>
+                <div id="adminNotifList" style="padding:8px;">
+                    <div style="text-align:center;padding:24px;color:var(--admin-text-muted);font-size:.85rem;">No notifications yet.</div>
+                </div>
+            </div>
+        </div>
     </div>
 </header>
 
@@ -1548,6 +1597,9 @@
         <button class="nav-tab" data-tab="orders" role="tab" aria-selected="false" aria-controls="ordersSection" id="ordersTab">
             <i class="fa-solid fa-receipt"></i> Orders
         </button>
+        <button class="nav-tab" data-tab="financial" role="tab" aria-selected="false" aria-controls="financialSection" id="financialTab">
+            <i class="fa-solid fa-wallet"></i> Financial
+        </button>
         <button class="nav-tab" data-tab="audit-logs" role="tab" aria-selected="false" aria-controls="auditLogsSection" id="auditLogsTab">
             <i class="fa-solid fa-clock-rotate-left"></i> Audit Logs
         </button>
@@ -1561,14 +1613,14 @@
 <!-- ══════════════════════════════════════════
      MAIN CONTAINER
      ══════════════════════════════════════════ -->
-<div class="container">
+<div class="container" id="main-content">
 
     <!-- ═══ DASHBOARD SECTION ═══ -->
     <div id="dashboardSection" role="tabpanel" aria-labelledby="dashboardTab">
 
-        <!-- KPI Cards -->
+        <!-- KPI Cards - Row 1: Platform Overview -->
         <div class="cards">
-            <div class="card">
+            <div class="card animate-in animate-in-d1" style="animation-delay:.02s">
                 <span class="card-badge"><span class="badge-arrow">&#9650;</span> Active</span>
                 <div class="card-icon users"><i class="fa-solid fa-users"></i></div>
                 <div class="card-body">
@@ -1576,7 +1628,7 @@
                     <p id="usersCount">0</p>
                 </div>
             </div>
-            <div class="card">
+            <div class="card animate-in animate-in-d2" style="animation-delay:.06s">
                 <span class="card-badge"><span class="badge-arrow">&#9650;</span> Growing</span>
                 <div class="card-icon products"><i class="fa-solid fa-box-open"></i></div>
                 <div class="card-body">
@@ -1584,7 +1636,7 @@
                     <p id="productsCount">0</p>
                 </div>
             </div>
-            <div class="card">
+            <div class="card animate-in animate-in-d3" style="animation-delay:.10s">
                 <span class="card-badge"><span class="badge-arrow">&#9650;</span> Marketplace</span>
                 <div class="card-icon farmers"><i class="fa-solid fa-seedling"></i></div>
                 <div class="card-body">
@@ -1592,12 +1644,77 @@
                     <p id="farmersCount">0</p>
                 </div>
             </div>
-            <div class="card">
+            <div class="card animate-in animate-in-d4" style="animation-delay:.14s">
                 <span class="card-badge"><span class="badge-arrow">&#9650;</span> Verified</span>
                 <div class="card-icon buyers"><i class="fa-solid fa-cart-shopping"></i></div>
                 <div class="card-body">
                     <p class="card-label">Total Buyers</p>
                     <p id="buyersCount">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI Cards - Row 2: Orders & Inventory -->
+        <div class="cards">
+            <div class="card animate-in animate-in-d1" style="animation-delay:.02s">
+                <div class="card-icon" style="background:rgba(22,163,74,.10);color:#16a34a;"><i class="fa-solid fa-boxes-stacked"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Active Products</p>
+                    <p id="activeProductsCount">0</p>
+                </div>
+            </div>
+            <div class="card animate-in animate-in-d2" style="animation-delay:.06s">
+                <div class="card-icon" style="background:rgba(21,101,192,.10);color:#1565c0;"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Orders Today</p>
+                    <p id="ordersTodayCount">0</p>
+                </div>
+            </div>
+            <div class="card animate-in animate-in-d3" style="animation-delay:.10s">
+                <div class="card-icon" style="background:rgba(230,126,34,.10);color:#e67e22;"><i class="fa-solid fa-hourglass-half"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Pending Orders</p>
+                    <p id="pendingOrdersCount">0</p>
+                </div>
+            </div>
+            <div class="card animate-in animate-in-d4" style="animation-delay:.14s">
+                <div class="card-icon" style="background:rgba(22,163,74,.10);color:#16a34a;"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Completed Orders</p>
+                    <p id="completedOrdersCount">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue Dashboard -->
+        <h2>Revenue Dashboard</h2>
+        <div class="cards">
+            <div class="card animate-in animate-in-d1" style="animation-delay:.02s">
+                <div class="card-icon" style="background:rgba(22,163,74,.10);color:#16a34a;"><i class="fa-solid fa-sack-dollar"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Gross Marketplace Value</p>
+                    <p id="grossMarketValue">0 RWF</p>
+                </div>
+            </div>
+            <div class="card animate-in animate-in-d2" style="animation-delay:.06s">
+                <div class="card-icon" style="background:rgba(21,101,192,.10);color:#1565c0;"><i class="fa-solid fa-percent"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Platform Commission (2%)</p>
+                    <p id="platformCommissionAmt">0 RWF</p>
+                </div>
+            </div>
+            <div class="card animate-in animate-in-d3" style="animation-delay:.10s">
+                <div class="card-icon" style="background:rgba(230,126,34,.10);color:#e67e22;"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Farmer Earnings (Est.)</p>
+                    <p id="farmerEarningsAmt">0 RWF</p>
+                </div>
+            </div>
+            <div class="card animate-in animate-in-d4" style="animation-delay:.14s">
+                <div class="card-icon" style="background:rgba(234,88,12,.10);color:#ea580c;"><i class="fa-solid fa-hourglass-start"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Pending Revenue</p>
+                    <p id="pendingRevenueAmt">0 RWF</p>
                 </div>
             </div>
         </div>
@@ -1789,6 +1906,7 @@
                         <th>Price</th>
                         <th>Owner</th>
                         <th>Status</th>
+                        <th>Stock</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -1861,6 +1979,7 @@
                     <option value="accepted">Accepted</option>
                     <option value="completed">Completed</option>
                     <option value="rejected">Rejected</option>
+                    <option value="cancelled">Cancelled</option>
                 </select>
             </div>
             <div class="export-group">
@@ -1895,12 +2014,150 @@
 
     </div><!-- /ordersSection -->
 
+    <!-- ═══ FINANCIAL SECTION ═══ -->
+    <div id="financialSection" class="admin-section" role="tabpanel" aria-labelledby="financialTab" style="display:none;">
+
+        <!-- Financial KPI Cards -->
+        <div class="cards">
+            <div class="card animate-in animate-in-d1" style="animation-delay:.04s">
+                <div class="card-icon" style="background:rgba(46,125,50,.10);color:#2e7d32;"><i class="fa-solid fa-coins"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Platform Balance</p>
+                    <p id="finPlatformBalance">0</p>
+                </div>
+            </div>
+            <div class="card animate-in animate-in-d2" style="animation-delay:.08s">
+                <div class="card-icon" style="background:rgba(22,163,74,.10);color:#16a34a;"><i class="fa-solid fa-sack-dollar"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Total Commission</p>
+                    <p id="finTotalCommission">0</p>
+                </div>
+            </div>
+            <div class="card animate-in animate-in-d3" style="animation-delay:.12s">
+                <div class="card-icon" style="background:rgba(142,68,173,.10);color:#8e44ad;"><i class="fa-solid fa-users"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Farmer Balances</p>
+                    <p id="finFarmerBalances">0</p>
+                </div>
+            </div>
+            <div class="card animate-in animate-in-d4" style="animation-delay:.16s">
+                <div class="card-icon" style="background:rgba(230,126,34,.10);color:#e67e22;"><i class="fa-solid fa-hourglass-half"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Pending Withdrawals</p>
+                    <p id="finPendingWithdrawals">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="cards" style="margin-bottom:32px;">
+            <div class="card animate-in animate-in-d1" style="animation-delay:.20s">
+                <div class="card-icon" style="background:rgba(21,101,192,.10);color:#1565c0;"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Approved Withdrawals</p>
+                    <p id="finApprovedWithdrawals">0</p>
+                </div>
+            </div>
+            <div class="card animate-in animate-in-d2" style="animation-delay:.24s">
+                <div class="card-icon" style="background:rgba(211,47,47,.10);color:#d32f2f;"><i class="fa-solid fa-circle-xmark"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Rejected</p>
+                    <p id="finRejectedWithdrawals">0</p>
+                </div>
+            </div>
+            <div class="card animate-in animate-in-d3" style="animation-delay:.28s">
+                <div class="card-icon" style="background:rgba(46,125,50,.10);color:#2e7d32;"><i class="fa-solid fa-arrow-up-from-bracket"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Total Withdrawn (Farmers)</p>
+                    <p id="finTotalWithdrawn">0</p>
+                </div>
+            </div>
+            <div class="card animate-in animate-in-d4" style="animation-delay:.32s">
+                <div class="card-icon" style="background:rgba(21,101,192,.10);color:#1565c0;"><i class="fa-solid fa-seedling"></i></div>
+                <div class="card-body">
+                    <p class="card-label">Farmers with Wallets</p>
+                    <p id="finFarmersWithWallets">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Commission Chart -->
+        <h2>Commission Analytics</h2>
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>Monthly Commission Earned</h3>
+                <canvas id="finMonthlyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Withdrawal Requests Table -->
+        <h2>Withdrawal Requests</h2>
+        <div class="table-toolbar">
+            <div class="filter-group">
+                <input type="text" id="withdrawalSearch" placeholder="Search by farmer, request ID..." aria-label="Search withdrawals" autocomplete="off">
+                <select id="withdrawalStatusFilter" aria-label="Filter by status">
+                    <option value="all">All Requests</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="completed">Completed</option>
+                </select>
+            </div>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Farmer</th>
+                        <th>Amount</th>
+                        <th>Method</th>
+                        <th>Status</th>
+                        <th>Admin Note</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="withdrawalsTable"></tbody>
+            </table>
+        </div>
+        <div id="withdrawalsPagination" class="pagination" role="navigation" aria-label="Withdrawals pagination"></div>
+
+        <!-- Recent Transactions Table -->
+        <h2>Recent Wallet Transactions</h2>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Wallet</th>
+                        <th>Amount</th>
+                        <th>Before</th>
+                        <th>After</th>
+                        <th>Description</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="finTransactionsTable"></tbody>
+            </table>
+        </div>
+
+    </div><!-- /financialSection -->
+
     <!-- ═══ AUDIT LOGS SECTION ═══ -->
     <div id="auditLogsSection" class="admin-section" role="tabpanel" aria-labelledby="auditLogsTab" style="display:none;">
         <h2>Audit Logs</h2>
         <div class="table-toolbar">
             <div class="filter-group">
                 <input type="text" id="auditSearch" placeholder="Search audit logs..." aria-label="Search audit logs" autocomplete="off">
+                <select id="auditActionFilter" aria-label="Filter by action type">
+                    <option value="all">All Actions</option>
+                    <option value="Role Changed">Role Changed</option>
+                    <option value="User Suspended">User Suspended</option>
+                    <option value="User Activated">User Activated</option>
+                    <option value="User Deleted">User Deleted</option>
+                    <option value="Product Approved">Product Approved</option>
+                    <option value="Product Rejected">Product Rejected</option>
+                    <option value="Product Deleted">Product Deleted</option>
+                </select>
             </div>
         </div>
         <div class="table-wrapper">
@@ -1980,8 +2237,10 @@
 <div id="toastContainer" class="toast-container" aria-live="polite"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="js/currency.js"></script>
 <script src="js/notification-center.js"></script>
 <script src="js/admin.js"></script>
+<script src="ux-utils.js"></script>
 <script>
 (function() {
     var token = localStorage.getItem('token');

@@ -21,8 +21,22 @@ function requireAuth(req, res, next) {
         const token = auth.split(" ")[1];
         const decoded = jwt.verify(token, JWT_SECRET);
 
-        req.userId = decoded.id;
-        next();
+        User.findById(decoded.id).select("isSuspended")
+            .then(function (user) {
+                if (user && user.isSuspended) {
+                    return res.status(403).json({
+                        success: false,
+                        message: "Account suspended.",
+                        error: "Your account has been suspended."
+                    });
+                }
+                req.userId = decoded.id;
+                next();
+            })
+            .catch(function () {
+                req.userId = decoded.id;
+                next();
+            });
     } catch (err) {
         if (err.name === "TokenExpiredError") {
             return res.status(401).json({
@@ -67,6 +81,13 @@ function requireAuthWithUser(req, res, next) {
                         success: false,
                         message: "User not found.",
                         error: "User account no longer exists."
+                    });
+                }
+                if (user.isSuspended) {
+                    return res.status(403).json({
+                        success: false,
+                        message: "Account suspended.",
+                        error: "Your account has been suspended."
                     });
                 }
                 req.user = user;

@@ -10,8 +10,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="ux-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body class="public-page">
+<a href="#main-content" class="ux-skip-link">Skip to main content</a>
 
 <!-- Modern Navigation -->
 <nav class="public-navbar">
@@ -36,7 +39,7 @@
 </nav>
 
 <!-- Contact Header -->
-<section class="public-section" style="padding-top: 140px;">
+<section class="public-section" style="padding-top: 140px;" id="main-content" role="main">
     <div class="public-section-header">
         <span class="section-badge">Get in Touch</span>
         <h2>Contact AgriConnect Support</h2>
@@ -51,14 +54,14 @@
         <div class="public-contact-form-card">
             <h2>Send Us a Message</h2>
             <p class="form-subtitle">Fill out the form below and we'll get back to you within 4-8 business hours.</p>
-            <form id="contact-form">
+            <form id="contact-form" aria-label="Contact AgriConnect support">
                 <div class="public-form-group">
                     <label for="contact-name">Your Name</label>
-                    <input type="text" id="contact-name" name="name" required placeholder="John Doe">
+                    <input type="text" id="contact-name" name="name" required placeholder="John Doe" aria-required="true">
                 </div>
                 <div class="public-form-group">
                     <label for="contact-email">Your Email Address</label>
-                    <input type="email" id="contact-email" name="email" required placeholder="your.email@example.com">
+                    <input type="email" id="contact-email" name="email" required placeholder="your.email@example.com" aria-required="true">
                 </div>
                 <div class="public-form-group">
                     <label for="contact-subject">Subject</label>
@@ -66,7 +69,7 @@
                 </div>
                 <div class="public-form-group">
                     <label for="contact-message">Message</label>
-                    <textarea id="contact-message" name="message" rows="5" required placeholder="Please describe your issue or question in detail..." style="resize: vertical;"></textarea>
+                    <textarea id="contact-message" name="message" rows="5" required placeholder="Please describe your issue or question in detail..." style="resize: vertical;" aria-required="true"></textarea>
                 </div>
                 <button type="submit" class="public-form-submit">Send Message</button>
                 <p id="contact-status" class="contact-status-margin"></p>
@@ -142,5 +145,6 @@
 
     <script src="script.js"></script>
     <script src="public-ui.js"></script>
+    <script src="ux-utils.js"></script>
 </body>
 </html>
