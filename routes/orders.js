@@ -64,10 +64,11 @@ router.post("/", requireAuthWithUser, async function (req, res) {
             deliveryInfo: {
                 fullName: deliveryInfo.fullName,
                 phone: deliveryInfo.phone,
-                district: deliveryInfo.district,
-                sector: deliveryInfo.sector,
-                cell: deliveryInfo.cell,
-                village: deliveryInfo.village
+                streetAddress: deliveryInfo.streetAddress,
+                city: deliveryInfo.city,
+                stateProvinceRegion: deliveryInfo.stateProvinceRegion || "",
+                postalCode: deliveryInfo.postalCode || "",
+                country: deliveryInfo.country
             },
             totalPrice: totalPrice,
             status: "Pending",

@@ -829,54 +829,30 @@
                             <input type="tel" id="ckPhone" class="ck-form-input" placeholder="e.g. 0780000000" autocomplete="tel">
                             <span class="ck-form-error">Please enter a valid phone number</span>
                         </div>
-                        <div class="ck-form-group" data-field="district">
-                            <label class="ck-form-label" for="ckDistrict"><i class="fa-solid fa-map-location-dot"></i> District</label>
-                            <select id="ckDistrict" class="ck-form-input">
-                                <option value="">Select District</option>
-                                <option value="Bugesera">Bugesera</option>
-                                <option value="Gatsibo">Gatsibo</option>
-                                <option value="Gicumbi">Gicumbi</option>
-                                <option value="Gisenyi">Gisenyi</option>
-                                <option value="Gitarama">Gitarama</option>
-                                <option value="Kamonyi">Kamonyi</option>
-                                <option value="Karongi">Karongi</option>
-                                <option value="Kayonza">Kayonza</option>
-                                <option value="Kicukiro">Kicukiro</option>
-                                <option value="Kigali City">Kigali City</option>
-                                <option value="Kirehe">Kirehe</option>
-                                <option value="Muhanga">Muhanga</option>
-                                <option value="Musanze">Musanze</option>
-                                <option value="Ngoma">Ngoma</option>
-                                <option value="Ngororero">Ngororero</option>
-                                <option value="Nyabihu">Nyabihu</option>
-                                <option value="Nyagatare">Nyagatare</option>
-                                <option value="Nyamagabe">Nyamagabe</option>
-                                <option value="Nyamasheke">Nyamasheke</option>
-                                <option value="Nyanza">Nyanza</option>
-                                <option value="Nyungwe">Nyungwe</option>
-                                <option value="Rubavu">Rubavu</option>
-                                <option value="Ruhango">Ruhango</option>
-                                <option value="Rulindo">Rulindo</option>
-                                <option value="Rusizi">Rusizi</option>
-                                <option value="Rutsiro">Rutsiro</option>
-                                <option value="Rwamagana">Rwamagana</option>
-                            </select>
-                            <span class="ck-form-error">Please select your district</span>
+                        <div class="ck-form-group" data-field="streetAddress">
+                            <label class="ck-form-label" for="ckStreetAddress"><i class="fa-solid fa-road"></i> Street Address</label>
+                            <input type="text" id="ckStreetAddress" class="ck-form-input" placeholder="e.g. KN 5 Rd, 123 Main Street">
+                            <span class="ck-form-error">Please enter your street address</span>
                         </div>
-                        <div class="ck-form-group" data-field="sector">
-                            <label class="ck-form-label" for="ckSector"><i class="fa-solid fa-map-pin"></i> Sector</label>
-                            <input type="text" id="ckSector" class="ck-form-input" placeholder="e.g. Kimironko">
-                            <span class="ck-form-error">Please enter your sector</span>
+                        <div class="ck-form-group" data-field="city">
+                            <label class="ck-form-label" for="ckCity"><i class="fa-solid fa-city"></i> City</label>
+                            <input type="text" id="ckCity" class="ck-form-input" placeholder="e.g. Kigali">
+                            <span class="ck-form-error">Please enter your city</span>
                         </div>
-                        <div class="ck-form-group" data-field="cell">
-                            <label class="ck-form-label" for="ckCell"><i class="fa-solid fa-location-crosshairs"></i> Cell</label>
-                            <input type="text" id="ckCell" class="ck-form-input" placeholder="e.g. Bwiza">
-                            <span class="ck-form-error">Please enter your cell</span>
+                        <div class="ck-form-group" data-field="stateProvinceRegion">
+                            <label class="ck-form-label" for="ckStateProvinceRegion"><i class="fa-solid fa-map-location-dot"></i> State / Province / Region</label>
+                            <input type="text" id="ckStateProvinceRegion" class="ck-form-input" placeholder="e.g. Kigali City Province (optional)">
+                            <span class="ck-form-error"></span>
                         </div>
-                        <div class="ck-form-group" data-field="village">
-                            <label class="ck-form-label" for="ckVillage"><i class="fa-solid fa-house"></i> Village</label>
-                            <input type="text" id="ckVillage" class="ck-form-input" placeholder="e.g. Kabuga">
-                            <span class="ck-form-error">Please enter your village</span>
+                        <div class="ck-form-group" data-field="postalCode">
+                            <label class="ck-form-label" for="ckPostalCode"><i class="fa-solid fa-mailbox"></i> Postal / ZIP Code</label>
+                            <input type="text" id="ckPostalCode" class="ck-form-input" placeholder="e.g. 250 (optional)">
+                            <span class="ck-form-error"></span>
+                        </div>
+                        <div class="ck-form-group" data-field="country">
+                            <label class="ck-form-label" for="ckCountry"><i class="fa-solid fa-globe"></i> Country</label>
+                            <input type="text" id="ckCountry" class="ck-form-input" placeholder="e.g. Rwanda" autocomplete="country-name">
+                            <span class="ck-form-error">Please enter your country</span>
                         </div>
                     </div>
                 </div>

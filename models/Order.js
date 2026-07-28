@@ -63,10 +63,11 @@ const OrderSchema = new mongoose.Schema({
     deliveryInfo: {
         fullName: { type: String, required: true, trim: true },
         phone: { type: String, required: true, trim: true },
-        district: { type: String, required: true, trim: true },
-        sector: { type: String, required: true, trim: true },
-        cell: { type: String, required: true, trim: true },
-        village: { type: String, required: true, trim: true }
+        streetAddress: { type: String, required: true, trim: true },
+        city: { type: String, required: true, trim: true },
+        stateProvinceRegion: { type: String, default: "", trim: true },
+        postalCode: { type: String, default: "", trim: true },
+        country: { type: String, required: true, trim: true }
     },
     totalPrice: {
         type: Number,

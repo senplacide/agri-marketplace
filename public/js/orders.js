@@ -132,10 +132,11 @@
     function formatDeliveryAddress(deliveryInfo) {
         if (!deliveryInfo) return '';
         var parts = [];
-        if (deliveryInfo.village) parts.push(deliveryInfo.village);
-        if (deliveryInfo.cell) parts.push(deliveryInfo.cell);
-        if (deliveryInfo.sector) parts.push(deliveryInfo.sector);
-        if (deliveryInfo.district) parts.push(deliveryInfo.district);
+        if (deliveryInfo.streetAddress) parts.push(deliveryInfo.streetAddress);
+        if (deliveryInfo.city) parts.push(deliveryInfo.city);
+        if (deliveryInfo.stateProvinceRegion) parts.push(deliveryInfo.stateProvinceRegion);
+        if (deliveryInfo.postalCode) parts.push(deliveryInfo.postalCode);
+        if (deliveryInfo.country) parts.push(deliveryInfo.country);
         return parts.join(', ');
     }
 

@@ -31,7 +31,7 @@ app.use(helmet({
         }
     },
     crossOriginEmbedderPolicy: false,
-    crossOriginResourcePolicy: { policy: "same-origin" }
+    crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
 // --- CORS ---
@@ -46,7 +46,7 @@ app.use(cors({
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
-            callback(null, false);
+            callback(null, true);
         }
     },
     credentials: true,
@@ -189,10 +189,8 @@ app.use("/api/products", require("./routes/products"));
 app.use("/api/contact", require("./routes/contact"));
 app.use("/api/admin", require("./routes/admin"));
 app.use("/api/farmer", require("./routes/farmer"));
-app.use("/api/farmer", require("./routes/wallet"));
 app.use("/api/orders", require("./routes/orders"));
 app.use("/api/analytics", require("./routes/analytics"));
-app.use("/api/notifications", require("./routes/notifications"));
 
 // --- Health Check ---
 app.get("/health", function (req, res) {
@@ -214,9 +212,6 @@ app.get("/contact", function (req, res) {
 app.get("/items", function (req, res) {
     res.sendFile(path.join(__dirname, "public", "items.html"));
 });
-app.get("/item/:id", function (req, res) {
-    res.sendFile(path.join(__dirname, "public", "item.html"));
-});
 app.get("/auth", function (req, res) {
     res.sendFile(path.join(__dirname, "public", "auth.html"));
 });
@@ -234,9 +229,6 @@ app.get("/orders", function (req, res) {
 });
 app.get("/farmer-orders", function (req, res) {
     res.sendFile(path.join(__dirname, "public", "farmer-orders.html"));
-});
-app.get("/farmer-wallet", function (req, res) {
-    res.sendFile(path.join(__dirname, "public", "farmer-wallet.html"));
 });
 app.get("/verify", function (req, res) {
     res.sendFile(path.join(__dirname, "public", "verify.html"));

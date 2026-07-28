@@ -19,10 +19,11 @@
 
     var ckFullName = document.getElementById('ckFullName');
     var ckPhone = document.getElementById('ckPhone');
-    var ckDistrict = document.getElementById('ckDistrict');
-    var ckSector = document.getElementById('ckSector');
-    var ckCell = document.getElementById('ckCell');
-    var ckVillage = document.getElementById('ckVillage');
+    var ckStreetAddress = document.getElementById('ckStreetAddress');
+    var ckCity = document.getElementById('ckCity');
+    var ckStateProvinceRegion = document.getElementById('ckStateProvinceRegion');
+    var ckPostalCode = document.getElementById('ckPostalCode');
+    var ckCountry = document.getElementById('ckCountry');
 
     var currentProducts = [];
     var currentCart = [];
@@ -171,8 +172,11 @@
         var estStr = months[estDate.getMonth()] + ' ' + estDate.getDate() + ', ' + estDate.getFullYear();
 
         var address = 'To be confirmed';
-        if (ckDistrict && ckDistrict.value && ckSector && ckSector.value) {
-            address = ckSector.value + ', ' + ckDistrict.value;
+        if (ckStreetAddress && ckStreetAddress.value && ckCity && ckCity.value) {
+            address = ckStreetAddress.value + ', ' + ckCity.value;
+            if (ckCountry && ckCountry.value) {
+                address += ', ' + ckCountry.value;
+            }
         }
 
         ckDeliveryGrid.innerHTML =
@@ -239,10 +243,11 @@
         var data = {
             fullName: ckFullName ? ckFullName.value : '',
             phone: ckPhone ? ckPhone.value : '',
-            district: ckDistrict ? ckDistrict.value : '',
-            sector: ckSector ? ckSector.value : '',
-            cell: ckCell ? ckCell.value : '',
-            village: ckVillage ? ckVillage.value : ''
+            streetAddress: ckStreetAddress ? ckStreetAddress.value : '',
+            city: ckCity ? ckCity.value : '',
+            stateProvinceRegion: ckStateProvinceRegion ? ckStateProvinceRegion.value : '',
+            postalCode: ckPostalCode ? ckPostalCode.value : '',
+            country: ckCountry ? ckCountry.value : ''
         };
         try {
             localStorage.setItem('ckDeliveryForm', JSON.stringify(data));
@@ -256,10 +261,11 @@
                 var data = JSON.parse(stored);
                 if (ckFullName && data.fullName) ckFullName.value = data.fullName;
                 if (ckPhone && data.phone) ckPhone.value = data.phone;
-                if (ckDistrict && data.district) ckDistrict.value = data.district;
-                if (ckSector && data.sector) ckSector.value = data.sector;
-                if (ckCell && data.cell) ckCell.value = data.cell;
-                if (ckVillage && data.village) ckVillage.value = data.village;
+                if (ckStreetAddress && data.streetAddress) ckStreetAddress.value = data.streetAddress;
+                if (ckCity && data.city) ckCity.value = data.city;
+                if (ckStateProvinceRegion && data.stateProvinceRegion) ckStateProvinceRegion.value = data.stateProvinceRegion;
+                if (ckPostalCode && data.postalCode) ckPostalCode.value = data.postalCode;
+                if (ckCountry && data.country) ckCountry.value = data.country;
             }
         } catch (e) { /* ignore */ }
     }
@@ -268,10 +274,11 @@
         return {
             fullName: ckFullName ? ckFullName.value.trim() : '',
             phone: ckPhone ? ckPhone.value.trim() : '',
-            district: ckDistrict ? ckDistrict.value.trim() : '',
-            sector: ckSector ? ckSector.value.trim() : '',
-            cell: ckCell ? ckCell.value.trim() : '',
-            village: ckVillage ? ckVillage.value.trim() : ''
+            streetAddress: ckStreetAddress ? ckStreetAddress.value.trim() : '',
+            city: ckCity ? ckCity.value.trim() : '',
+            stateProvinceRegion: ckStateProvinceRegion ? ckStateProvinceRegion.value.trim() : '',
+            postalCode: ckPostalCode ? ckPostalCode.value.trim() : '',
+            country: ckCountry ? ckCountry.value.trim() : ''
         };
     }
 
@@ -291,10 +298,9 @@
 
         clearFieldError('fullName');
         clearFieldError('phone');
-        clearFieldError('district');
-        clearFieldError('sector');
-        clearFieldError('cell');
-        clearFieldError('village');
+        clearFieldError('streetAddress');
+        clearFieldError('city');
+        clearFieldError('country');
 
         if (!data.fullName || data.fullName.length < 2) {
             setFieldError('fullName');
@@ -307,23 +313,18 @@
             valid = false;
         }
 
-        if (!data.district) {
-            setFieldError('district');
+        if (!data.streetAddress || data.streetAddress.length < 3) {
+            setFieldError('streetAddress');
             valid = false;
         }
 
-        if (!data.sector || data.sector.length < 2) {
-            setFieldError('sector');
+        if (!data.city || data.city.length < 2) {
+            setFieldError('city');
             valid = false;
         }
 
-        if (!data.cell || data.cell.length < 2) {
-            setFieldError('cell');
-            valid = false;
-        }
-
-        if (!data.village || data.village.length < 2) {
-            setFieldError('village');
+        if (!data.country || data.country.length < 2) {
+            setFieldError('country');
             valid = false;
         }
 
@@ -354,10 +355,11 @@
 
     function buildDeliveryAddress(data) {
         var parts = [];
-        if (data.village) parts.push(data.village);
-        if (data.cell) parts.push(data.cell);
-        if (data.sector) parts.push(data.sector);
-        if (data.district) parts.push(data.district);
+        if (data.streetAddress) parts.push(data.streetAddress);
+        if (data.city) parts.push(data.city);
+        if (data.stateProvinceRegion) parts.push(data.stateProvinceRegion);
+        if (data.postalCode) parts.push(data.postalCode);
+        if (data.country) parts.push(data.country);
         return parts.join(', ') || 'Not provided';
     }
 
@@ -375,7 +377,7 @@
         }
 
         var orderId = (data.data && data.data.orderId) ? data.data.orderId : (data.orderId || 'N/A');
-        var address = deliveryData.sector + ', ' + deliveryData.district;
+        var address = deliveryData.city + ', ' + deliveryData.country;
 
         details.innerHTML =
             '<div class="ck-confirm-detail-row"><span class="ck-confirm-detail-key">Order ID</span><span class="ck-confirm-detail-val">' + escapeHtml(orderId.slice(-12).toUpperCase()) + '</span></div>' +
@@ -465,10 +467,11 @@
                             deliveryInfo: {
                                 fullName: deliveryData.fullName,
                                 phone: deliveryData.phone,
-                                district: deliveryData.district,
-                                sector: deliveryData.sector,
-                                cell: deliveryData.cell,
-                                village: deliveryData.village
+                                streetAddress: deliveryData.streetAddress,
+                                city: deliveryData.city,
+                                stateProvinceRegion: deliveryData.stateProvinceRegion,
+                                postalCode: deliveryData.postalCode,
+                                country: deliveryData.country
                             }
                         })
                     });

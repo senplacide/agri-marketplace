@@ -129,10 +129,11 @@
     function formatDeliveryAddress(deliveryInfo) {
         if (!deliveryInfo) return '';
         var parts = [];
-        if (deliveryInfo.village) parts.push(deliveryInfo.village);
-        if (deliveryInfo.cell) parts.push(deliveryInfo.cell);
-        if (deliveryInfo.sector) parts.push(deliveryInfo.sector);
-        if (deliveryInfo.district) parts.push(deliveryInfo.district);
+        if (deliveryInfo.streetAddress) parts.push(deliveryInfo.streetAddress);
+        if (deliveryInfo.city) parts.push(deliveryInfo.city);
+        if (deliveryInfo.stateProvinceRegion) parts.push(deliveryInfo.stateProvinceRegion);
+        if (deliveryInfo.postalCode) parts.push(deliveryInfo.postalCode);
+        if (deliveryInfo.country) parts.push(deliveryInfo.country);
         return parts.join(', ');
     }
 
@@ -351,10 +352,11 @@
             '<p class="fo-delivery-title"><i class="fa-solid fa-location-dot"></i> Delivery Information</p>' +
             '<div class="fo-delivery-row"><span class="fo-delivery-label">Full Name:</span> <span class="fo-delivery-value">' + escapeHtml(di.fullName || '') + '</span></div>' +
             '<div class="fo-delivery-row"><span class="fo-delivery-label">Phone:</span> <span class="fo-delivery-value">' + escapeHtml(di.phone || '') + '</span></div>' +
-            '<div class="fo-delivery-row"><span class="fo-delivery-label">District:</span> <span class="fo-delivery-value">' + escapeHtml(di.district || '') + '</span></div>' +
-            '<div class="fo-delivery-row"><span class="fo-delivery-label">Sector:</span> <span class="fo-delivery-value">' + escapeHtml(di.sector || '') + '</span></div>' +
-            '<div class="fo-delivery-row"><span class="fo-delivery-label">Cell:</span> <span class="fo-delivery-value">' + escapeHtml(di.cell || '') + '</span></div>' +
-            '<div class="fo-delivery-row"><span class="fo-delivery-label">Village:</span> <span class="fo-delivery-value">' + escapeHtml(di.village || '') + '</span></div>' +
+            '<div class="fo-delivery-row"><span class="fo-delivery-label">Street Address:</span> <span class="fo-delivery-value">' + escapeHtml(di.streetAddress || '') + '</span></div>' +
+            '<div class="fo-delivery-row"><span class="fo-delivery-label">City:</span> <span class="fo-delivery-value">' + escapeHtml(di.city || '') + '</span></div>' +
+            '<div class="fo-delivery-row"><span class="fo-delivery-label">State / Province / Region:</span> <span class="fo-delivery-value">' + escapeHtml(di.stateProvinceRegion || '') + '</span></div>' +
+            '<div class="fo-delivery-row"><span class="fo-delivery-label">Postal / ZIP Code:</span> <span class="fo-delivery-value">' + escapeHtml(di.postalCode || '') + '</span></div>' +
+            '<div class="fo-delivery-row"><span class="fo-delivery-label">Country:</span> <span class="fo-delivery-value">' + escapeHtml(di.country || '') + '</span></div>' +
         '</div>';
 
         var detailActions = '';

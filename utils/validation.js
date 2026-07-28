@@ -273,7 +273,7 @@ function validateOrderInput(body) {
         return { error: "Delivery information is required." };
     }
 
-    var requiredDeliveryFields = ["fullName", "phone", "district", "sector", "cell", "village"];
+    var requiredDeliveryFields = ["fullName", "phone", "streetAddress", "city", "country"];
     for (var j = 0; j < requiredDeliveryFields.length; j++) {
         var field = requiredDeliveryFields[j];
         if (!deliveryInfo[field] || typeof deliveryInfo[field] !== "string" || !deliveryInfo[field].trim()) {
@@ -281,6 +281,13 @@ function validateOrderInput(body) {
         }
         if (deliveryInfo[field].length > 200) {
             return { error: "Delivery " + field + " is too long." };
+        }
+    }
+    var optionalFields = ["stateProvinceRegion", "postalCode"];
+    for (var k = 0; k < optionalFields.length; k++) {
+        var optField = optionalFields[k];
+        if (deliveryInfo[optField] && typeof deliveryInfo[optField] === "string" && deliveryInfo[optField].length > 200) {
+            return { error: "Delivery " + optField + " is too long." };
         }
     }
 

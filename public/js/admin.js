@@ -1151,10 +1151,11 @@
     function formatOrderAddress(deliveryInfo) {
         if (!deliveryInfo) return '';
         var parts = [];
-        if (deliveryInfo.village) parts.push(deliveryInfo.village);
-        if (deliveryInfo.cell) parts.push(deliveryInfo.cell);
-        if (deliveryInfo.sector) parts.push(deliveryInfo.sector);
-        if (deliveryInfo.district) parts.push(deliveryInfo.district);
+        if (deliveryInfo.streetAddress) parts.push(deliveryInfo.streetAddress);
+        if (deliveryInfo.city) parts.push(deliveryInfo.city);
+        if (deliveryInfo.stateProvinceRegion) parts.push(deliveryInfo.stateProvinceRegion);
+        if (deliveryInfo.postalCode) parts.push(deliveryInfo.postalCode);
+        if (deliveryInfo.country) parts.push(deliveryInfo.country);
         return parts.join(', ');
     }
 
@@ -1319,10 +1320,11 @@
         if (order.deliveryInfo) {
             html += '<div class="order-detail-field"><strong>Full Name:</strong> ' + escapeHtml(order.deliveryInfo.fullName || '') + '</div>';
             html += '<div class="order-detail-field"><strong>Phone:</strong> ' + escapeHtml(order.deliveryInfo.phone || '') + '</div>';
-            html += '<div class="order-detail-field"><strong>District:</strong> ' + escapeHtml(order.deliveryInfo.district || '') + '</div>';
-            html += '<div class="order-detail-field"><strong>Sector:</strong> ' + escapeHtml(order.deliveryInfo.sector || '') + '</div>';
-            html += '<div class="order-detail-field"><strong>Cell:</strong> ' + escapeHtml(order.deliveryInfo.cell || '') + '</div>';
-            html += '<div class="order-detail-field"><strong>Village:</strong> ' + escapeHtml(order.deliveryInfo.village || '') + '</div>';
+            html += '<div class="order-detail-field"><strong>Street Address:</strong> ' + escapeHtml(order.deliveryInfo.streetAddress || '') + '</div>';
+            html += '<div class="order-detail-field"><strong>City:</strong> ' + escapeHtml(order.deliveryInfo.city || '') + '</div>';
+            html += '<div class="order-detail-field"><strong>State / Province / Region:</strong> ' + escapeHtml(order.deliveryInfo.stateProvinceRegion || '') + '</div>';
+            html += '<div class="order-detail-field"><strong>Postal / ZIP Code:</strong> ' + escapeHtml(order.deliveryInfo.postalCode || '') + '</div>';
+            html += '<div class="order-detail-field"><strong>Country:</strong> ' + escapeHtml(order.deliveryInfo.country || '') + '</div>';
         }
         html += '</div></div></div>';
 

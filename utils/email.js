@@ -126,13 +126,18 @@ function buildOrderTable(items, totalPrice) {
 }
 
 function buildDeliveryTable(deliveryInfo) {
+    var addrLine2 = "";
+    if (deliveryInfo.stateProvinceRegion || deliveryInfo.postalCode) {
+        addrLine2 = "<br>" + (deliveryInfo.stateProvinceRegion ? escapeHtml(deliveryInfo.stateProvinceRegion) + ", " : "") + (deliveryInfo.postalCode ? escapeHtml(deliveryInfo.postalCode) : "");
+    }
     return `
     <div style="background-color:#f7fafc;border-radius:6px;padding:16px;margin:16px 0;">
         <h3 style="margin:0 0 8px;color:#276749;font-size:14px;">Delivery Address</h3>
         <p style="margin:0;color:#4a5568;font-size:14px;line-height:1.6;">
             ${escapeHtml(deliveryInfo.fullName)}<br>
-            ${escapeHtml(deliveryInfo.village)}, ${escapeHtml(deliveryInfo.cell)}<br>
-            ${escapeHtml(deliveryInfo.sector)}, ${escapeHtml(deliveryInfo.district)}<br>
+            ${escapeHtml(deliveryInfo.streetAddress)}<br>
+            ${escapeHtml(deliveryInfo.city)}${addrLine2}<br>
+            ${escapeHtml(deliveryInfo.country)}<br>
             Phone: ${escapeHtml(deliveryInfo.phone)}
         </p>
     </div>`;
@@ -288,7 +293,7 @@ const sendNewOrderReceivedEmail = async (farmerEmail, farmerName, order, buyerNa
             <p style="margin:0 0 8px;color:#2d3748;font-size:14px;"><strong>Quantity:</strong> ${quantities}</p>
             <p style="margin:0 0 8px;color:#2d3748;font-size:14px;">
                 <strong>Delivery:</strong>
-                ${escapeHtml(order.deliveryInfo.village)}, ${escapeHtml(order.deliveryInfo.cell)}, ${escapeHtml(order.deliveryInfo.sector)}, ${escapeHtml(order.deliveryInfo.district)}
+                ${escapeHtml(order.deliveryInfo.streetAddress)}, ${escapeHtml(order.deliveryInfo.city)}${order.deliveryInfo.stateProvinceRegion ? ", " + escapeHtml(order.deliveryInfo.stateProvinceRegion) : ""}${order.deliveryInfo.postalCode ? ", " + escapeHtml(order.deliveryInfo.postalCode) : ""}, ${escapeHtml(order.deliveryInfo.country)}
             </p>
             <p style="margin:0;color:#276749;font-size:16px;font-weight:700;">Order Total: ${order.totalPrice.toLocaleString()} RWF</p>
         </div>
