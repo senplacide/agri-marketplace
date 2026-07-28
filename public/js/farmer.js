@@ -430,7 +430,7 @@
 
             var imageHtml = '';
             if (product.imageUrl) {
-                imageHtml = '<img src="' + escapeHtml(product.imageUrl) + '" alt="" class="product-image-cell" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="product-image-placeholder" style="display:none"><i class="fa-solid fa-image"></i></div>';
+                imageHtml = '<img src="' + escapeHtml(product.imageUrl) + '" alt="" class="product-image-cell"><div class="product-image-placeholder" style="display:none"><i class="fa-solid fa-image"></i></div>';
             } else {
                 imageHtml = '<div class="product-image-placeholder"><i class="fa-solid fa-box-open"></i></div>';
             }
@@ -448,6 +448,15 @@
                     '<button class="action-btn edit" data-tooltip="Edit" data-id="' + product._id + '"><i class="fa-solid fa-pen"></i></button>' +
                     '<button class="action-btn delete" data-tooltip="Delete" data-id="' + product._id + '"><i class="fa-solid fa-trash"></i></button>' +
                 '</div></td>';
+
+            var img = row.querySelector('img');
+            if (img) {
+                img.addEventListener('error', function() {
+                    this.style.display = 'none';
+                    var ph = this.nextElementSibling;
+                    if (ph) ph.style.display = 'flex';
+                });
+            }
 
             fragment.appendChild(row);
         }
@@ -605,7 +614,7 @@
 
         var imgHtml = '';
         if (product.imageUrl) {
-            imgHtml = '<img src="' + escapeHtml(product.imageUrl) + '" alt="" class="modal-product-img" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="modal-product-img-placeholder" style="display:none"><i class="fa-solid fa-image"></i> Image not available</div>';
+            imgHtml = '<img src="' + escapeHtml(product.imageUrl) + '" alt="" class="modal-product-img"><div class="modal-product-img-placeholder" style="display:none"><i class="fa-solid fa-image"></i> Image not available</div>';
         } else {
             imgHtml = '<div class="modal-product-img-placeholder"><i class="fa-solid fa-box-open" style="font-size:1.5rem;margin-right:8px;"></i> No image uploaded</div>';
         }
@@ -614,7 +623,7 @@
             '<div class="modal">' +
                 '<div class="modal-header">' +
                     '<h3><i class="fa-solid fa-eye" style="color:var(--fd-green);margin-right:8px;font-size:.95rem;"></i>Product Details</h3>' +
-                    '<button class="modal-close" onclick="closeModal(\'viewModal\')"><i class="fa-solid fa-xmark"></i></button>' +
+                    '<button class="modal-close"><i class="fa-solid fa-xmark"></i></button>' +
                 '</div>' +
                 '<div class="modal-body">' +
                     imgHtml +
@@ -628,9 +637,20 @@
                     (product.contact ? '<div class="modal-field"><span class="modal-field-label">Contact</span><span class="modal-field-value">' + escapeHtml(product.contact) + '</span></div>' : '') +
                 '</div>' +
                 '<div class="modal-footer">' +
-                    '<button class="modal-btn modal-btn-cancel" onclick="closeModal(\'viewModal\')">Close</button>' +
+                    '<button class="modal-btn modal-btn-cancel">Close</button>' +
                 '</div>' +
             '</div>';
+
+        var vmImg = dom.viewModal.querySelector('.modal-product-img');
+        if (vmImg) {
+            vmImg.addEventListener('error', function() {
+                this.style.display = 'none';
+                var ph = this.nextElementSibling;
+                if (ph) ph.style.display = 'flex';
+            });
+        }
+        dom.viewModal.querySelector('.modal-close').addEventListener('click', function() { closeModal('viewModal'); });
+        dom.viewModal.querySelector('.modal-btn-cancel').addEventListener('click', function() { closeModal('viewModal'); });
 
         dom.viewModal.style.display = 'flex';
         document.body.classList.add('no-scroll');
@@ -655,7 +675,7 @@
             '<div class="modal">' +
                 '<div class="modal-header">' +
                     '<h3><i class="fa-solid fa-pen" style="color:#0288d1;margin-right:8px;font-size:.95rem;"></i>Edit Product</h3>' +
-                    '<button class="modal-close" onclick="closeModal(\'editModal\')"><i class="fa-solid fa-xmark"></i></button>' +
+                    '<button class="modal-close"><i class="fa-solid fa-xmark"></i></button>' +
                 '</div>' +
                 '<div class="modal-body">' +
                     '<div class="edit-form-group"><label for="editProductName">Product Name</label><input type="text" id="editProductName" value="' + escapeHtml(product.name) + '" maxlength="100"></div>' +
@@ -664,10 +684,13 @@
                     '<div class="edit-form-group"><label for="editProductQuantity">Stock Quantity</label><input type="number" id="editProductQuantity" value="' + (product.quantity || 0) + '" min="0" step="1" placeholder="0"></div>' +
                 '</div>' +
                 '<div class="modal-footer">' +
-                    '<button class="modal-btn modal-btn-cancel" onclick="closeModal(\'editModal\')">Cancel</button>' +
+                    '<button class="modal-btn modal-btn-cancel">Cancel</button>' +
                     '<button class="modal-btn modal-btn-save" id="editSaveBtn"><i class="fa-solid fa-check" style="margin-right:6px;"></i>Save Changes</button>' +
                 '</div>' +
             '</div>';
+
+        dom.editModal.querySelector('.modal-close').addEventListener('click', function() { closeModal('editModal'); });
+        dom.editModal.querySelector('.modal-btn-cancel').addEventListener('click', function() { closeModal('editModal'); });
 
         dom.editModal.style.display = 'flex';
         document.body.classList.add('no-scroll');
@@ -736,7 +759,7 @@
             '<div class="modal">' +
                 '<div class="modal-header">' +
                     '<h3><i class="fa-solid fa-triangle-exclamation" style="color:#d32f2f;margin-right:8px;font-size:.95rem;"></i>Delete Product</h3>' +
-                    '<button class="modal-close" onclick="closeModal(\'deleteModal\')"><i class="fa-solid fa-xmark"></i></button>' +
+                    '<button class="modal-close"><i class="fa-solid fa-xmark"></i></button>' +
                 '</div>' +
                 '<div class="modal-body" style="text-align:center;padding:28px 24px;">' +
                     '<div style="font-size:2.5rem;margin-bottom:12px;">\u26A0\uFE0F</div>' +
@@ -744,10 +767,13 @@
                     '<p style="margin:0;font-size:.88rem;color:var(--fd-text-muted);">This will permanently delete <strong>"' + escapeHtml(product.name) + '"</strong>. This action cannot be undone.</p>' +
                 '</div>' +
                 '<div class="modal-footer" style="justify-content:center;">' +
-                    '<button class="modal-btn modal-btn-cancel" onclick="closeModal(\'deleteModal\')">Cancel</button>' +
+                    '<button class="modal-btn modal-btn-cancel">Cancel</button>' +
                     '<button class="modal-btn modal-btn-danger" id="deleteConfirmBtn"><i class="fa-solid fa-trash" style="margin-right:6px;"></i>Delete</button>' +
                 '</div>' +
             '</div>';
+
+        dom.deleteModal.querySelector('.modal-close').addEventListener('click', function() { closeModal('deleteModal'); });
+        dom.deleteModal.querySelector('.modal-btn-cancel').addEventListener('click', function() { closeModal('deleteModal'); });
 
         dom.deleteModal.style.display = 'flex';
         document.body.classList.add('no-scroll');
@@ -806,7 +832,7 @@
             '<div class="modal">' +
                 '<div class="modal-header">' +
                     '<h3><i class="fa-solid fa-plus-circle" style="color:var(--fd-green);margin-right:8px;font-size:.95rem;"></i>Add New Product</h3>' +
-                    '<button class="modal-close" onclick="closeModal(\'addModal\')"><i class="fa-solid fa-xmark"></i></button>' +
+                    '<button class="modal-close"><i class="fa-solid fa-xmark"></i></button>' +
                 '</div>' +
                 '<div class="modal-body">' +
                     '<div class="add-form-group"><label for="addProductName">Product Name *</label><input type="text" id="addProductName" placeholder="e.g. Fresh Mangoes" maxlength="100"></div>' +
@@ -819,10 +845,13 @@
                     '<div class="add-form-group"><label>Payment Methods *</label><div class="add-form-checkboxes"><label><input type="checkbox" id="addPayMobile" checked> Mobile Money (MoMo)</label><label><input type="checkbox" id="addPayVisa"> Visa Card</label></div></div>' +
                 '</div>' +
                 '<div class="modal-footer">' +
-                    '<button class="modal-btn modal-btn-cancel" onclick="closeModal(\'addModal\')">Cancel</button>' +
+                    '<button class="modal-btn modal-btn-cancel">Cancel</button>' +
                     '<button class="modal-btn modal-btn-save" id="addSaveBtn"><i class="fa-solid fa-plus" style="margin-right:6px;"></i>Add Product</button>' +
                 '</div>' +
             '</div>';
+
+        dom.addModal.querySelector('.modal-close').addEventListener('click', function() { closeModal('addModal'); });
+        dom.addModal.querySelector('.modal-btn-cancel').addEventListener('click', function() { closeModal('addModal'); });
 
         dom.addModal.style.display = 'flex';
         document.body.classList.add('no-scroll');

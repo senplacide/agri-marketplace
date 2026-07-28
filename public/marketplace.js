@@ -144,7 +144,7 @@ var Marketplace = (function () {
         var imgHtml;
         if (p.imageUrl) {
             imgHtml = '<div class="mp-card-img-wrap">'
-                + '<img src="' + esc(p.imageUrl) + '" alt="' + esc(p.name) + '" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'
+                + '<img src="' + esc(p.imageUrl) + '" alt="' + esc(p.name) + '" loading="lazy">'
                 + '<div class="mp-card-placeholder" style="display:none"><i class="fa-solid fa-image"></i></div>'
                 + '</div>';
         } else {
@@ -165,6 +165,15 @@ var Marketplace = (function () {
             + '<div class="mp-card-price">' + priceHtml + '</div>'
             + '<a href="/item.html?id=' + encodeURIComponent(p._id) + '" class="mp-card-btn">View Details <i class="fa-solid fa-arrow-right"></i></a>'
             + '</div>';
+
+        var img = card.querySelector('img');
+        if (img) {
+            img.addEventListener('error', function() {
+                this.style.display = 'none';
+                var ph = this.nextElementSibling;
+                if (ph) ph.style.display = 'flex';
+            });
+        }
 
         return card;
     }

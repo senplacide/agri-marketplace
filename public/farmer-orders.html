@@ -1479,25 +1479,7 @@
 <div id="toastContainer" class="toast-container" aria-live="polite"></div>
 
 <script src="ux-utils.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    var hamburger = document.getElementById('navHamburger');
-    var navCenter = document.getElementById('navCenter');
-    var navRight = document.getElementById('navRight');
-    if (hamburger && navCenter && navRight) {
-        hamburger.addEventListener('click', function() {
-            navCenter.classList.toggle('open');
-            navRight.classList.toggle('open');
-            var icon = hamburger.querySelector('i');
-            if (navCenter.classList.contains('open')) {
-                icon.className = 'fa-solid fa-xmark';
-            } else {
-                icon.className = 'fa-solid fa-bars';
-            }
-        });
-    }
-});
-</script>
+<script src="hamburger-menu.js"></script>
 <script src="js/currency.js"></script>
 <script src="script.js"></script>
 <script src="js/farmer-orders.js"></script>

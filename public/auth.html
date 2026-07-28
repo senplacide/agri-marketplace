@@ -40,7 +40,7 @@
         <div class="public-auth-brand">
             <div class="brand-content">
                 <div class="brand-logo">🌾 AgriConnect</div>
-                <h2>Welcome to Rwanda's Agricultural Marketplace</h2>
+                <h2>Welcome to AgriConnect Agricultural Marketplace</h2>
                 <p>Join hundreds of farmers and buyers already transforming how agricultural products are traded.</p>
                 <ul class="brand-features">
                     <li>
@@ -74,13 +74,13 @@
                     <input type="text" id="signup-name" name="signup-name" required placeholder="John Doe">
                 </div>
                 <div class="public-form-group">
-                    <label>I am a...</label>
+                    <label>Register as</label>
                     <div style="display:flex;gap:12px;margin-top:6px;">
-                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:10px 16px;border:2px solid #e0e0e0;border-radius:8px;flex:1;text-align:center;transition:border-color .2s,background .2s;" class="role-option" data-role="farmer">
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:10px 16px;border:2px solid #e0e0e0;border-radius:8px;flex:1;text-align:center;transition:border-color .2s,background .2s;" class="role-option" data-role-option="farmer">
                             <input type="radio" name="signup-role" value="farmer" checked style="display:none;" aria-label="Select farmer role">
                             <span style="font-size:1.2rem;">🌾</span> Farmer
                         </label>
-                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:10px 16px;border:2px solid #e0e0e0;border-radius:8px;flex:1;text-align:center;transition:border-color .2s,background .2s;" class="role-option" data-role="buyer">
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:10px 16px;border:2px solid #e0e0e0;border-radius:8px;flex:1;text-align:center;transition:border-color .2s,background .2s;" class="role-option" data-role-option="buyer">
                             <input type="radio" name="signup-role" value="buyer" style="display:none;" aria-label="Select buyer role">
                             <span style="font-size:1.2rem;">🛒</span> Buyer
                         </label>
@@ -92,8 +92,7 @@
                 </div>
                 <div class="public-form-group">
                     <label for="signup-password">Password</label>
-                    <input type="password" id="signup-password" name="signup-password" required placeholder="Min. 6 characters" aria-describedby="signup-password-help">
-                    <small id="signup-password-help" style="color:#6B7280;font-size:0.85rem;margin-top:4px;display:block;">Password must be at least 6 characters</small>
+                    <input type="password" id="signup-password" name="signup-password" required placeholder="Min. 6 characters">
                 </div>
                 <button type="submit" class="public-form-submit">Create Account</button>
             </form>
@@ -110,8 +109,7 @@
                 </div>
                 <div class="public-form-group">
                     <label for="login-password">Password</label>
-                    <input type="password" id="login-password" name="login-password" required placeholder="Enter your password" aria-describedby="login-password-help">
-                    <small id="login-password-help" style="color:#6B7280;font-size:0.85rem;margin-top:4px;display:block;">Password must be at least 6 characters</small>
+                    <input type="password" id="login-password" name="login-password" required placeholder="Enter your password">
                 </div>
                 <button type="submit" class="public-form-submit">Sign In</button>
                 <p class="forgot-password-link" style="margin-top: 16px; text-align: center;">
@@ -125,30 +123,6 @@
     <script src="script.js"></script>
     <script src="public-ui.js"></script>
     <script src="ux-utils.js"></script>
-    <script>
-    (function() {
-        var options = document.querySelectorAll('.role-option');
-        function updateRoleStyles() {
-            options.forEach(function(opt) {
-                var radio = opt.querySelector('input[type="radio"]');
-                if (radio.checked) {
-                    opt.style.borderColor = '#2E7D32';
-                    opt.style.background = '#f0fdf4';
-                } else {
-                    opt.style.borderColor = '#e0e0e0';
-                    opt.style.background = 'transparent';
-                }
-            });
-        }
-        options.forEach(function(opt) {
-            opt.addEventListener('click', function() {
-                var radio = opt.querySelector('input[type="radio"]');
-                radio.checked = true;
-                updateRoleStyles();
-            });
-        });
-        updateRoleStyles();
-    })();
-    </script>
+    <script src="role-selector.js"></script>
 </body>
 </html>

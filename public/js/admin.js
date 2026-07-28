@@ -1752,8 +1752,8 @@
             var statusClass = 'order-status-badge ' + w.status;
             var actionHtml = '';
             if (w.status === 'pending') {
-                actionHtml = '<button class="orders-view-btn" style="background:#16a34a!important;margin-right:4px;" onclick="adminApproveWithdrawal(\'' + w.requestId + '\')"><i class="fa-solid fa-check"></i></button>' +
-                    '<button class="orders-view-btn" style="background:#d32f2f!important;" onclick="adminRejectWithdrawal(\'' + w.requestId + '\')"><i class="fa-solid fa-xmark"></i></button>';
+                actionHtml = '<button class="orders-view-btn" style="background:#16a34a!important;margin-right:4px;" data-action="approve" data-request-id="' + w.requestId + '"><i class="fa-solid fa-check"></i></button>' +
+                    '<button class="orders-view-btn" style="background:#d32f2f!important;" data-action="reject" data-request-id="' + w.requestId + '"><i class="fa-solid fa-xmark"></i></button>';
             } else {
                 actionHtml = '<span style="font-size:.82rem;color:var(--admin-text-muted);">Processed</span>';
             }
@@ -1771,6 +1771,15 @@
             fragment.appendChild(row);
         }
         tbody.appendChild(fragment);
+
+        var approveBtns = tbody.querySelectorAll('[data-action="approve"]');
+        var rejectBtns = tbody.querySelectorAll('[data-action="reject"]');
+        approveBtns.forEach(function(btn) {
+            btn.addEventListener('click', function() { adminApproveWithdrawal(this.getAttribute('data-request-id')); });
+        });
+        rejectBtns.forEach(function(btn) {
+            btn.addEventListener('click', function() { adminRejectWithdrawal(this.getAttribute('data-request-id')); });
+        });
     }
 
     window.adminApproveWithdrawal = function (requestId) {

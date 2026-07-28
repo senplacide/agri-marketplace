@@ -1252,12 +1252,31 @@ form select {
     margin-bottom: 20px;
 }
 
-.public-page .public-form-group label {
+.public-page .public-form-group label:not(.role-option) {
     display: block;
     color: var(--public-text);
     font-weight: 600;
     font-size: 0.9rem;
     margin-bottom: 8px;
+}
+
+.public-page .public-form-group .role-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 10px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    flex: 1;
+    text-align: center;
+    transition: border-color 0.2s, background 0.2s;
+    color: var(--public-text);
+}
+
+.public-page .public-form-group .role-option:has(input:checked) {
+    border-color: #2E7D32;
+    background: #f0fdf4;
 }
 
 .public-page .public-form-group input,
