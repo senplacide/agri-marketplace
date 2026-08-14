@@ -6,7 +6,7 @@ const Product = require("../models/Product");
 const User = require("../models/User");
 const { validateProductInput, validateObjectId } = require("../utils/validation");
 const requireAdmin = require("../middleware/admin");
-const { requireAuth } = require("../middleware/auth");
+const { requireFarmer } = require("../middleware/auth");
 const { sendAdminNewProductEmail } = require("../utils/email");
 
 const router = express.Router();
@@ -71,7 +71,7 @@ router.get("/", async function (req, res) {
    GET MY PRODUCTS
 ============================================================ */
 
-router.get("/my-listings", requireAuth, async function (req, res) {
+router.get("/my-listings", requireFarmer, async function (req, res) {
     try {
         var products = await Product.find({ owner: req.userId })
             .sort({ createdAt: -1 });
@@ -94,7 +94,7 @@ router.get("/my-listings", requireAuth, async function (req, res) {
    CREATE PRODUCT
 ============================================================ */
 
-router.post("/", requireAuth, upload.single("image"), async function (req, res) {
+router.post("/", requireFarmer, upload.single("image"), async function (req, res) {
     try {
         var productData = Object.assign({}, req.body, { owner: req.userId });
 
@@ -145,7 +145,7 @@ router.post("/", requireAuth, upload.single("image"), async function (req, res) 
    UPDATE PRODUCT
 ============================================================ */
 
-router.put("/:id", requireAuth, upload.single("image"), async function (req, res) {
+router.put("/:id", requireFarmer, upload.single("image"), async function (req, res) {
     try {
         var idCheck = validateObjectId(req.params.id, "product ID");
         if (idCheck.error) {
@@ -224,7 +224,7 @@ router.put("/:id", requireAuth, upload.single("image"), async function (req, res
    DELETE PRODUCT
 ============================================================ */
 
-router.delete("/:id", requireAuth, async function (req, res) {
+router.delete("/:id", requireFarmer, async function (req, res) {
     try {
         var idCheck = validateObjectId(req.params.id, "product ID");
         if (idCheck.error) {

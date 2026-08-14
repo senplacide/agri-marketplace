@@ -1013,7 +1013,7 @@
     // =====================================
     async function loadWalletBalance() {
         try {
-            var response = await fetch('/api/farmer/wallet', {
+            var response = await fetch('/api/wallet', {
                 headers: { Authorization: 'Bearer ' + token }
             });
             if (!response.ok) return;

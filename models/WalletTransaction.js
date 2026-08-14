@@ -19,7 +19,7 @@ const WalletTransactionSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        required: true
+        default: null
     },
     orderId: {
         type: mongoose.Schema.Types.ObjectId,

@@ -2,7 +2,7 @@ const express = require("express");
 const User = require("../models/User");
 const Product = require("../models/Product");
 const Order = require("../models/Order");
-const { requireAuth } = require("../middleware/auth");
+const { requireFarmer, requireAuth } = require("../middleware/auth");
 const requireAdmin = require("../middleware/admin");
 
 const router = express.Router();
@@ -52,7 +52,7 @@ function groupByMonth(items, dateField) {
 FARMER ANALYTICS
 ==================================================
 */
-router.get("/farmer", requireAuth, async function (req, res) {
+router.get("/farmer", requireFarmer, async function (req, res) {
     try {
         var farmerId = req.userId;
         var period = req.query.period;

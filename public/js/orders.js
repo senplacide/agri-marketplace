@@ -491,8 +491,6 @@
                 var orderId = actionEl.getAttribute('data-order-id');
                 if (action === 'cancel') {
                     cancelOrder(orderId);
-                } else if (action === 'complete') {
-                    updateOrderStatus(orderId, 'Completed');
                 } else if (action === 'track') {
                     showToast('Order tracking coming soon!', 'info');
                 } else if (action === 'reorder') {

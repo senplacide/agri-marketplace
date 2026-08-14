@@ -4,6 +4,7 @@ const ALLOWED_PRODUCT_CATEGORIES = ["Fruits", "Vegetables", "Grains", "Livestock
 const ALLOWED_PAYMENT_METHODS = ["Visa Card", "Mobile Money (MoMo)"];
 const ORDER_STATUSES = ["Pending", "Processing", "Completed", "Cancelled"];
 const FARMER_ORDER_STATUSES = ["Accepted", "Rejected", "Completed"];
+const BUYER_ORDER_STATUSES = ["Cancelled"];
 const USER_ROLES = ["farmer", "buyer", "admin"];
 
 function sanitizeText(value) {
@@ -475,5 +476,6 @@ module.exports = {
     ALLOWED_PAYMENT_METHODS,
     ORDER_STATUSES,
     FARMER_ORDER_STATUSES,
+    BUYER_ORDER_STATUSES,
     USER_ROLES
 };

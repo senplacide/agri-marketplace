@@ -23,7 +23,14 @@ function requireAuth(req, res, next) {
 
         User.findById(decoded.id).select("isSuspended")
             .then(function (user) {
-                if (user && user.isSuspended) {
+                if (!user) {
+                    return res.status(401).json({
+                        success: false,
+                        message: "User not found.",
+                        error: "User account no longer exists."
+                    });
+                }
+                if (user.isSuspended) {
                     return res.status(403).json({
                         success: false,
                         message: "Account suspended.",
@@ -33,9 +40,13 @@ function requireAuth(req, res, next) {
                 req.userId = decoded.id;
                 next();
             })
-            .catch(function () {
-                req.userId = decoded.id;
-                next();
+            .catch(function (err) {
+                console.error("[Auth] Database lookup error:", err.message);
+                return res.status(500).json({
+                    success: false,
+                    message: "Authentication failed.",
+                    error: "Internal server error."
+                });
             });
     } catch (err) {
         if (err.name === "TokenExpiredError") {
@@ -125,4 +136,17 @@ function requireAuthWithUser(req, res, next) {
     }
 }
 
-module.exports = { requireAuth, requireAuthWithUser, JWT_SECRET };
+function requireFarmer(req, res, next) {
+    return requireAuthWithUser(req, res, function () {
+        if (req.user.role !== "farmer") {
+            return res.status(403).json({
+                success: false,
+                message: "Forbidden.",
+                error: "Farmer access only."
+            });
+        }
+        next();
+    });
+}
+
+module.exports = { requireAuth, requireAuthWithUser, requireFarmer, JWT_SECRET };

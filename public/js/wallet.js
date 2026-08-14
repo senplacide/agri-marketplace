@@ -176,7 +176,7 @@
 
     async function loadWalletData() {
         try {
-            var res = await fetch('/api/farmer/wallet', {
+            var res = await fetch('/api/wallet', {
                 headers: { Authorization: 'Bearer ' + token }
             });
 
@@ -193,7 +193,7 @@
             renderWallet(state.wallet);
             renderTransactions(state.transactions);
 
-            var withdrawalRes = await fetch('/api/farmer/wallet/withdrawals', {
+            var withdrawalRes = await fetch('/api/wallet/withdrawals', {
                 headers: { Authorization: 'Bearer ' + token }
             });
             if (withdrawalRes.ok) {
@@ -228,7 +228,7 @@
             submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
 
             try {
-                var res = await fetch('/api/farmer/wallet/withdraw', {
+                var res = await fetch('/api/wallet/withdraw', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

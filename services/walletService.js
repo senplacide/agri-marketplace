@@ -2,6 +2,7 @@ const Wallet = require("../models/Wallet");
 const PlatformWallet = require("../models/PlatformWallet");
 const WithdrawRequest = require("../models/WithdrawRequest");
 const WalletTransaction = require("../models/WalletTransaction");
+const Order = require("../models/Order");
 const { PLATFORM_COMMISSION_PERCENT } = require("../config/payment");
 
 // ==========================================
@@ -332,31 +333,76 @@ async function getWalletTransactions(walletType, userId, limit) {
 // ORDER COMMISSION PROCESSING
 // ==========================================
 
-async function processOrderCommission(order) {
-    if (!order || !order.commissionAmount) return null;
-
-    if (order.commissionAmount > 0) {
-        await creditPlatformWallet(
-            order.commissionAmount,
-            order._id,
-            "Commission from order " + order.orderId
-        );
+async function processOrderCommission(order, farmerId) {
+    if (!order || order.status !== "Completed") {
+        return { processed: false, reason: "invalid-order-or-status" };
     }
 
-    var farmerAmount = order.farmerAmount || (order.totalPrice - order.commissionAmount);
-    if (farmerAmount > 0) {
-        var farmerId = null;
-        if (order.items && order.items.length > 0) {
+    if (order.commissionProcessed) {
+        return { processed: false, reason: "already-processed" };
+    }
+
+    var claim = await Order.findOneAndUpdate(
+        { _id: order._id, status: "Completed", commissionProcessed: { $ne: true } },
+        { $set: { commissionProcessed: true } },
+        { new: true }
+    );
+    if (!claim) {
+        return { processed: false, reason: "already-processed" };
+    }
+
+    try {
+        var farmerIdToCredit = farmerId;
+        if (!farmerIdToCredit && order.items && order.items.length > 0) {
             var Product = require("../models/Product");
             var firstProduct = await Product.findById(order.items[0].product);
-            if (firstProduct) farmerId = firstProduct.owner;
+            if (firstProduct) farmerIdToCredit = firstProduct.owner;
         }
-        if (farmerId) {
-            await creditWallet(farmerId, farmerAmount, order._id);
-        }
-    }
 
-    return true;
+        var farmerAmount = order.farmerAmount || (order.totalPrice - order.commissionAmount);
+
+        if (farmerIdToCredit && farmerAmount > 0) {
+            await findOrCreateWallet(farmerIdToCredit);
+            var existingFarmerTxn = await WalletTransaction.findOne({
+                orderId: order._id,
+                walletType: "farmer",
+                userId: farmerIdToCredit,
+                type: "credit"
+            });
+            if (!existingFarmerTxn) {
+                await creditWallet(farmerIdToCredit, farmerAmount, order._id);
+                await releasePendingFunds(farmerIdToCredit, farmerAmount);
+            }
+        }
+
+        if (order.commissionAmount > 0) {
+            var existingPlatformTxn = await WalletTransaction.findOne({
+                orderId: order._id,
+                walletType: "platform",
+                type: "commission"
+            });
+            if (!existingPlatformTxn) {
+                await creditPlatformWallet(
+                    order.commissionAmount,
+                    order._id,
+                    "Commission from order " + order.orderId
+                );
+            }
+        }
+
+        await Order.updateOne({ _id: order._id }, { $set: { commissionProcessed: true, payoutStatus: "completed" } });
+
+        return {
+            processed: true,
+            farmerId: farmerIdToCredit || null,
+            farmerAmount: farmerAmount,
+            commissionAmount: order.commissionAmount || 0
+        };
+    } catch (err) {
+        console.error("[WalletService] Commission processing failed for " + (order.orderId || order._id) + ":", err.message);
+        await Order.updateOne({ _id: order._id }, { $set: { commissionProcessed: false, payoutStatus: "failed" } });
+        return { processed: false, reason: "error" };
+    }
 }
 
 module.exports = {
