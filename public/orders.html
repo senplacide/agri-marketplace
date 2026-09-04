@@ -828,7 +828,7 @@
             min-width: 55px;
             flex-shrink: 0;
         }
-        .od-delivery-value { color: var(--od-text); font-weight: 500; }
+        .od-delivery-value { color: var(--od-text); font-weight: 500; min-width: 0; word-break: break-word; overflow-wrap: anywhere; }
 
         .od-detail-actions {
             display: flex;
@@ -1108,6 +1108,7 @@
 
         @media(max-width: 767px) {
             .buyer-nav { padding: 0 20px; height: 58px; }
+            .nav-hamburger { display: flex; }
             .nav-center, .nav-right { display: none; }
             .nav-center.open, .nav-right.open {
                 display: flex;
@@ -1377,7 +1378,7 @@
         .od-m-label { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--od-text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
         .od-m-label i { font-size: .72rem; color: var(--od-green); }
 
-        .od-m-order-id { font-size: .88rem; font-weight: 600; color: var(--od-text); display: flex; align-items: center; gap: 6px; }
+        .od-m-order-id { font-size: .88rem; font-weight: 600; color: var(--od-text); display: flex; align-items: center; gap: 6px; word-break: break-word; overflow-wrap: anywhere; }
         .od-m-order-id i { color: var(--od-green); }
 
         .od-m-product {
@@ -1443,6 +1444,7 @@
     </style>
 
 <script src="ux-utils.js"></script>
+<script src="hamburger-menu.js"></script>
 <script src="js/currency.js"></script>
 <script src="script.js"></script>
 <script src="js/orders.js"></script>

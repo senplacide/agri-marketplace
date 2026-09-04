@@ -1486,10 +1486,13 @@
                 top: auto;
                 position: relative;
             }
-            .nav-tabs { width: 100%; justify-content: center; }
+            .nav-tabs { width: 100%; justify-content: center; flex-wrap: wrap; }
             .nav-search { width: 100%; }
             #globalSearch { width: 100%; }
             #globalSearch:focus { width: 100%; }
+            #orderSearch { min-width: 0 !important; width: 100%; }
+            #adminNotifDropdown { position: fixed !important; top: 120px !important; left: 12px !important; right: 12px !important; width: auto !important; max-height: calc(100vh - 160px) !important; }
+            table { overflow-x: auto; }
             .container { width: 96%; padding: 20px 12px 48px; }
             .cards { grid-template-columns: 1fr; gap: 14px; }
             .card { padding: 20px 18px; }
