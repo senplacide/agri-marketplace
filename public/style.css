@@ -2701,4 +2701,10 @@ textarea:focus-visible {
         right: 8px;
         left: 8px;
     }
+
+    .toast-container .toast {
+        min-width: 0;
+        width: 100%;
+        max-width: none;
+    }
 }

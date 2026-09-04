@@ -202,8 +202,17 @@
             .nav-center, .nav-right { display: none; width: 100%; flex-direction: column; align-items: stretch; gap: 2px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,.15); }
             .nav-center.open, .nav-right.open { display: flex; }
             .container { width: 96%; padding: 20px 12px 48px; }
+            .welcome-section { padding: 28px 22px; }
             .wallet-cards { grid-template-columns: 1fr 1fr; gap: 14px; }
             .form-row { grid-template-columns: 1fr; }
+            table { overflow-x: auto; }
+            td { word-break: break-word; overflow-wrap: anywhere; }
+        }
+
+        @media(max-width:400px) {
+            .wallet-cards { grid-template-columns: 1fr; }
+            .form-submit { flex-direction: column; }
+            .form-submit .btn-primary, .form-submit .btn-secondary { width: 100%; justify-content: center; }
         }
     </style>
 </head>
