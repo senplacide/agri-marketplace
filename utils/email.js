@@ -1,30 +1,100 @@
-const nodemailer = require('nodemailer');
+const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 
 function escapeHtml(str) {
     if (typeof str !== 'string') return String(str);
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-const transporter = nodemailer.createTransport({
-    host: "smtp-relay.brevo.com",
-    port: 587,
-    secure: false,
-    requireTLS: true,
-
-    auth: {
-        user: process.env.EMAIL_SERVICE_USER,
-        pass: process.env.EMAIL_SERVICE_PASS
-    },
-
-    connectionTimeout: 30000,
-    greetingTimeout: 30000,
-    socketTimeout: 30000
-});
-
 function ensureEmailConfig() {
-    if (!process.env.EMAIL_SERVICE_USER || !process.env.EMAIL_SERVICE_PASS || !process.env.SENDER_EMAIL) {
-        throw new Error("Email service is not configured.");
+    if (!process.env.BREVO_API_KEY) {
+        throw new Error("Email service is not configured: BREVO_API_KEY environment variable is missing.");
     }
+    if (!process.env.SENDER_EMAIL) {
+        throw new Error("Email service is not configured: SENDER_EMAIL environment variable is missing.");
+    }
+}
+
+function parseFromField(from) {
+    if (!from) return { email: process.env.SENDER_EMAIL };
+    const match = from.match(/^(.+?)\s*<(.+?)>$/);
+    if (match) {
+        return { name: match[1].replace(/"/g, '').trim(), email: match[2].trim() };
+    }
+    return { email: from };
+}
+
+function parseToField(to) {
+    if (typeof to === 'string') return [{ email: to }];
+    if (Array.isArray(to)) {
+        return to.map(function (addr) {
+            if (typeof addr === 'string') return { email: addr };
+            return addr;
+        });
+    }
+    return [{ email: to }];
+}
+
+function parseReplyToField(replyTo) {
+    if (!replyTo) return undefined;
+    if (typeof replyTo === 'string') return { email: replyTo };
+    return replyTo;
+}
+
+async function sendBrevoEmail(options) {
+    var apiKey = process.env.BREVO_API_KEY;
+
+    var payload = {
+        sender: parseFromField(options.from),
+        to: parseToField(options.to),
+        subject: options.subject
+    };
+
+    if (options.html) {
+        payload.htmlContent = options.html;
+    }
+    if (options.text) {
+        payload.textContent = options.text;
+    }
+
+    var replyTo = parseReplyToField(options.replyTo);
+    if (replyTo) {
+        payload.replyTo = replyTo;
+    }
+
+    var response;
+    try {
+        response = await fetch(BREVO_API_URL, {
+            method: 'POST',
+            headers: {
+                'api-key': apiKey,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+    } catch (err) {
+        throw new Error("Brevo API request failed: " + err.message);
+    }
+
+    if (!response.ok) {
+        var errorBody = '';
+        try { errorBody = await response.text(); } catch (_) { /* ignore */ }
+
+        if (response.status === 401) {
+            throw new Error("Brevo API authentication failed (401): verify BREVO_API_KEY is valid.");
+        }
+        if (response.status === 402) {
+            throw new Error("Brevo API payment required (402): account credits exhausted or plan upgrade needed.");
+        }
+        throw new Error("Brevo API error " + response.status + ": " + errorBody);
+    }
+
+    var result;
+    try { result = await response.json(); } catch (_) { result = {}; }
+    return {
+        messageId: result.messageId || null,
+        response: result
+    };
 }
 
 /* ============================================================
@@ -175,7 +245,7 @@ const sendOrderPlacedEmail = async (buyerEmail, buyerName, order) => {
         html
     };
     ensureEmailConfig();
-    return transporter.sendMail(mailOptions);
+    return sendBrevoEmail(mailOptions);
 };
 
 const sendOrderAcceptedEmail = async (buyerEmail, buyerName, order, farmerName) => {
@@ -207,7 +277,7 @@ const sendOrderAcceptedEmail = async (buyerEmail, buyerName, order, farmerName) 
         html
     };
     ensureEmailConfig();
-    return transporter.sendMail(mailOptions);
+    return sendBrevoEmail(mailOptions);
 };
 
 const sendOrderRejectedEmail = async (buyerEmail, buyerName, order) => {
@@ -236,7 +306,7 @@ const sendOrderRejectedEmail = async (buyerEmail, buyerName, order) => {
         html
     };
     ensureEmailConfig();
-    return transporter.sendMail(mailOptions);
+    return sendBrevoEmail(mailOptions);
 };
 
 const sendOrderCompletedEmail = async (buyerEmail, buyerName, order) => {
@@ -265,7 +335,7 @@ const sendOrderCompletedEmail = async (buyerEmail, buyerName, order) => {
         html
     };
     ensureEmailConfig();
-    return transporter.sendMail(mailOptions);
+    return sendBrevoEmail(mailOptions);
 };
 
 /* ============================================================
@@ -310,7 +380,7 @@ const sendNewOrderReceivedEmail = async (farmerEmail, farmerName, order, buyerNa
         html
     };
     ensureEmailConfig();
-    return transporter.sendMail(mailOptions);
+    return sendBrevoEmail(mailOptions);
 };
 
 const sendProductApprovedEmail = async (farmerEmail, farmerName, productName) => {
@@ -339,7 +409,7 @@ const sendProductApprovedEmail = async (farmerEmail, farmerName, productName) =>
         html
     };
     ensureEmailConfig();
-    return transporter.sendMail(mailOptions);
+    return sendBrevoEmail(mailOptions);
 };
 
 const sendProductRejectedEmail = async (farmerEmail, farmerName, productName, reason) => {
@@ -375,7 +445,7 @@ const sendProductRejectedEmail = async (farmerEmail, farmerName, productName, re
         html
     };
     ensureEmailConfig();
-    return transporter.sendMail(mailOptions);
+    return sendBrevoEmail(mailOptions);
 };
 
 /* ============================================================
@@ -404,7 +474,7 @@ const sendAdminNewUserEmail = async (adminEmail, user) => {
         html
     };
     ensureEmailConfig();
-    return transporter.sendMail(mailOptions);
+    return sendBrevoEmail(mailOptions);
 };
 
 const sendAdminNewProductEmail = async (adminEmail, product, farmerName) => {
@@ -433,7 +503,7 @@ const sendAdminNewProductEmail = async (adminEmail, product, farmerName) => {
         html
     };
     ensureEmailConfig();
-    return transporter.sendMail(mailOptions);
+    return sendBrevoEmail(mailOptions);
 };
 
 /* ============================================================
@@ -475,7 +545,7 @@ ${options.message}`,
 
     try {
         ensureEmailConfig();
-        const info = await transporter.sendMail(mailOptions);
+        const info = await sendBrevoEmail(mailOptions);
         return info;
     } catch (error) {
         console.error("Email send failed:", error.message);
@@ -546,7 +616,7 @@ AgriConnect Team
     };
 
     ensureEmailConfig();
-    return transporter.sendMail(mailOptions);
+    return sendBrevoEmail(mailOptions);
 
 };
 const sendPasswordResetEmail = async (email, name, code) => {
@@ -605,7 +675,7 @@ AgriConnect Team
     };
 
     ensureEmailConfig();
-    return transporter.sendMail(mailOptions);
+    return sendBrevoEmail(mailOptions);
 
 };
 
