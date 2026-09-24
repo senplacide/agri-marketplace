@@ -2,12 +2,13 @@
 var ProductDetail = (function () {
     'use strict';
 
-    var loadingEl, notFoundEl, contentEl, imageEl, infoEl, relatedSection, relatedGrid;
+    var loadingEl, notFoundEl, errorEl, contentEl, imageEl, infoEl, relatedSection, relatedGrid;
     var allProducts = [];
 
     function init() {
         loadingEl = document.getElementById('pd-loading');
         notFoundEl = document.getElementById('pd-not-found');
+        errorEl = document.getElementById('pd-error');
         contentEl = document.getElementById('pd-content');
         imageEl = document.getElementById('pd-image');
         infoEl = document.getElementById('pd-info');
@@ -23,12 +24,15 @@ var ProductDetail = (function () {
     }
 
     async function loadAndRender(id) {
+        var response;
         try {
-            var response = await apiFetch('/api/products', { headers: false });
-            allProducts = Array.isArray(response) ? response : (response.data || response.products || []);
+            response = await apiFetch('/api/products', { headers: false });
         } catch (e) {
-            allProducts = [];
+            console.error('Failed to load product details:', e);
+            showError();
+            return;
         }
+        allProducts = Array.isArray(response) ? response : (response.data || response.products || []);
 
         var product = null;
         for (var i = 0; i < allProducts.length; i++) {
@@ -181,6 +185,14 @@ var ProductDetail = (function () {
     function showNotFound() {
         loadingEl.style.display = 'none';
         notFoundEl.style.display = 'block';
+        if (errorEl) errorEl.style.display = 'none';
+        contentEl.style.display = 'none';
+    }
+
+    function showError() {
+        loadingEl.style.display = 'none';
+        if (errorEl) errorEl.style.display = 'block';
+        notFoundEl.style.display = 'none';
         contentEl.style.display = 'none';
     }
 
@@ -192,3 +204,9 @@ var ProductDetail = (function () {
 
     return { init: init };
 })();
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', ProductDetail.init);
+} else {
+    ProductDetail.init();
+}
